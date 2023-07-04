@@ -1,1 +1,7 @@
 node_modules/
+.idea/
+/.next/
+/out/
+npm-debug.log*
+*.tsbuildinfo
+next-env.d.ts
