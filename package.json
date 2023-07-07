@@ -23,7 +23,7 @@
   "homepage": "https://github.com/outsideris/retrotech#readme",
   "dependencies": {
     "gray-matter": "^4.0.3",
-    "next": "latest",
+    "next": "^13.4.9",
     "nextra": "^2.0.0-beta.5",
     "nextra-theme-blog": "^2.0.0-beta.5",
     "react": "^18.2.0",
@@ -34,6 +34,6 @@
     "@types/node": "^18.0.0",
     "@types/react": "^18.0.14",
     "@types/react-dom": "^18.0.5",
-    "typescript": "^4.7.4"
+    "typescript": "^5.1.6"
   }
 }
