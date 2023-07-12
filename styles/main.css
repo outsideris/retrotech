@@ -2,4 +2,13 @@ body {
   font: 19px "Apple SD Gothic Neo", AppleSDGothicNeo, "Malgun Gothic", "맑은 고딕", 돋움, dotum, arial, sans-serif;
 }
 
+.badges {
+  text-align: center;
+}
+
+.badge {
+  display: inline-block;
+  margin: 10px;
+}
+
 
