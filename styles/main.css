@@ -11,4 +11,7 @@ body {
   margin: 10px;
 }
 
-
+.badge.spotify {
+  border: 1px solid #a6a6a6;
+  border-radius: 15px;
+}
