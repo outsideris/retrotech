@@ -4,12 +4,7 @@ export default {
   darkMode: true,
   footer: (
     <footer>
-      <small>
-        <time>{YEAR}</time> © Outsider.
-        <a href="/feed.xml">
-          <i className="fa-solid fa-rss"></i>
-        </a>
-      </small>
+      <iframe src="https://github.com/sponsors/outsideris/button" title="Sponsor outsideris" height="32" width="114"></iframe>
       <h3>Host:</h3>
       <div>
         <img src="/images/outsider.png" alt="Outsider" width="120px" className="profile" />
@@ -18,9 +13,19 @@ export default {
         <i className="fa-brands fa-github"></i> <a href="https://github.com/outsideris">outsideris</a><br/>
         <i className="fa-solid fa-blog"></i> <a href="https://blog.outsider.ne.kr/">blog.outsider.ne.kr</a>
       </div>
+      <small>
+        <time>{YEAR}</time> © Outsider.
+        <a href="/feed.xml">
+          <i className="fa-solid fa-rss"></i>
+        </a>
+      </small>
       <style jsx>{`
         footer {
           margin-top: 8rem;
+        }
+        footer > small {
+          display: block;
+          margin-top: 30px;
         }
         footer > small > a {
           float: right;
@@ -28,6 +33,11 @@ export default {
         footer > div > img {
           float: left;
           margin: 0 10px 0 0;
+        }
+        footer > iframe {
+          border: 0; 
+          border-radius: 6px;
+          margin: 0 auto;
         }
       `}</style>
 
