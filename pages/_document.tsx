@@ -25,6 +25,7 @@ export default function Document() {
       <body>
         <Main />
         <NextScript />
+        <script src="https://kit.fontawesome.com/bba8fa6a15.js" crossOrigin="anonymous"></script>
       </body>
     </Html>
   )
