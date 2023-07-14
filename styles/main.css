@@ -6,9 +6,18 @@ body {
   text-align: center;
 }
 
-.badge {
+.badges > a {
   display: inline-block;
   margin: 10px;
+}
+
+.badges > a.youtube {
+  margin: 0 40px;
+}
+
+.badge {
+  display: inline-block;
+  margin: 0;
 }
 
 .badge.spotify {
