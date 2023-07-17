@@ -2,7 +2,7 @@ import { Html, Head, Main, NextScript } from 'next/document'
 
 export default function Document() {
   const meta = {
-    title: 'RetroTech Podcast',
+    title: 'RetroTech 팟캐스트',
     description: '기술의 역사를 살펴봅니다',
     image: '/images/cover.jpg',
   }
