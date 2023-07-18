@@ -4,16 +4,21 @@ const RSS = require('rss')
 const matter = require('gray-matter')
 
 async function generate() {
-  const feed = new RSS({
+  const feedOption = {
     title: 'RetroTech 팟캐스트',
     site_url: 'https://yoursite.com',
     feed_url: 'https://yoursite.com/feed.xml',
-  })
+    language: 'ko',
+    custom_namespaces: {
+      'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd'
+    },
+  }
+  const feed = new RSS(feedOption)
 
-  const posts = await fs.readdir(path.join(__dirname, '..', 'pages', 'episodes'))
+  const episodes = await fs.readdir(path.join(__dirname, '..', 'pages', 'episodes'))
 
   await Promise.all(
-    posts.map(async (name) => {
+    episodes.map(async (name) => {
       if (name.startsWith('index.')) return
 
       const content = await fs.readFile(
@@ -23,10 +28,18 @@ async function generate() {
 
       feed.item({
         title: frontmatter.data.title,
-        url: '/episodes/' + name.replace(/\.mdx?/, ''),
-        date: frontmatter.data.date,
+        url: `${feedOption.site_url}/episodes/${name.replace(/\.mdx?/, '')}`,
+        date: `${frontmatter.data.date} 09:00`,
         description: frontmatter.data.description,
         author: frontmatter.data.author,
+        enclosure: frontmatter.data.enclosure,
+        duration: frontmatter.data.duration,
+        custom_elements: [
+          {'duration': frontmatter.data.duration},
+          {'itunes:duration': frontmatter.data.duration},
+          {'itunes:explicit': 'no'},
+          {'itunes:author': 'Outsider'},
+        ]
       })
     })
   )
