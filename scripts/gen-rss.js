@@ -35,7 +35,14 @@ async function generate() {
   }
   const feed = new RSS(feedOption)
 
-  const episodes = await fs.readdir(path.join(__dirname, '..', 'pages', 'episodes'))
+  const episodeFiles = await fs.readdir(path.join(__dirname, '..', 'pages', 'episodes'))
+  const episodes = (await Promise.all(episodeFiles.map(async (name) => {
+    if (!name.endsWith('.mdx') && !name.endsWith('.md')) {
+      return (await fs.readdir(path.join(__dirname, '..', 'pages', 'episodes', name))).map((file) => `${name}/${file}`)
+    }
+
+    return name
+  }))).flat()
 
   await Promise.all(
     episodes.map(async (name) => {
@@ -48,7 +55,7 @@ async function generate() {
 
       feed.item({
         title: frontmatter.data.title,
-        url: `${feedOption.site_url}/episodes/${name.replace(/\.mdx?/, '')}`,
+        url: `${SITE_URL}/episodes/${name.replace(/\.mdx?/, '')}`,
         date: `${frontmatter.data.date} 09:00`,
         description: frontmatter.data.description,
         author: frontmatter.data.author,
