@@ -3,15 +3,35 @@ const path = require('node:path')
 const RSS = require('rss')
 const matter = require('gray-matter')
 
+const SITE_URL = 'https://yoursite.com'
+
 async function generate() {
   const feedOption = {
     title: 'RetroTech 팟캐스트',
-    site_url: 'https://yoursite.com',
-    feed_url: 'https://yoursite.com/feed.xml',
+    site_url: SITE_URL,
+    feed_url: `${SITE_URL}/feed.xml`,
     language: 'ko',
     custom_namespaces: {
       'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd'
     },
+    custom_elements: [
+      {'itunes:owner': [
+          {'itunes:name': 'Outsider'},
+          {'itunes:email': 'outsideris@gmail.com.com'}
+      ]},
+      {'itunes:author': 'Outsider'},
+      {'itunes:image': {
+          _attr: {
+            href: `${SITE_URL}/images/cover.png`
+          }
+      }},
+      {'itunes:explicit': 'no'},
+      {'itunes:category': [
+          {_attr: {
+              text: 'Technology'
+          }},
+      ]}
+    ],
   }
   const feed = new RSS(feedOption)
 
@@ -45,6 +65,7 @@ async function generate() {
   )
 
   await fs.writeFile('./public/feed.xml', feed.xml({ indent: true }))
+  console.log('RSS feed generated!')
 }
 
 generate()
