@@ -17,7 +17,7 @@ async function generate() {
     custom_elements: [
       {'itunes:owner': [
           {'itunes:name': 'Outsider'},
-          {'itunes:email': 'outsideris@gmail.com.com'}
+          {'itunes:email': 'outsideris@gmail.com'}
       ]},
       {'itunes:author': 'Outsider'},
       {'itunes:image': {
