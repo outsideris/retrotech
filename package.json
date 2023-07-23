@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "dev": "next",
-    "build": "ls -la && ls -la components && ls -la pages && node ./scripts/gen-rss.js && next build",
+    "build": "node ./scripts/gen-rss.js && next build",
     "start": "next start"
   },
   "repository": {
