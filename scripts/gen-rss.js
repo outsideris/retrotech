@@ -3,7 +3,7 @@ const path = require('node:path')
 const RSS = require('rss')
 const matter = require('gray-matter')
 
-const SITE_URL = 'https://yoursite.com'
+const SITE_URL = 'https://retrotech.outsider.dev'
 
 async function generate() {
   const feedOption = {

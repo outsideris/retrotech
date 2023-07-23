@@ -24,3 +24,15 @@ body {
   border: 1px solid #a6a6a6;
   border-radius: 15px;
 }
+
+h5 {
+ font-size: 0.9rem;
+}
+
+.refs {
+  font-size: 0.9rem;
+}
+
+.refs ul {
+  margin-top: 0;
+}
