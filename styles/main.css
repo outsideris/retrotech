@@ -3,7 +3,8 @@ body {
 }
 
 .badges {
-  text-align: center;
+  /*text-align: center;*/
+  text-align: left;
 }
 
 .badges > a {
