@@ -22,7 +22,7 @@ async function generate() {
       {'itunes:author': 'Outsider'},
       {'itunes:image': {
           _attr: {
-            href: `${SITE_URL}/images/cover.png`
+            href: `${SITE_URL}/images/cover.jpg`
           }
       }},
       {'itunes:explicit': 'no'},

@@ -4,7 +4,7 @@ export default function Document() {
   const meta = {
     title: 'RetroTech 팟캐스트',
     description: '기술의 역사를 살펴보는 팟캐스트입니다',
-    image: '/images/cover.png',
+    image: 'https://retrotech.outsider.dev/images/cover.jpg',
   }
 
   return (
@@ -16,8 +16,9 @@ export default function Document() {
         <meta property="og:description" content={meta.description} />
         <meta property="og:title" content={meta.title} />
         <meta property="og:image" content={meta.image} />
-        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:card" content="summary" />
         <meta name="twitter:site" content="@outsideris" />
+        <meta name="twitter:creator" content="@outsideris" />
         <meta name="twitter:title" content={meta.title} />
         <meta name="twitter:description" content={meta.description} />
         <meta name="twitter:image" content={meta.image} />
