@@ -24,6 +24,9 @@ export default function Document() {
         <meta name="twitter:image" content={meta.image} />
       </Head>
       <body>
+        <noscript>
+          <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P368DQ3M" height="0" width="0" style={{display: "none", visibility: "hidden"}}></iframe>
+        </noscript>
         <Main />
         <NextScript />
         <script src="https://kit.fontawesome.com/bba8fa6a15.js" crossOrigin="anonymous"></script>
