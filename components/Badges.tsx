@@ -3,7 +3,7 @@ import Image from 'next/image'
 
 export default function Badges({
   apple = "https://podcasts.apple.com/kr/podcast/retrotech-%ED%8C%9F%EC%BA%90%EC%8A%A4%ED%8A%B8/id1698903712",
-  youtube = "https://www.youtube.com/@OutsidersDevStory/podcasts",
+  youtube = "https://www.youtube.com/playlist?list=PLEHf_UYxvkp9HCnP3UIZhEss_Yo4XuUDX",
   google = "https://podcasts.google.com/feed/aHR0cHM6Ly9yZXRyb3RlY2gub3V0c2lkZXIuZGV2L2ZlZWQueG1s",
   spotify = "https://open.spotify.com/show/3nSplj43Rd86snTrsEHdTI"
 }) {
