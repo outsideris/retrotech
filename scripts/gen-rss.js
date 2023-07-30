@@ -52,12 +52,17 @@ async function generate() {
         path.join(__dirname, '..', 'pages', 'episodes', name)
       )
       const frontmatter = matter(content)
+      let description = frontmatter.data.description
+      if (frontmatter.data.description2) {
+        description += `\n${frontmatter.data.description2}`
+      }
+
 
       feed.item({
         title: frontmatter.data.title,
         url: `${SITE_URL}/episodes/${name.replace(/\.mdx?/, '')}`,
         date: `${frontmatter.data.date} 09:00`,
-        description: frontmatter.data.description,
+        description,
         author: frontmatter.data.author,
         enclosure: frontmatter.data.enclosure,
         duration: frontmatter.data.duration,
