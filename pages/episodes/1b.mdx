@@ -1,0 +1,114 @@
+---
+title: >
+    1b. JavaScript Framework: jQuery
+date: 2023/8/14
+description: |
+    John Resig이 2006년에 공개한 jQuery가 어떻게 만들어졌고, 릴리스 된 이후 발전하게 된 과정을 설명합니다.
+    jQuery 팀의 프로젝트인 jQuery UI와 jQuery Mobile도 함께 살펴봅니다.
+description2: |
+    레퍼런스는 홈페이지 참고:
+    https://retrotech.outsider.dev/episodes/1b
+
+    Music from #Uppbeat (free for Creators!):
+    https://uppbeat.io/t/zoo/breathtaker
+    License code: DEE3F7LCBCBCJESY
+author: Outsider
+enclosure:
+  url: https://retrotech-episodes.outsider.dev/1b.mp3
+  size: 112965376
+duration: "1:34:08"
+---
+
+# 1a. JavaScript Framework: jQuery
+
+[John Resig](https://johnresig.com/)이 2006년에 공개한
+[jQuery](https://jquery.com/)가 어떻게 만들어졌고,
+릴리스 된 이후 발전하게 된 과정을 설명합니다.
+
+jQuery 팀의 프로젝트인 [jQuery UI](https://jqueryui.com/)와
+[jQuery Mobile](https://jquerymobile.com/)도 함께 살펴봅니다.
+
+#### 레퍼런스:
+<div class="refs">
+  * [W3Tech의 Usage statistics of JavaScript libraries for websites](https://w3techs.com/technologies/overview/javascript_library)
+  * [John Resig의 jQuery Past, Present, and Future 발표자료](https://www.slideshare.net/jeresig/history-of-jquery)
+  * [Simon Willison의 getElementsBySelector()](https://simonwillison.net/2003/Mar/25/getElementsBySelector/)
+  * [Dean Edwards의 base2](https://code.google.com/archive/p/base2/)
+  * [Dean Edwards의 packer](http://dean.edwards.name/packer/)
+  * [Dean Edwards의 cssQuery()](https://web.archive.org/web/20050527200932/http://dean.edwards.name/my/cssQuery/)
+  * [Dean Edwards의 addEvent()](http://dean.edwards.name/weblog/2005/10/add-event/)
+  * [ppk가 쓴 addEvent() considered harmful](https://www.quirksmode.org/blog/archives/2005/08/addevent_consid.html)
+  * [Peter-Paul Koch(PPK)](https://www.quirksmode.org/about/)
+  * [PPK 자바스크립트](http://www.acornpub.co.kr/book/ppk)
+  * [addEvent() recoding contest](https://www.quirksmode.org/blog/archives/2005/09/addevent_recodi.html)
+  * [moo.fx](https://web.archive.org/web/20051124002803/http://moofx.mad4milk.net/)
+  * [John Resig이 쓴 Selectors in Javascript](https://johnresig.com/blog/selectors-in-javascript/)
+  * [Behaviour is the missing link for your ajax apps.](http://web.archive.org/web/20051013060536/http://bennolan.com/behaviour/)
+  * [Dave Shea](https://en.wikipedia.org/wiki/Dave_Shea_(web_designer))
+  * [CSS Zen Garden](https://www.csszengarden.com/)
+  * [2003년의 CSS Zen Garden](http://web.archive.org/web/20031217182049/https://www.csszengarden.com/)
+  * [Unobtrusive는 뭐라 번역하는 게 좋을까요?](https://blog.insightbook.co.kr/2008/07/16/unobtrusive%EB%8A%94-%EB%AD%90%EB%9D%BC-%EB%B2%88%EC%97%AD%ED%95%98%EB%8A%94-%EA%B2%8C-%EC%A2%8B%EC%9D%84%EA%B9%8C%EC%9A%94/)
+  * [Stuart Langridge](https://en.wikipedia.org/wiki/Stuart_Langridge)
+  * [Stuart Langridge가 쓴 Unobtrusive DHTML, and the power of unordered lists](https://www.kryogenix.org/code/browser/aqlists/)
+  * [John Resig의 jselect](https://johnresig.com/apps/jselect/selector.js)
+  * [2006년 Bar Camp NYC](https://johnresig.com/blog/bar-camp-nyc/)
+  * [John Resig이 쓴 BarCampNYC Wrap-up](https://johnresig.com/blog/barcampnyc-wrap-up/)
+  * [2006년 jQuery 홈페이지](https://web.archive.org/web/20060203025710/http://jquery.com/)
+  * [2006년 jQuery 소스 코드](https://web.archive.org/web/20060203063951/http://jquery.com/src/)
+  * [2006년 jQuery 튜토리얼](https://web.archive.org/web/20060205024915/http://jquery.com/docs/Tutorial/)
+  * [Michael Geary의 JSON for jQuery](https://web.archive.org/web/20060430223032/https://mg.to/2006/01/25/json-for-jquery)
+  * [https://en.wikipedia.org/wiki/JSONP](https://en.wikipedia.org/wiki/JSONP)
+  * [Bob Ippolito가 쓴 Remote JSON - JSONP](https://web.archive.org/web/20120608162347/http://bob.ippoli.to/archives/2005/12/05/remote-json-jsonp/)
+  * [2006년 jQuery 문서의 PrototypeAndJQuery](https://web.archive.org/web/20060205012055/http://jquery.com/docs/PrototypeAndJQuery/)
+  * [jQuery에 추가된 AJAXModule](https://web.archive.org/web/20070106132551/http://jquery.com/docs/AJAXModule/)
+  * [jQuery에 추가된 Ajax 플러그인](https://web.archive.org/web/20070127233929/http://jquery.com/blog/2006/02/26/ajax-new-fx-and-more/)
+  * [jQuery Visul Map](https://web.archive.org/web/20070217120400/http://jquery.com/images/jQuery-Map.png)
+  * [jQuery Trac](https://web.archive.org/web/20070218202116/http://dev.jquery.com/ticket/264)
+  * [trac](https://trac.edgewall.org/)
+  * [jQuery의 The Road to 1.0](https://web.archive.org/web/20060718170203/http://jquery.com/blog/2006/06/23/the-road-to-10/)
+  * [jQuery 1.0](https://web.archive.org/web/20070112065333/http://jquery.com/blog/2006/08/26/jquery-10/)
+  * [jQuery 1.0 - Alpha Release](https://web.archive.org/web/20070109232203/http://jquery.com/blog/2006/06/30/jquery-10-alpha-release/)
+  * [.net magazine - Interview: John Resig of jQuery](https://web.archive.org/web/20080819202313/http://rikrikrik.com/log/jquery-interview)
+  * [Visual jQuery Magazine Released](https://blog.jquery.com/2006/09/22/visual-jquery-magazine-released/)
+  * [Meet The People Behind jQuery](https://blog.jquery.com/2006/12/18/meet-the-people-behind-jquery/)
+  * [jQuery 1.1.3: 800%+ Faster, still 20KB](https://blog.jquery.com/2007/07/01/jquery-113-800-faster-still-20kb/)
+  * [Paul Bakaus](https://www.linkedin.com/in/paulbakaus/)
+  * [jQuery UI: Interactions and Widgets](https://blog.jquery.com/2007/09/17/jquery-ui-interactions-and-widgets/)
+  * [Renaissance Geek by Paul Bakaus](https://paulbakaus.com/)
+  * [2007년 jQuery UI 홈페이지](https://web.archive.org/web/20070917135318/http://ui.jquery.com/)
+  * [jQuery UI v1.5 Released, Focus on Consistent API and Effects](https://blog.jquery.com/2008/06/09/jquery-ui-v15-released-focus-on-consistent-api-and-effects/)
+  * [jQuery ThemeRoller](https://web.archive.org/web/20090308045030/http://jqueryui.com//themeroller//)
+  * [jQuery.com Site Redesign](https://blog.jquery.com/2008/08/29/jquerycom-site-redesign/)
+  * [WebPageTest](https://www.webpagetest.org/)
+  * [jQueryCamp ’07 (Boston)](https://blog.jquery.com/2007/09/06/jquerycamp-07-boston/)
+  * [Listening to John Resig at JQueryCamp](https://7fff.com/2007/10/listening-to-john-resig-at-jquerycamp/)
+  * [Google Using jQuery](https://blog.jquery.com/2007/11/02/google-using-jquery/)
+  * [Scott Guthrie가 쓴 jQuery and Microsoft](https://web.archive.org/web/20081101204756/http://weblogs.asp.net/scottgu/archive/2008/09/28/jquery-and-microsoft.aspx)
+  * [Scott Guthrie](https://www.linkedin.com/in/guthriescott/)
+  * [jQuery Wins .Net Magazine Award](https://blog.jquery.com/2009/12/03/jquery-wins-net-magazine-award/)
+  * [CloudFront CDN for jQuery](https://blog.jquery.com/2008/11/19/cloudfront-cdn-for-jquery/)
+  * [JSDelivr](https://www.jsdelivr.com/)
+  * [cdnjs](https://cdnjs.com/)
+  * [unpkg](https://unpkg.com/)
+  * [Google AJAX Libraries API](https://web.archive.org/web/20080928012527/http://code.google.com/apis/ajaxlibs/)
+  * [The jQuery Project is Proud to Announce the jQuery Mobile Project](https://blog.jquery.com/2010/08/13/the-jquery-project-is-proud-to-announce-the-jquery-mobile-project/)
+  * [Steve Jobs Introducing The iPhone At MacWorld 2007](https://www.youtube.com/watch?v=x7qPAY9JqE4)
+  * [CSS Media queries](https://en.wikipedia.org/wiki/Media_queries)
+  * [jQuery Mobile 홈페이지](https://jquerymobile.com/)
+  * [2010년의 jQuery Mobile 홈페이지](https://web.archive.org/web/20101225200247/https://jquerymobile.com/)
+  * [Announcing jQuery Mobile 1.0](https://blog.jquerymobile.com/2011/11/16/announcing-jquery-mobile-1-0/)
+  * [jQuery Mobile 1.0 데모](https://demos.jquerymobile.com/1.0/)
+  * [ThemeRoller For jQuery Mobile](https://themeroller.jquerymobile.com/)
+  * [jQuery Mobile: "Innovation of the Year" in the 2011 .net Awards](https://blog.jquerymobile.com/2011/11/28/jquery-mobile-innovation-of-the-year-in-the-2011-net-awards/)
+</div>
+
+import Badges from 'components/Badges'
+
+<Badges
+/>
+
+#### 배경음악
+Music from #Uppbeat (free for Creators!):
+https://uppbeat.io/t/zoo/breathtaker
+
+License code: DEE3F7LCBCBCJESY
