@@ -1,7 +1,25 @@
+import { useBlogContext } from 'nextra-theme-blog'
+
 const YEAR = new Date().getFullYear()
 
 export default {
   darkMode: true,
+  head: () => {
+    const { opts } = useBlogContext()
+    let title = '';
+    if (opts.title === 'RetroTech') {
+      title = 'RetroTech 팟캐스트'
+    } else {
+      title = `${opts.title.replace('\n', '')} - RetroTech`
+    }
+
+    return (
+      <>
+        <meta property="og:title" content={title} />
+        <meta name="twitter:title" content={title} />
+      </>
+    )
+  },
   footer: (
     <footer>
       <iframe src="https://github.com/sponsors/outsideris/button" title="Sponsor outsideris" height="32" width="114"></iframe>
