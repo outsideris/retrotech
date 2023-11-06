@@ -45,7 +45,7 @@ async function generate() {
   }))).flat()
 
   await Promise.all(
-    episodes.map(async (name) => {
+    episodes.reverse().map(async (name) => {
       if (name.startsWith('index.')) return
 
       const content = await fs.readFile(
