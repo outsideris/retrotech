@@ -1,0 +1,163 @@
+---
+title: >
+    1l. JavaScript Framework: Isomorphic JavaScript Framework - Meteor
+date: 2024/7/19
+description: |
+    2009년 Node.js가 나오면서 JavaScript로 서버도 작성할 수 있게 되자 서버와 클라이언트에서 코드를 공유하고자 하는 Isomorphic JavaScript, 즉, 동형 자바스크립트라는 개념이 등장합니다.
+    Isomorphic JavaScript Framework 중 가장 인기를 끌었던 Meteor는 커뮤니티에 주목을 받으며 오픈소스 프레임워크를 만드는 회사로서는 고무적으로 큰 투자도 받으면서 성장해 갑니다.
+description2: |
+    레퍼런스는 홈페이지 참고:
+    https://retrotech.outsider.dev/episodes/1l
+
+    Music from #Uppbeat
+    https://uppbeat.io/t/zoo/breathtaker
+    License code: 4GX2KBM7YZ9B7EDU
+author: Outsider
+enclosure:
+  url: https://retrotech-episodes.outsider.dev/1l.mp3
+  size: 84711616
+duration: "1:10:35"
+---
+
+# 1l. JavaScript Framework: Isomorphic JavaScript Framework - Meteor
+
+2009년 Node.js가 나오면서 JavaScript로 서버도 작성할 수 있게 되자
+서버와 클라이언트에서 코드를 공유하고자 하는 Isomorphic JavaScript,
+즉, 동형 자바스크립트라는 개념이 등장합니다.
+
+Isomorphic JavaScript Framework 중 가장 인기를 끌었던 Meteor는
+커뮤니티에 주목을 받으며 오픈소스 프레임워크를 만드는 회사로서는 고무적으로 큰 투자도
+받으면서 성장해 갑니다.
+
+import Badges from 'components/Badges'
+
+<Badges
+/>
+
+#### 레퍼런스:
+<div class="refs">
+    * [Meteor 홈페이지](https://www.meteor.com/)
+    * [Node.js Wikipedia](https://en.wikipedia.org/wiki/Node.js)
+    * [MongoDB Wikipedia](https://en.wikipedia.org/wiki/MongoDB)
+    * [MongoDB 홈페이지](https://www.mongodb.com/)
+    * [10gen Announces Company Name Change to MongoDB, Inc.](https://www.mongodb.com/company/newsroom/press-releases/10gen-announces-solutions-name-change-mongodb-inc)
+    * [LAMP Wikipedia](https://en.wikipedia.org/wiki/LAMP_(software_bundle))
+    * [Valeri Karpov의 LinkedIn](https://www.linkedin.com/in/valeri-karpov-64b48138/)
+    * [Valeri Karpov의 Blog](https://thecodebarbarian.com/)
+    * [The MEAN Stack: MongoDB, ExpressJS, AngularJS and Node.js](https://web.archive.org/web/20130606063300/http://blog.mongodb.org/post/49262866911/the-mean-stack-mongodb-expressjs-angularjs-and)
+    * [mongoose.js](https://mongoosejs.com/)
+    * [Mastering JS](https://masteringjs.io/)
+    * [MERN Stack Explained](https://www.mongodb.com/resources/languages/mern-stack)
+    * [nodejitsu](https://web.archive.org/web/20110128115716/https://nodejitsu.com/#/splash)
+    * [Charlie Robbins의 GitHub](https://github.com/indexzero)
+    * [Scaling Isomorphic Javascript Code](https://web.archive.org/web/20120509142816/https://blog.nodejitsu.com/scaling-isomorphic-javascript-code/)
+    * [Isomorphic JavaScript: The Future of Web Apps](https://medium.com/airbnb-engineering/isomorphic-javascript-the-future-of-web-apps-10882b7a2ebc)
+    * [Yahoo!s Mojito is Now Open Source](https://web.archive.org/web/20130722082828/http://developer.yahoo.com/blogs/ydn/yahoo-mojito-now-open-source-52490.html)
+    * [Dustin Moskovitz Wikipedia](https://en.wikipedia.org/wiki/Dustin_Moskovitz)
+    * [asana](https://asana.com/)
+    * [Luna, our in-house framework for writing great web apps](https://web.archive.org/web/20120920035806/http://asana.com/luna/)
+    * [Geoff Schmidt의 LinkedIn](https://www.linkedin.com/in/gschmidt/)
+    * [Geoff Schmidt의 GitHub](https://github.com/gschmidt)
+    * [Geoff Schmidt의 Twitter](https://x.com/geoffql)
+    * [Napster Wikipedia](https://en.wikipedia.org/wiki/Napster)
+    * [Miro](https://www.getmiro.com/)
+    * [Miro Wikipedia](https://en.wikipedia.org/wiki/Miro_(video_software))
+    * [ActBlue: Built to Last](https://blogdotactbluedotcom.wordpress.com/2007/07/02/auburn-quad/)
+    * [ActBlue](https://secure.actblue.com/)
+    * [ActBlue Wikipedia](https://en.wikipedia.org/wiki/ActBlue)
+    * [Meteor Development Group](https://impact.dealroom.co/companies/meteor_df)
+    * [Matt DeBergalis의 LinkedIn](https://www.linkedin.com/in/debergalis/)
+    * [Matt DeBergalis의 GitHub](https://github.com/debergalis)
+    * [Matt DeBergalis의 Twitter](https://x.com/debergalis)
+    * [InfluenceWatch: Matt DeBergalis](https://www.influencewatch.org/person/matt-debergalis/)
+    * [6 million Democratic donors gave $1 billion in 2019 through ActBlue, officials say](https://www.washingtonpost.com/politics/6-million-democratic-donors-gave-1-billion-in-2019-through-actblue-officials-say/2020/01/08/d358d09a-3268-11ea-a053-dc6d944ba776_story.html)
+    * [WinRed Wikipedia](https://en.wikipedia.org/wiki/WinRed)
+    * [Nick Martin의 LinkedIn](https://www.linkedin.com/in/n1mmy/)
+    * [Nick Martin의 GitHub](https://github.com/n1mmy)
+    * [Nick Martin의 Twitter](https://x.com/n1mmy)
+    * [Nick Martin의 홈페이지](https://www.nimlabs.org/)
+    * [Nick Martin의 이력서](https://www.nimlabs.org/resume/resume.html)
+    * [Square](https://squareup.com/us/en)
+    * [2010년의 mixapp](https://web.archive.org/web/20100523070621/http://mixapp.com/welcome)
+    * [mixapp: To all good things...](https://web.archive.org/web/20130525040409/http://blog.mixapp.com/to-all-good-things)
+    * [David Greenspan의 LinkedIn](https://www.linkedin.com/in/david-greenspan-b7b2b21b2/)
+    * [David Greenspan의 Twitter](https://x.com/davidlg)
+    * [David Greenspan의 홈페이지](https://dgreenspan.com/)
+    * [2008년의 AppJet](https://web.archive.org/web/20080908032159/http://appjet.com/)
+    * [EtherPad 런](https://blogoscoped.com/archive/2008-11-20-n42.html)
+    * [현재의 EtherPad](https://etherpad.org/)
+    * [2010년의 EtherPad](https://web.archive.org/web/20100722023953/https://etherpad.org/)
+    * [CRDT(Conflict-free replicated data type)](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)
+    * [Slashdot: A Web App For Real-Time Collaborative Writing](https://tech.slashdot.org/story/08/11/21/1626208/a-web-app-for-real-time-collaborative-writing)
+    * [Slashdot effect](https://en.wikipedia.org/wiki/Slashdot_effect)
+    * [TechCrunch: Google Wave Drips With Ambition. A New Communication Platform For A New Web.](https://techcrunch.com/2009/05/28/google-wave-drips-with-ambition-can-it-fulfill-googles-grand-web-vision/)
+    * [2010년의 Google Wave](https://web.archive.org/web/20100427183005/http://wave.google.com/about.html)
+    * [Congratulations, Appjets!](https://www.ycombinator.com/blog/congratulations-appjets)
+    * [Status of Google Wave](https://support.google.com/answer/1083134?hl=en)
+    * [Meteor (YC S11) raises $11.2M from Andreessen Horowitz and Matrix Partners to create the next Ruby on Rails](https://www.ycombinator.com/blog/meteor-yc-s11-raises-112m-from-andreessen-hor)
+    * [Skybreak: First preview](https://blog.meteor.com/first-preview-8d4675d7fe35)
+    * [2012년의 Skybreak README](https://github.com/dandv/skybreak)
+    * [Skybreak is now Meteor](https://blog.meteor.com/skybreak-is-now-meteor-e680d1dbaf84)
+    * [2010년의 Meteor](https://web.archive.org/web/20120413012027/http://www.meteor.com/)
+    * [Andreessen Horowitz Keeps Eating The Software World With $11.2 Million Investment In JavaScript Framework Company Meteor](https://techcrunch.com/2012/07/25/andreessen-horowitz-keeps-eating-the-software-world-with-11-2-million-investment-in-javascript-framework-company-meteor/)
+    * [Meteor’s new $11.2 million development budget](https://blog.meteor.com/meteors-new-11-2-million-development-budget-7370586949e7)
+    * [Meteor 0.5.0: authentication, user accounts, new screencast](https://blog.meteor.com/meteor-0-5-0-authentication-user-accounts-new-screencast-1880d312ea44)
+    * [Introducing DDP](https://blog.meteor.com/introducing-ddp-6b40c6aff27d)
+    * [Introduction to DDP](https://web.archive.org/web/20140701151304/http://meteorhacks.com/introduction-to-ddp.html)
+    * [Meteor 0.6.0: brand new distribution system, app packages, NPM integration](https://blog.meteor.com/meteor-0-6-0-brand-new-distribution-system-app-packages-npm-integration-7c04e50ef815)
+    * [Meteor 0.7.0: Scalable database queries using MongoDB oplog instead of poll-and-diff](https://blog.meteor.com/meteor-0-7-0-scalable-database-queries-using-mongodb-oplog-instead-of-poll-and-diff-7c4166441ab8)
+    * [Introducing the Blaze live templating engine and Meteor 0.8.0](https://blog.meteor.com/introducing-the-blaze-live-templating-engine-and-meteor-0-8-0-8d9581c27bca)
+    * [Introducing Meteor 0.9.0 and the official Meteor packaging system](https://blog.meteor.com/introducing-meteor-0-9-0-and-the-official-meteor-packaging-system-6984eb91bc76)
+    * [Atomospherejs: The trusted source for JavaScript packages, Meteor.js resources and tools](https://atmospherejs.com/)
+    * [velocity: A reactive test-runner for Meteor](https://github.com/meteor-velocity/velocity)
+    * [Blaze](https://guide.meteor.com/blaze.html)
+    * [PhoneGap](https://web.archive.org/web/20140122031619/http://phonegap.com/)
+    * [Apache Cordova](https://cordova.apache.org/)
+    * [Apple allows hot code push in mobile apps](https://blog.meteor.com/apple-allows-hot-code-push-in-mobile-apps-c2709c814102)
+    * [Meteor: Hot code pushes](https://blog.meteor.com/hot-code-pushes-c3d49c43094b)
+    * [W3C: Service Workers publication history](https://www.w3.org/standards/history/service-workers/)
+    * [Meteor 1.0](https://blog.meteor.com/meteor-1-0-d0702aab3ef)
+    * [Meteor Day Recap: 4,259 developers at 134 meetups on one day](https://blog.meteor.com/meteor-day-recap-4-259-developers-at-134-meetups-on-one-day-a5ce4385dc00)
+    * [Meteor: Announcing our $20m Series B Funding](https://blog.meteor.com/announcing-our-20m-series-b-funding-49dcfd3c3c6f)
+    * [Announcing Meteor Galaxy](https://blog.meteor.com/announcing-meteor-galaxy-39c652c9ae69)
+    * [Meteor 2.0 is here!](https://blog.meteor.com/meteor-2-0-is-here-867b0ab4f8df)
+    * [Meteor reaches top ten on GitHub!](https://blog.meteor.com/meteor-reaches-top-ten-on-github-593efb6a9287)
+    * [Stack Overflow trends: React.js, Angular, Angular.js, Meteor](https://trends.stackoverflow.co/?tags=reactjs,angular,angularjs,meteor)
+    * [Gartner: Cool Vendors in Application Development, 2015](https://www.gartner.com/en/documents/3031720)
+    * [State of JS 2020: Back-end Frameworks](https://2020.stateofjs.com/en-US/technologies/back-end-frameworks/)
+    * [The State Of Meteor Part 1: Growing Pains](https://web.archive.org/web/20160409024636/https://www.discovermeteor.com/blog/the-state-of-meteor-part-1-what-went-wrong/)
+    * [The State Of Meteor Part 2: What Happens Next](https://web.archive.org/web/20160408184146/https://www.discovermeteor.com/blog/the-state-of-meteor-part-2-what-happens-next/)
+    * [Ask HN: Is Meteor.js dead?](https://news.ycombinator.com/item?id=16782266)
+    * [Why I won’t recommend Meteor anymore](https://medium.com/@pierrebaz/why-i-won-t-recommend-meteor-anymore-fcec4e478d78)
+    * [10 years of Meteor](https://meteor10.sachagreif.com/)
+    * [Discover Meteor](https://web.archive.org/web/20130508020431/http://www.discovermeteor.com/)
+    * [Meteorite: Installer & smart package manager for Meteor](https://github.com/oortcloud/meteorite)
+    * [chromatic: From Meteor to Chroma](https://www.chromatic.com/blog/from-meteor-to-chroma/)
+    * [Storybook](https://storybook.js.org/)
+    * [The Storybook Story](https://storybook.js.org/blog/the-storybook-story)
+    * [MDG acquires Kadira APM](https://blog.meteor.com/mdg-acquires-kadira-apm-96dfb3167fe5)
+    * [Kadira APM is now open source](https://blog.meteor.com/kadira-apm-is-now-open-source-490469ffc85f)
+    * [State of JavaScript](https://stateofjs.com/)
+    * [State of CSS](https://stateofcss.com/en-US)
+    * [State of GraphQL](https://stateofgraphql.com/en-US)
+    * [Engineering at Meta: GraphQL: A data query language](https://engineering.fb.com/2015/09/14/core-infra/graphql-a-data-query-language/)
+    * [Meteor: Reactive GraphQL](https://blog.meteor.com/reactive-graphql-d78d307bbcbb)
+    * [2017년 Apollo GraphQL](https://web.archive.org/web/20170701064817/http://apollodata.com/)
+    * [2016년의 Apollo GraphQL](https://web.archive.org/web/20160520075414/http://www.apollostack.com/)
+    * [현재의 Apollo GraphQL](https://www.apollographql.com/)
+    * [The Meteor Chef: An Introduction to Apollo](https://blog.meteor.com/the-meteor-chef-an-introduction-to-apollo-b1904955289e)
+    * [The real story behind Apollo GraphQL](https://www.xolv.io/blog/articles/the-real-story-behind-apollo-graphql/)
+    * [A New Chapter For Meteor](https://blog.meteor.com/a-new-chapter-for-meteor-7b684320be4c)
+    * [tiny](https://www.tiny.com/companies)
+    * [Metalab](https://www.metalab.com/)
+    * [Dribbble](https://dribbble.com/)
+    * [Pixel Union](https://pixelunion.net/)
+    * [We Work Remotely](https://weworkremotely.com/)
+    * [Leadership at Apollo](https://www.apollographql.com/leadership)
+</div>
+
+#### 배경음악
+Music from #Uppbeat
+https://uppbeat.io/t/zoo/breathtaker
+
+License code: 4GX2KBM7YZ9B7EDU
