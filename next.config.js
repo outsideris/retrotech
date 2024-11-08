@@ -5,7 +5,7 @@ const withNextra = require('nextra')({
 })
 
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConigg = {
   output: 'export',
   distDir: 'dist',
   images: {
