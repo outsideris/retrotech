@@ -1,0 +1,232 @@
+---
+title: >
+    1n. JavaScript Framework: Svelte, Preact, SolidJS, Alpine.js, Lit
+date: 2024/12/31
+description: |
+    Angular, React, Vue.js가 3대 프론트엔드 프레임워크로 자리 잡고 가장 많이 관심을 받는 중에 React가 가장 많은 인기를 누리고 있지만 그 이후에도 새로운 자바스크립트 프레임워크는 계속 등장하고 있습니다.
+    이후에 등장해서 지금도 어느 정도 사용자층이 있는 Svelte, Preact, SolidJS, Alpine.js, Lit가 어떻게 만들어지고 어떤 문제를 해결하려고 했는지를 살펴봅니다.
+description2: |
+    레퍼런스는 홈페이지 참고:
+    https://retrotech.outsider.dev/episodes/1n
+
+    Music from #Uppbeat
+    https://uppbeat.io/t/zoo/clarity
+    License code: DEG8IR0VQV5JZPP9
+author: Outsider
+enclosure:
+  url: https://retrotech-episodes.outsider.dev/1n.mp3
+  size: 124166656
+duration: "1:43:28"
+---
+
+# 1n. JavaScript Framework: Svelte, Preact, SolidJS, Alpine.js, Lit
+
+Angular, React, Vue.js가 3대 프론트엔드 프레임워크로 자리 잡고
+가장 많이 관심을 받는 중에 React가 가장 많은 인기를 누리고 있지만
+그 이후에도 새로운 자바스크립트 프레임워크는 계속 등장하고 있습니다.
+
+이후에 등장해서 지금도 어느 정도 사용자층이 있는
+Svelte, Preact, SolidJS, Alpine.js, Lit가
+어떻게 만들어지고 어떤 문제를 해결하려고 했는지를 살펴봅니다.
+
+import Badges from 'components/Badges'
+
+<Badges
+/>
+
+#### 레퍼런스:
+<div className="refs">
+    * Svelte
+        * [State of JS 2024 - Front-End Frameworks](https://2024.stateofjs.com/en-US/libraries/front-end-frameworks/)
+        * [Rich Harris의 LinkedIn](https://www.linkedin.com/in/rich-harris/)
+        * [Rich Harris의 GitHub](https://github.com/rich-harris)
+        * [Rich Harris의 Twitter](https://x.com/rich_harris)
+        * [Rich Harris의 Medium](https://medium.com/@Rich_Harris)
+        * [Ractive.js 홈페이지](https://ractive.js.org/)
+        * [Ractive.js 2013년 홈페이지](https://web.archive.org/web/20130905032105/http://www.ractivejs.org/)
+        * [Ractive.js GitHub](https://github.com/ractivejs/ractive)
+        * [The Guardian](https://www.theguardian.com/international)
+        * [The Guardian Engineering blog](https://www.theguardian.com/info/series/engineering-blog)
+        * [Introducing Ractive.js: next-generation DOM manipulation](https://www.theguardian.com/info/developer-blog/2013/jul/24/ractive-js-next-generation-dom-manipulation)
+        * [Ractive.js의 Contributors](https://github.com/ractivejs/ractive/graphs/contributors)
+        * [ECMAScript 2015 Language Specification](https://262.ecma-international.org/6.0/)
+        * [Source-to-source compiler](https://en.wikipedia.org/wiki/Source-to-source_compiler)
+        * [Babel: Not Born to Die](https://babeljs.io/blog/2015/02/15/not-born-to-die/)
+        * [webpack](https://webpack.github.io/)
+        * [browserify](https://browserify.org/)
+        * [rollup.js](https://rollupjs.org/)
+        * [rollup.js의 첫 커밋](https://github.com/rollup/rollup/tree/f9efb42fc7969a7c3ee23b8e18d614b0bd18ee6c?tab=readme-ov-file)
+        * [Wiz Khalifa - Roll Up](https://www.youtube.com/watch?v=lkLDV1sF4hI)
+        * [BrooklynJS](http://brooklynjs.com/)
+        * [Jed Schmidt](https://github.com/jed)
+        * [Svelte의 첫 커밋](https://github.com/sveltejs/svelte/commit/fc7e6e6827c3e9f2a29ec1c6ec957bab9f195841#diff-7ae45ad102eab3b6d7e7896acd08c427a9b25b346470d7bc6507b6481575d519)
+        * [Svelte의 Twitter 계정](https://x.com/sveltejs/status/802710541366128640)
+        * [Svelte의 2016년 홈페이지](https://web.archive.org/web/20161201231907/https://svelte.technology/)
+        * [Svelte 1.0.0 커밋](https://github.com/sveltejs/svelte/commit/aab6df51fdc232e7047f039a710431a085041eed)
+        * [Svelte is heavily inspired by Ractive but they're separate projects](https://x.com/Rich_Harris/status/804438965122015232)
+        * [Svelte 홈페이지의 2017년 소개](https://web.archive.org/web/20170201195235/https://svelte.technology/guide)
+        * [Frameworks without the framework: why didn't we think of this sooner?](https://web.archive.org/web/20161228085316/https://svelte.technology/blog/frameworks-without-the-framework)
+        * [Conduitry](https://github.com/Conduitry)
+        * [Changelog: A UI framework without the framework](https://changelog.com/podcast/332)
+        * [The New York Times: The Follower Factory](https://www.nytimes.com/interactive/2018/01/27/technology/social-media-bots.html)
+        * [The zen of Just Writing CSS](https://web.archive.org/web/20180321170831/https://svelte.technology/blog/the-zen-of-just-writing-css)
+        * [Svelte v2 is out!](https://svelte.dev/blog/version-2)
+        * [mustache](https://mustache.github.io/)
+        * [handlebars](https://handlebarsjs.com/)
+        * [Babel](https://babeljs.io/)
+        * [Svelte 3: Rethinking reactivity](https://svelte.dev/blog/svelte-3-rethinking-reactivity)
+        * [You Gotta Love Frontend Code Camp 2019](https://web.archive.org/web/20191123010504/https://www.israel.yglfconf.com/)
+        * [Rich Harris - Rethinking reactivity](https://www.youtube.com/watch?v=AdNJ3fydeao)
+        * [Evan You의 Tweet](https://x.com/youyuxi/status/1057291776724271104)
+        * [Svelte 5 is alive](https://svelte.dev/blog/svelte-5-is-alive)
+        * [Dan Abramov: Beyond React 16 | JSConf Iceland](https://www.youtube.com/watch?v=nLF0n9SACd4)
+        * [State of JS 2019 - Front-End Frameworks](https://2019.stateofjs.com/front-end-frameworks/)
+        * [Announcing SvelteKit 1.0](https://svelte.dev/blog/announcing-sveltekit-1.0)
+        * [Sapper: Towards the ideal web app framework](https://web.archive.org/web/20180123075441/https://svelte.technology/blog/sapper-towards-the-ideal-web-app-framework)
+        * [Svelte \<3 TypeScript](https://svelte.dev/blog/svelte-and-typescript)
+        * [Rich Harris의 Tweet](https://x.com/Rich_Harris/status/1488240873527730176)
+        * [Announcing Svelte 4](https://svelte.dev/blog/svelte-4)
+        * [JSDoc](https://jsdoc.app/)
+        * [Yuichiro Yamashita의 답변](https://github.com/sveltejs/svelte/pull/8569#issuecomment-1540011903)
+        * [Rich Harris가 Hacker News에 올린 글](https://news.ycombinator.com/item?id=35892250)
+        * [Guillermo Rauch](https://x.com/rauchg)
+        * [Vercel welcomes Rich Harris, creator of Svelte](https://vercel.com/blog/vercel-welcomes-rich-harris-creator-of-svelte)
+        * [Rich Harris가 Vecel에 합류한 Tweet](https://x.com/Rich_Harris/status/1458822051263823875)
+        * [Svelte Origins: A JavaScript Documentary](https://www.youtube.com/watch?v=kMlkCYL9qo0)
+    * Preact
+        * [Preact 홈페이지](https://preactjs.com/)
+        * [Jason Miller의 LinkedIn](https://www.linkedin.com/in/developit/)
+        * [Jason Miller의 Twitter](https://x.com/_developit)
+        * [Jason Miller의 GitHub](https://github.com/developit)
+        * [Jason Miller의 홈페이지](https://jasonformat.com/)
+        * [zimbra](https://www.zimbra.com/)
+        * [Synacor](https://synacor.com/)
+        * [S07E13 Modern Web Podcast - The Need for JS Speed | Using Preact - Interview with Jason Miller](https://www.youtube.com/watch?v=hsGVNzMh2So)
+        * [WTF is JSX](https://jasonformat.com/wtf-is-jsx/)
+        * [Jason Miller의 Codepen](https://codepen.io/developit/)
+        * [Codepen](https://codepen.io/)
+        * [jsfiddle](https://jsfiddle.net/)
+        * [Preact AMA on Sideway](https://jasonformat.com/preact-ama-on-sideway/)
+        * [Preact 첫 커밋](https://github.com/preactjs/preact/commit/e9f1a5645ef7d10ba05c601b94d70e4e4d0bd57f)
+        * [Mithril](https://mithril.js.org/)
+        * [Preact 2.0.0](https://github.com/preactjs/preact/releases/tag/2.0.0)
+        * [Jason Miller가 Hacker News에 올린 Preact 홍보 글](https://news.ycombinator.com/item?id=10674099)
+        * [Hacker News에 올라온 Preact](https://news.ycombinator.com/item?id=10988746)
+        * [2016년 첫 Preact 홈페이지](https://web.archive.org/web/20160131190629/http://developit.github.io/preact/)
+        * [New Preact website (with a live-coding REPL)](https://news.ycombinator.com/item?id=12932280)
+        * [Using Preact Instead Of React](https://rajaraodv.medium.com/using-preact-instead-of-react-70f40f53107c#.st8u3fyfr)
+        * [Sho Task Show 347: Jason Miller and PreactJS](https://shoptalkshow.com/347/)
+        * [Code Golf](https://code.golf/)
+        * [State of JS 2024 - Front-End Frameworks](https://2024.stateofjs.com/en-US/libraries/front-end-frameworks/)
+        * [Introducing Signals](https://preactjs.com/blog/introducing-signals/)
+    * SolidJS
+        * [SolidJS](https://www.solidjs.com/)
+        * [Ryan Carniato의 GitHub](https://github.com/ryansolid)
+        * [Ryan Carniato의 Twitter](https://x.com/RyanCarniato)
+        * [Ryan Carniato의 Medium](https://ryansolid.medium.com/)
+        * [Ryan Carniato의 Dev.to](https://dev.to/ryansolid)
+        * [SolidJS 첫 커밋](https://github.com/solidjs/solid/commit/a194f02e3df560f0e75d96a96f9df6631285199e)
+        * [mdn web docs: Web Components](https://developer.mozilla.org/en-US/docs/Web/API/Web_components)
+        * [CoffeeScript](https://coffeescript.org/)
+        * [B.Y.O.F. — Part 1: Writing a JS Framework in 2018](https://ryansolid.medium.com/b-y-o-f-part-1-writing-a-js-framework-in-2018-b02a41026929)
+        * [B.Y.O.F. — Part 2: Web Components as Containers](https://ryansolid.medium.com/b-y-o-f-part-2-web-components-as-containers-85e04a7d96e9)
+        * [B.Y.O.F. — Part 3: Change Management in JavaScript Frameworks](https://ryansolid.medium.com/b-y-o-f-part-3-change-management-in-javascript-frameworks-6af6e436f63c)
+        * [B.Y.O.F. — Part 4: Rendering the DOM](https://ryansolid.medium.com/b-y-o-f-part-4-rendering-the-dom-753657689647)
+        * [B.Y.O.F. — Part 5: JS Frameworks in 2019](https://ryansolid.medium.com/b-y-o-f-part-5-js-frameworks-in-2019-deb9c4d3e74)
+        * [Component Register](https://github.com/ryansolid/component-register)
+        * [React: Higher-Order Components](https://legacy.reactjs.org/docs/higher-order-components.html)
+        * [Adam Haile의 S.js](https://github.com/adamhaile/S)
+        * [Adam Haile의 Surplus.js](https://github.com/adamhaile/surplus)
+        * [Solid — The Best JavaScript UI Library You’ve Never Heard Of](https://levelup.gitconnected.com/solid-the-best-javascript-ui-library-youve-never-heard-of-297b22848ac1)
+        * [js-framework-benchmark](https://github.com/krausest/js-framework-benchmark)
+        * [SolidJS Official Release: The long road to 1.0](https://dev.to/ryansolid/solidjs-official-release-the-long-road-to-1-0-4ldd)
+        * [State of JS 2024 - Front-End Frameworks](https://2024.stateofjs.com/en-US/libraries/front-end-frameworks/)
+        * [marko](https://markojs.com/)
+        * [marko 저장소에 Ryan Carniato 커밋](https://github.com/marko-js/marko/commits?author=rcarniato%40ebay.com&before=4b6c6135badad6db7e4a8f0f59fb005ed66b04fa+35)
+        * [OpenJS Foundation](https://openjsf.org/)
+        * [netlify](https://www.netlify.com/)
+        * [When Netlify asks you to full-time OSS, you say yes!](https://dev.to/ryansolid/when-netlify-asks-you-to-full-time-oss-you-say-yes-5ccf)
+        * [SolidStart 1.0: The Shape of Frameworks to Come](https://www.solidjs.com/blog/solid-start-the-shape-frameworks-to-come)
+        * [Sentry](https://sentry.io/)
+        * [I'm Joining Sentry](https://dev.to/ryansolid/im-joining-sentry-2k9e)
+    * Alpine.js
+        * [Alpine.js](https://alpinejs.dev/)
+        * [Caleb Porzio의 LinkedIn](https://www.linkedin.com/in/caleb-porzio-75911419/)
+        * [Caleb Porzio의 GitHub](https://github.com/calebporzio)
+        * [Caleb Porzio의 Twitter](https://x.com/calebporzio)
+        * [Caleb Porzio의 홈페이지](https://calebporzio.com/)
+        * [I just crossed $1 million on GitHub Sponsors. 💰🎉](https://calebporzio.com/i-just-cracked-1-million-on-github-sponsors-heres-my-playbook)
+        * [alpine Linux](https://alpinelinux.org/)
+        * [Tighten](https://tighten.com/)
+        * [Matt Stauffer](https://mattstauffer.com/)
+        * [Laravel Up & Running](https://laravelupandrunning.com/)
+        * [On Leaving My Day Job](https://calebporzio.com/n-leaving-my-day-job)
+        * [elixir](https://elixir-lang.org/)
+        * [Phoenix Framework](https://www.phoenixframework.org/)
+        * [Phoenix LiveView](https://hexdocs.pm/phoenix_live_view/welcome.html)
+        * [ElixirConf 2018 - Keynote - Chris McCord](https://www.youtube.com/watch?v=Z2DU0qLfPIY)
+        * [Hotwire](https://hotwired.dev/)
+        * [Blazor](https://dotnet.microsoft.com/ko-kr/apps/aspnet/web-apps/blazor)
+        * [htmx](https://htmx.org/)
+        * [From Terrible Employee to Open Source Entrepreneur: Caleb Porzio's Playbook | Caleb Porzio, Creator of Livewire & Alpine.js](https://tighten.com/insights/bol-ep2-caleb-porzio-livewire-and-alpinejs/)
+        * [livewire 홈페이지](https://laravel-livewire.com/)
+        * [livewire 2020년 홈페이지](https://web.archive.org/web/20200102082118/https://laravel-livewire.com/)
+        * [Hotwire: Turbo](https://turbo.hotwired.dev/)
+        * [Hotwire: Stimulus](https://stimulus.hotwired.dev/)
+        * [Full Stack Radio 132: Caleb Porzio - Just Enough JavaScript with Alpine.js](https://fullstackradio.com/132)
+        * [Alpine.js 첫 커밋](https://github.com/alpinejs/alpine/commit/3af35fdc1e25ba0569068371c192a8036e36925c)
+        * [Minimal JS로 이름 변경한 커밋](https://github.com/alpinejs/alpine/commit/19ec13d8585071b03969f06fde09673288c9c4d2)
+        * [Project X로 이름 변경한 커밋](https://github.com/alpinejs/alpine/commit/c5238cf0db8d3787b69d4e5a89990b854b3f88c7)
+        * [Alpine.js 1.0.0](https://github.com/alpinejs/alpine/releases/tag/v1.0.0)
+        * [Alpine.js로 이름 변경한 커밋](https://github.com/alpinejs/alpine/commit/c7c1209d3b2a19a27f7968fbe440e5e077c590e7)
+        * [tailwindcss](https://tailwindcss.com/)
+        * [Alpine.js 2.0.0](https://github.com/alpinejs/alpine/releases/tag/v2.0.0)
+        * [Say No To Complexity With AlpineJS - Caleb Porzio](https://www.youtube.com/watch?v=4c8dpZN0rqM)
+        * [Thymeleaf](https://www.thymeleaf.org/)
+        * [Jinja](https://jinja.palletsprojects.com/en/stable/)
+        * [EJS](https://ejs.co/)
+        * [pug](https://pugjs.org/api/getting-started.html)
+        * [No Plans to Merge](https://noplanstomerge.com/)
+        * [GitHub Sponsors](https://github.com/sponsors)
+        * [I Just Hit $100k/yr On GitHub Sponsors! 🎉❤️ (How I Did It)](https://calebporzio.com/i-just-hit-dollar-100000yr-on-github-sponsors-heres-how-i-did-it)
+    * Lit
+        * [Justin Fagnani의 LinkedIn](https://www.linkedin.com/in/justinfagnani/)
+        * [Justin Fagnani의 GitHub](https://github.com/justinfagnani)
+        * [Justin Fagnani의 Twitter](https://x.com/justinfagnani)
+        * [Justin Fagnani의 홈페이지](https://justinfagnani.com/)
+        * [Polymer Library](https://polymer-library.polymer-project.org/)
+        * [Polymer 2013년 릴리스](https://web.archive.org/web/20140214175436/http://www.polymer-project.org/changelog.html#r2013-02-25)
+        * [Polymer pre-alpha](https://web.archive.org/web/20130517021139/https://www.polymer-project.org/)
+        * [Polymer 0.5.0](https://github.com/Polymer/polymer/releases/tag/0.5.0)
+        * [Material Design m1](https://m1.material.io/#introduction-principles)
+        * [Google I/O 2014 - Android "L" - New Material Design - Project Volta - Overview](https://www.youtube.com/watch?v=gZz7nnx-sM4)
+        * [Polymer 2014년 홈페이지](https://web.archive.org/web/20140701081049/http://www.polymer-project.org/)
+        * [Polymer 1.0](https://www.polymer-project.org/blog/2015-05-29-one-dot-oh)
+        * [Polymer 2015년 홈페이지](https://web.archive.org/web/20150602203438/https://www.polymer-project.org/1.0/)
+        * [About the Polymer Project: #UseThePlatform](https://web.archive.org/web/20171005141820/https://www.polymer-project.org/about)
+        * [W3C: HTML Templates](https://www.w3.org/TR/html-templates/)
+        * [Custom Elements: HTML Living Standard](https://github.com/whatwg/html/commit/6e7eaa4bd2912965fd83766f99f984f249531f3a)
+        * [W3C: Shadow DOM](https://www.w3.org/TR/shadow-dom/)
+        * [Polymer: Wikipedia](https://en.wikipedia.org/wiki/Polymer_(library))
+        * [W3C: HTML Imports](https://www.w3.org/TR/html-imports/)
+        * [Polymer 2.0.0](https://github.com/Polymer/polymer/releases/tag/v2.0.0)
+        * [JS Party #284: This is going to be Lit 🔥](https://changelog.com/jsparty/284)
+        * [Lit의 첫 커밋](https://github.com/lit/lit/commit/5ce03d734391e4e272b0b86489580b9980be1ee6)
+        * [초기 Lit 설명](https://github.com/lit/lit/commit/2b44590e4bfa991c289fa29d74c4d6d8880244ba)
+        * [Polymer Summit 2017](https://www.polymer-project.org/blog/2017-05-17-summit-2017)
+        * [Efficient, Expressive, and Extensible HTML Templates (Polymer Summit 2017)](https://www.youtube.com/watch?v=ruql541T7gc)
+        * [2017년 lit-html 저장소](https://web.archive.org/web/20171005044103/https://github.com/PolymerLabs/lit-html)
+        * [mdn web docs: Tagged templates literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates)
+        * [Lightning-fast templates & Web Components: lit-html & LitElement](https://lit.dev/blog/2019-02-05-lit-element-and-lit-html-release/)
+        * [Polymer 3.0](https://github.com/Polymer/polymer/releases/tag/v3.0.0)
+        * [Announcing Lit 2 stable release](https://lit.dev/blog/2021-09-21-announcing-lit-2/)
+        * [Goodnight Polymer Project](https://mckenzielong.blog/post/2021/04/goodnight-polymer-project/)
+        * [Lit Launch Day: Lit 3.0, Labs graduations, a compiler and more!](https://lit.dev/blog/2023-10-10-lit-3.0/)
+        * [State of JS 2024 - Front-End Frameworks](https://2024.stateofjs.com/en-US/libraries/front-end-frameworks/)
+</div>
+
+#### 배경음악
+Music from #Uppbeat
+https://uppbeat.io/t/zoo/clarity
+
+License code: DEG8IR0VQV5JZPP9
