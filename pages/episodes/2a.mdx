@@ -1,0 +1,88 @@
+---
+title: >
+    2a. VCS: SCCS, Source Code Control System
+date: 2025/05/11
+description: |
+    VCS(Version Control System)는 소스코드의 버전을 관리하는 시스템입니다. 첫 번째 VCS는 1972년 Bell Labs의 Marc Rochkind가 만든 SCCS(Source Code Control System)입니다.
+    SCCS를 살펴보기 전에 왜 VCS가 필요했는지를 이해하기 위해 1950년대부터 1960년대까지 소프트웨어 엔지니어링이 어떻게 발전해 왔는지를 살펴보고 그러한 상황에서 만들어진 SCCS가 어떤 기능을 제공했고 어떻게 만들어졌는지를 설명합니다.
+description2: |
+    레퍼런스는 홈페이지 참고:
+    https://retrotech.outsider.dev/episodes/2a
+
+    Music from #Uppbeat
+    https://uppbeat.io/t/zoo/breathtaker
+    License code: GOPJALIBWXB2MMCT
+author: Outsider
+enclosure:
+  url: https://retrotech-episodes.outsider.dev/2a.mp3
+  size: 52165216
+duration: "43:28"
+---
+
+# 2a. VCS: SCCS, Source Code Control System
+
+VCS(Version Control System)는 소스코드의 버전을 관리하는 시스템입니다.
+첫 번째 VCS는 1972년 Bell Labs의 Marc Rochkind가 만든 SCCS(Source Code Control System)입니다.
+
+SCCS를 살펴보기 전에 왜 VCS가 필요했는지를 이해하기 위해
+1950년대부터 1960년대까지 소프트웨어 엔지니어링이 어떻게 발전해 왔는지를 살펴보고
+그러한 상황에서 만들어진 SCCS가 어떤 기능을 제공했고 어떻게 만들어졌는지를 설명합니다.
+
+import Badges from 'components/Badges'
+
+<Badges
+/>
+
+#### 레퍼런스:
+<div className="refs">
+    * [The Joel Test: 12 Steps to Better Code](https://www.joelonsoftware.com/2000/08/09/the-joel-test-12-steps-to-better-code/)
+    * [UNIVAC - Wikipedia](https://en.wikipedia.org/wiki/UNIVAC)
+    * [IBA 701 - Wikipedia](https://en.wikipedia.org/wiki/IBM_701)
+    * [John Backus - Wikipedia](https://en.wikipedia.org/wiki/John_Backus)
+    * [Fortran - Wikipedia](https://en.wikipedia.org/wiki/Fortran)
+    * [COBOL - Wikipedia](https://en.wikipedia.org/wiki/COBOL)
+    * [Mary K. Hawes - Wikipedia](https://en.wikipedia.org/wiki/Mary_K._Hawes)
+    * [Grace Hopper - Wikipedia](https://en.wikipedia.org/wiki/Grace_Hopper)
+    * [FLOW-MATIC - Wikipedia](https://en.wikipedia.org/wiki/FLOW-MATIC)
+    * [John McCarthy - Wikipedia](https://en.wikipedia.org/wiki/John_McCarthy_(computer_scientist))
+    * [Lisp - Wikipedia](https://en.wikipedia.org/wiki/Lisp_(programming_language))
+    * [Association for Computing Machinery](https://www.acm.org/)
+    * [Communications of the ACM](https://cacm.acm.org/)
+    * [Jack Kilby - Wikipedia](https://en.wikipedia.org/wiki/Jack_Kilby)
+    * [Fairchild Semiconductor - Wikipedia](https://en.wikipedia.org/wiki/Fairchild_Semiconductor)
+    * [Robert Noyce - Wikipedia](https://en.wikipedia.org/wiki/Robert_Noyce)
+    * [IBM System/360](https://www.computerhistory.org/revolution/mainframe-computers/7/161)
+    * [The IBM System/360](https://www.ibm.com/history/system-360)
+    * [NATO Software Engineering Conferences - Wikipedia](https://en.wikipedia.org/wiki/NATO_Software_Engineering_Conferences)
+    * [Memories of the NATO Software Engineering Conferences By Brian Randell](https://eprints.ncl.ac.uk/file_store/production/157892/5C5CB83B-030F-420B-A248-C0AE51D89266.pdf)
+    * [Friedrich L. Bauer - Wikipedia](https://en.wikipedia.org/wiki/Friedrich_L._Bauer)
+    * [THE ROOTS OF SOFTWARE ENGINEERING](https://www.pc-freak.net/files/NCR_ATM_terminals/www.thecorememory.com/TROSE.pdf)
+    * [1968 NATO Software Engineering Conference](https://isthisit.nz/posts/2022/1968-nato-software-engineering-conference/)
+    * [Anthony Oettinger - Wikipedia](https://en.wikipedia.org/wiki/Anthony_Oettinger)
+    * [The origin of "software engineering"](https://bertrandmeyer.com/2013/04/04/the-origin-of-software-engineering/)
+    * [Edsger W. Dijkstra - Wikipedia](https://en.wikipedia.org/wiki/Edsger_W._Dijkstra)
+    * [Alan Perlis - Wikipedia](https://en.wikipedia.org/wiki/Alan_Perlis)
+    * [Peter Naur - Wikipedia](https://en.wikipedia.org/wiki/Peter_Naur)
+    * [Backus–Naur form - Wikipedia](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form)
+    * [Bell Labs - Wikipedia](https://en.wikipedia.org/wiki/Bell_Labs)
+    * [Dennis Ritchie - Wikipedia](https://en.wikipedia.org/wiki/Dennis_Ritchie)
+    * [Ken Thompson - Wikipedia](https://en.wikipedia.org/wiki/Ken_Thompson)
+    * [유닉스의 탄생](https://blog.outsider.ne.kr/1521)
+    * [IBM System/370 - Wikipedia](https://en.wikipedia.org/wiki/IBM_System/370)
+    * [OS/360 - Wikipedia](https://en.wikipedia.org/wiki/OS/360_and_successors)
+    * [SNOBOL - Wikipedia](https://en.wikipedia.org/wiki/SNOBOL)
+    * [The Source Code Control System](https://web.archive.org/web/20160801210145/http://basepath.com/aup/talks/SCCS-Slideshow.pdf)
+    * [Interleaved deltas - Wikipedia](https://en.wikipedia.org/wiki/Interleaved_deltas)
+    * [SCCS Invention](https://web.archive.org/web/20160708131714/https://sccs.sourceforge.net/sccs_invention.html)
+    * [SCCS 4](https://www.tuhs.org/cgi-bin/utree.pl?file=PWB1/sys/source/sccs4)
+    * [Marc Rochkind의 홈페이지](https://www.mrochkind.com/mrochkind/index.html)
+    * [Marc Rochkind의 O'Reilly 저자 소개](https://www.oreilly.com/pub/au/6217)
+    * [Advanced UNIX Programming](https://www.mrochkind.com/aup/index.html)
+    * [Marc Rochkind의 저서](https://www.mrochkind.com/mrochkind/books.html)
+</div>
+
+#### 배경음악
+Music from #Uppbeat
+https://uppbeat.io/t/zoo/breathtaker
+
+License code: GOPJALIBWXB2MMCT
