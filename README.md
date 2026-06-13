@@ -23,9 +23,6 @@ npm run build    # RSS 생성(scripts/gen-rss.js) → 정적 익스포트 (dist/
 - 빌드 산출물은 `dist/` 에 생성되며(`.gitignore` 대상), 정적 호스트에 배포한다.
 - 별도의 test/lint/typecheck 스크립트는 없다. 타입체크는 `npm run build` 가 수행한다.
 
-> ⚠️ 현재 `components/Player.tsx`(미완성 WIP)의 타입에러로 `npm run build` 가 실패한다.
-> 빌드 전 해결이 필요하다 — [docs/QUALITY_GATE.md](docs/QUALITY_GATE.md), [docs/TODO.md](docs/TODO.md) 참고.
-
 ## 환경 / 외부 의존성
 
 - 분석: Google Tag Manager(`GTM-P368DQ3M`) + GA4(`G-PVJ12C7HR6`) — `pages/_app.tsx`.

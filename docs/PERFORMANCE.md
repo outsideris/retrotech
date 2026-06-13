@@ -5,7 +5,7 @@
 
 ## 측정 방법 & 한계 (먼저 읽을 것)
 
-- **빌드:** `npm run build` (정적 익스포트). 단, `components/Player.tsx` 가 타입에러로 빌드를 깨뜨려서 측정 동안 해당 WIP 파일을 잠시 제외하고 빌드함. ([ARCHITECURE.md 주의사항](./ARCHITECURE.md#알려진-제약--주의사항-작업-전-반드시-확인))
+- **빌드:** `npm run build` (정적 익스포트 → `dist/`).
 - **서빙:** `dist/` 를 로컬 `python3 -m http.server` 로 서빙(`http://localhost`).
 - **측정 도구:** Chrome DevTools — 성능 트레이스(Core Web Vitals)와 Lighthouse(접근성/모범사례/SEO).
 - ⚠️ **로컬 서빙의 한계 — 수치 해석 시 반드시 감안:**
@@ -113,7 +113,6 @@
 ## 재현 방법
 
 ```bash
-# (현재는 Player.tsx 때문에 빌드가 실패하므로 먼저 해결 필요 — QUALITY_GATE.md 참고)
 npm run build
 cd dist && python3 -m http.server 4321
 # 브라우저/DevTools 또는 Lighthouse 로 http://localhost:4321 측정

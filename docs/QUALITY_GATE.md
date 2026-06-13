@@ -14,8 +14,7 @@
 
 ## 필수 확인 항목
 
-- [ ] **빌드:** `npm run build` 성공.
-  - ⚠️ **현재 차단됨.** `components/Player.tsx` 의 타입에러(`Cannot find name 'Link'` 등)로 `next build` 가 실패한다. `tsconfig` 의 `include: ["**/*.tsx"]` 때문에 미사용 파일도 타입체크된다. → [TODO.md Phase 0](./TODO.md)
+- [ ] **빌드:** `npm run build` 성공. *(2026-06-14 기준 통과)*
 - [ ] **타입체크:** 위 빌드의 "Linting and checking validity of types" 단계 통과(별도 명령 없음).
 - [ ] **RSS 생성:** `public/feed.xml` 이 생성되고 iTunes 필드가 포함되는지 확인(`scripts/gen-rss.js`).
 - [ ] **정적 산출물:** `dist/` 에 HTML 27개(홈/episodes/에피소드들/404)와 자산이 생성되는지 확인.
@@ -41,4 +40,4 @@
 
 ## 마지막 검토
 
-- **2026-06-14:** 최초 작성. `package.json` 에 test/lint/typecheck/format 스크립트가 없음을 확인. `Player.tsx` 가 현재 빌드를 차단함을 기록.
+- **2026-06-14:** 최초 작성. `package.json` 에 test/lint/typecheck/format 스크립트가 없음을 확인. `npm run build` 통과 확인.

@@ -11,7 +11,6 @@
 | --- | --- | --- |
 | `scripts/gen-rss.js` | 프론트매터 → RSS 아이템 변환(제목/url/date `09:00`/description+description2 결합/enclosure/duration/iTunes 필드), `index.*` 제외, 정렬 | **가장 테스트 가치 높음** — 순수 변환 로직. 픽스처 mdx 입력으로 검증. |
 | `components/Badges.tsx` | `google` prop 유무에 따른 Google↔RSS 배지 토글, 기본 링크값 | React Testing Library 렌더 테스트 |
-| `components/Player.tsx` | (완성 시) howler 초기화·재생 계약 | 현재 미완성이라 보류. howler 는 mock |
 
 ## 권장 도입 방향
 

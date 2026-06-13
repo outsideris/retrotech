@@ -3,14 +3,6 @@
 > 작업 단위는 Phase > Todo. 상세 구현 계획이 필요해지면 `docs/plan/` 에 문서를 만들고 해당 Todo에서 링크한다.
 > 근거: [PERFORMANCE.md](./PERFORMANCE.md), [ARCHITECURE.md](./ARCHITECURE.md), [DESIGN.md](./DESIGN.md).
 
-## Phase 0 — 빌드 정상화 (선행, 차단 이슈)
-
-- [ ] **`components/Player.tsx` 빌드 차단 해소.** 현재 타입에러로 `next build` 실패. 둘 중 하나:
-  - (a) 인앱 플레이어를 완성한다(howler + `enclosure.url`), 또는
-  - (b) 미사용 WIP 이므로 제거/제외한다.
-  - 완료 기준: `npm run build` 성공. → [QUALITY_GATE.md](./QUALITY_GATE.md)
-- [ ] `public/feed.xml` 을 `.gitignore` 에 추가(빌드 산출물).
-
 ## Phase 1 — 성능: 이미지 (효과 최대)
 
 - [ ] **`cover.svg` (402 KB) 경량화.** SVGO 최적화 또는 적정 해상도 래스터(WebP/AVIF)로 교체.
@@ -32,6 +24,8 @@
 
 ## Phase 4 — 유지보수 / 구성
 
+- [ ] `public/feed.xml` 을 `.gitignore` 에 추가(빌드 산출물 — 매 빌드마다 untracked 로 생성됨).
+- [ ] 사용하지 않는 `howler` 의존성 제거 검토(현재 코드에서 미사용).
 - [ ] Nextra 권고대로 `_app.tsx → _app.mdx` 검토.
 - [ ] `npx update-browserslist-db@latest` (caniuse-lite 갱신).
 - [ ] `gen-rss.js` 의 `SITE_URL` 하드코딩을 환경변수/공유 상수로 추출(여러 곳에 도메인 중복).
