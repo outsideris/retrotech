@@ -47,7 +47,8 @@ retrotech/
 ├─ public/                    # 정적 자산. 빌드 시 dist/ 루트로 복사됨
 │  ├─ images/                 # cover.svg, cover.jpg, outsider.png
 │  ├─ badges/                 # apple/youtube/spotify/google/rss .svg
-│  ├─ favicon.ico, favicon_io/, robots.txt, ads.txt
+│  ├─ favicon.ico, favicon-*.png, apple-touch-icon.png, android-chrome-*.png, site.webmanifest  # 파비콘/PWA
+│  ├─ robots.txt, ads.txt
 │  └─ (feed.xml)              # 빌드가 생성 — 저장소엔 커밋되지 않음
 ├─ next.config.js             # 정적 익스포트 + Nextra + 이미지 로더 설정
 ├─ theme.config.js            # Nextra 블로그 테마 헤더/푸터/메타 커스터마이즈
@@ -122,6 +123,7 @@ module.exports = withNextra(nextConfig)
 - `<html lang="ko">`. SEO/OG/Twitter 메타태그(설명, 커버 이미지 `https://retrotech.outsider.dev/images/cover.jpg`).
 - GTM `<noscript>` iframe.
 - **FontAwesome Kit** 스크립트(`https://kit.fontawesome.com/bba8fa6a15.js`)를 `<body>` 끝에서 로드. 푸터 아이콘 몇 개를 위해 Pro 킷 전체를 불러온다.
+- **파비콘/PWA 아이콘 `<link>`** — favicon(16/32), `apple-touch-icon`, `site.webmanifest`. 아이콘 자산은 `public/` 루트에 위치하며 매니페스트도 루트 경로를 참조한다.
 
 ### `tsconfig.json`
 - `strict: false`, `target: es5`, `jsx: preserve`, `allowJs: true`. 타입 안전성은 느슨하게 설정됨.
