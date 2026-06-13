@@ -25,7 +25,6 @@
 ## Phase 4 — 유지보수 / 구성
 
 - [ ] `public/feed.xml` 을 `.gitignore` 에 추가(빌드 산출물 — 매 빌드마다 untracked 로 생성됨).
-- [ ] 사용하지 않는 `howler` 의존성 제거 검토(현재 코드에서 미사용).
 - [ ] Nextra 권고대로 `_app.tsx → _app.mdx` 검토.
 - [ ] `npx update-browserslist-db@latest` (caniuse-lite 갱신).
 - [ ] `gen-rss.js` 의 `SITE_URL` 하드코딩을 환경변수/공유 상수로 추출(여러 곳에 도메인 중복).

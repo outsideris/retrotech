@@ -19,7 +19,6 @@
 | 콘텐츠/MDX | Nextra | `2.0.0-beta.5` |
 | 테마 | nextra-theme-blog | `2.0.0-beta.5` |
 | UI 런타임 | React / React DOM | `^18.2.0` |
-| 오디오 | howler | `^2.2.4` *(현재 코드에서 미사용)* |
 | 프론트매터 파싱 | gray-matter | `^4.0.3` *(빌드 스크립트 전용)* |
 | RSS 생성 | rss | `^1.2.2` *(빌드 스크립트 전용)* |
 | 언어/타입 | TypeScript | `^5.1.6` (`strict: false`, `target: es5`) |
@@ -164,9 +163,8 @@ module.exports = withNextra(nextConfig)
 
 1. **`next/image` 는 이 구성에서 최적화를 하지 않는다**(akamai 로더 passthrough). 이미지 용량은 원본 그대로 전송된다. → [PERFORMANCE.md](./PERFORMANCE.md)
 2. **`public/feed.xml` 은 빌드 산출물인데 gitignore 되어 있지 않다.** 로컬 빌드 후 untracked 파일로 남는다. `/dist/feed.xml` 로도 익스포트되므로 `public/feed.xml` 은 `.gitignore` 에 추가하는 편이 깔끔하다.
-3. **`howler` 의존성은 현재 코드에서 쓰이지 않는다.** 제거를 검토할 수 있다. → [TODO.md](./TODO.md)
-4. **Nextra 권고:** 빌드 시 `Found "_app.tsx" file, refactor it to "_app.mdx" for better performance.` 힌트가 출력된다.
-5. **`caniuse-lite` 가 오래됨** — 빌드 시 browserslist 경고. `npx update-browserslist-db@latest` 권장.
+3. **Nextra 권고:** 빌드 시 `Found "_app.tsx" file, refactor it to "_app.mdx" for better performance.` 힌트가 출력된다.
+4. **`caniuse-lite` 가 오래됨** — 빌드 시 browserslist 경고. `npx update-browserslist-db@latest` 권장.
 
 ## 테스트
 
