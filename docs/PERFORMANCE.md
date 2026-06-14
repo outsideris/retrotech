@@ -20,7 +20,7 @@
 | 4 🟠 | 성능(CLS) | 히어로 이미지 높이 예약(`width/height` 또는 `aspect-ratio`) | 간헐 CLS 0.25 → 0 |
 | 5 🟡 | 성능(LCP) | 히어로 이미지 preload / 렌더블로킹 CSS 축소 | LCP load delay 439ms 단축 |
 | 6 ✅ | 성능(이미지) | `cover.svg` SVGO(402→143KB) · `outsider.png`→WebP(110→5KB) | 콜드 첫 방문 LCP·파싱/CPU 절감 |
-| 7 🟡 | 성능(서드파티) | GitHub Sponsors iframe 지연, GTM+GA4 중복 검토 | 메인스레드/요청 절감 |
+| 7 ◑ | 성능(서드파티) | ✅ GTM 제거(GA4만 직접) · ⬜ GitHub Sponsors iframe 지연 | 미사용 JS/요청 절감 |
 
 > ✅ **이미 좋은 점:** Brotli 압축 ON(HTML/CSS/JS/SVG), HTTP/3, LCP·CLS 양호 등급, SEO·Best Practices 100, 정적 익스포트.
 

@@ -16,7 +16,7 @@
 - [x] **정적 자산 캐시 연장 (최대 ROI).** `public/_headers` 로 `/_next/static/*` 를 1년 `immutable` 적용(배포 시 반영). 배포 후 `curl -I` 로 확인 권장. → [DEPLOYMENT.md](./DEPLOYMENT.md)
 - [x] **FontAwesome Pro 킷 풀로드 제거.** 4개 아이콘(twitter/github/blog/rss)을 `components/Icons.tsx` 인라인 SVG(FA Free, CC BY 4.0)로 대체, `_document.tsx` 의 kit 스크립트 제거. 외부 요청 ~9개 + 웹폰트 3개 절감.
 - [ ] **GitHub Sponsors iframe** 지연 로드 또는 정적 링크/버튼으로 대체(전 페이지 iframe 비용 제거).
-- [ ] GTM + GA4 동시 사용 필요성 재검토(중복 시 하나로 통합).
+- [x] **GTM 제거, GA4 직접 로드만 유지.** `_app.tsx` 의 GTM 컨테이너 + `_document.tsx` 의 GTM `noscript` 제거(사용자 결정: GA4만 직접). 미사용 JS 중복·이중 집계 위험 해소.
 - [ ] (경미) 홈의 `episodes-*.js` 중복 프리페치 원인 확인.
 
 ## Phase 3 — 접근성 ✅
