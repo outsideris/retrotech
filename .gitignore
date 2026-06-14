@@ -6,3 +6,4 @@ npm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 /dist/
+/public/feed.xml

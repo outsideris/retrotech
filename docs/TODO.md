@@ -8,7 +8,7 @@
 - [x] **`cover.svg` 경량화.** SVGO 적용 — 402KB→143KB(64.5%↓, path 436→306, 렌더 동일 확인). 콜드 첫 방문 LCP·파싱/CPU 개선.
 - [x] **히어로 이미지 CLS 제거.** `index.mdx` 히어로를 `width={3000} height={3000}` + `height:auto` 로(1:1 비율 예약). 트레이스 CLS 0.00 확인.
 - [x] **`outsider.png` 최적화.** 240px WebP 로 교체(110KB→5KB, 95%↓). png 제거, `theme.config.js` 에서 `outsider.webp` 참조 + width/height 지정.
-- [ ] 배지 SVG(apple/youtube/spotify/google/rss) SVGO 최적화.
+- [x] 배지 SVG SVGO 최적화 — apple/google/rss/spotify/youtube 총 ~80KB→35KB(viewBox 보존, 렌더 동일 확인).
 - [x] **배지 이미지 preload 경쟁 제거 (LCP).** `Badges.tsx` 의 `<Image priority>` 제거(배지는 히어로 아래라 LCP 무관). 히어로만 프리로드되도록 해 LCP 개선.
 
 ## Phase 2 — 성능: 캐시 / 서드파티 (전 페이지 공통)
@@ -27,7 +27,7 @@
 
 ## Phase 4 — 유지보수 / 구성
 
-- [ ] `public/feed.xml` 을 `.gitignore` 에 추가(빌드 산출물 — 매 빌드마다 untracked 로 생성됨).
+- [x] `public/feed.xml` 을 `.gitignore` 에 추가(빌드 산출물).
 - [ ] Nextra 권고대로 `_app.tsx → _app.mdx` 검토.
 - [x] `npx update-browserslist-db@latest` (caniuse-lite 1.0.30001517→…1799). 빌드의 "caniuse-lite is outdated" 경고 제거.
 - ℹ️ **레거시 JS(12KiB)는 설정으로 못 줄임.** Next 의 framework/main/polyfills 내장 청크라 `browserslist`/`tsconfig target` 변경에도 청크 해시 동일. 모던 browserslist 는 호환성만 좁혀 되돌림. → Next 업그레이드 시 재검토.
