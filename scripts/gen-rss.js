@@ -34,6 +34,15 @@ function episodeToItem(name, data) {
   }
 }
 
+// Order feed items newest-first, deterministically. Same-date items fall back
+// to name (descending) so the order is stable across builds and filesystems.
+function sortByDateDesc(episodes) {
+  return [...episodes].sort((a, b) => {
+    const diff = new Date(b.data.date) - new Date(a.data.date)
+    return diff !== 0 ? diff : b.name.localeCompare(a.name)
+  })
+}
+
 async function generate() {
   const feedOption = {
     title: 'RetroTech 팟캐스트',
@@ -73,17 +82,21 @@ async function generate() {
     return name
   }))).flat()
 
-  await Promise.all(
-    episodes.reverse().map(async (name) => {
-      if (shouldSkip(name)) return
-
-      const content = await fs.readFile(
-        path.join(__dirname, '..', 'pages', 'episodes', name)
-      )
-      const frontmatter = matter(content)
-      feed.item(episodeToItem(name, frontmatter.data))
-    })
+  // Read all episodes concurrently, then add them in a deterministic
+  // newest-first order. feed.item() must run AFTER sorting — calling it inside
+  // the concurrent reads makes item order depend on file-read completion timing.
+  const parsed = await Promise.all(
+    episodes
+      .filter((name) => !shouldSkip(name))
+      .map(async (name) => {
+        const content = await fs.readFile(
+          path.join(__dirname, '..', 'pages', 'episodes', name)
+        )
+        return { name, data: matter(content).data }
+      })
   )
+
+  sortByDateDesc(parsed).forEach(({ name, data }) => feed.item(episodeToItem(name, data)))
 
   await fs.writeFile('./public/feed.xml', feed.xml({ indent: true }))
   console.log('RSS feed generated!')
@@ -93,4 +106,4 @@ if (require.main === module) {
   generate()
 }
 
-module.exports = { episodeToItem, shouldSkip, generate }
+module.exports = { episodeToItem, shouldSkip, sortByDateDesc, generate }

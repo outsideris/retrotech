@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { episodeToItem, shouldSkip } from './gen-rss.js'
+import { episodeToItem, shouldSkip, sortByDateDesc } from './gen-rss.js'
 
 const baseData = {
   title: '2g. VCS: SourceForge',
@@ -56,5 +56,36 @@ describe('shouldSkip', () => {
   it('keeps episode files', () => {
     expect(shouldSkip('2g.mdx')).toBe(false)
     expect(shouldSkip('0.mdx')).toBe(false)
+  })
+})
+
+describe('sortByDateDesc', () => {
+  it('orders episodes newest-first, deterministically regardless of input order', () => {
+    const input = [
+      { name: '2e.mdx', data: { date: '2025/10/08' } },
+      { name: '2g.mdx', data: { date: '2026/03/07' } },
+      { name: '2f.mdx', data: { date: '2025/12/26' } },
+    ]
+    const expected = ['2g.mdx', '2f.mdx', '2e.mdx']
+    expect(sortByDateDesc(input).map((e) => e.name)).toEqual(expected)
+    // 입력 순서를 섞어도 결과가 같아야 한다(결정적).
+    expect(sortByDateDesc([input[2], input[0], input[1]]).map((e) => e.name)).toEqual(expected)
+  })
+
+  it('breaks same-date ties by name descending (stable across input order)', () => {
+    const a = { name: '1a.mdx', data: { date: '2023/07/31' } }
+    const b = { name: '1b.mdx', data: { date: '2023/07/31' } }
+    expect(sortByDateDesc([a, b]).map((e) => e.name)).toEqual(['1b.mdx', '1a.mdx'])
+    expect(sortByDateDesc([b, a]).map((e) => e.name)).toEqual(['1b.mdx', '1a.mdx'])
+  })
+
+  it('does not mutate the input array', () => {
+    const input = [
+      { name: '0.mdx', data: { date: '2023/07/24' } },
+      { name: '2g.mdx', data: { date: '2026/03/07' } },
+    ]
+    const before = input.map((e) => e.name)
+    sortByDateDesc(input)
+    expect(input.map((e) => e.name)).toEqual(before)
   })
 })

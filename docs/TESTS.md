@@ -14,10 +14,10 @@ npx vitest        # watch 모드
 
 | 테스트 파일 | 대상 | 검증 범위 |
 | --- | --- | --- |
-| `scripts/gen-rss.test.js` | `gen-rss.js` 의 `episodeToItem`, `shouldSkip` | 프론트매터→RSS 아이템 매핑(title, url 슬러그에서 `.mdx/.md` 제거, `date`+`09:00`, `description`+`description2` 결합, enclosure, duration, iTunes custom_elements), `index.*` 제외 |
+| `scripts/gen-rss.test.js` | `gen-rss.js` 의 `episodeToItem`·`shouldSkip`·`sortByDateDesc` | 프론트매터→RSS 아이템 매핑(title, url 슬러그에서 `.mdx/.md` 제거, `date`+`09:00`, `description`+`description2` 결합, enclosure, duration, iTunes custom_elements), `index.*` 제외, **최신순 결정적 정렬**(동일 날짜 타이브레이크·입력 불변) |
 | `components/Badges.test.tsx` | `components/Badges.tsx` | 항상 노출되는 Apple/YouTube/Spotify 배지, `google` prop 유무에 따른 Google↔RSS 토글, props 로 넘긴 링크 사용 |
 
-- 합계: 2개 파일, 10개 테스트 (현재 모두 통과).
+- 합계: 2개 파일, 13개 테스트 (현재 모두 통과).
 - `gen-rss.js` 는 순수 로직(`episodeToItem`/`shouldSkip`)과 I/O(`generate`)를 분리하고 `module.exports` 로 노출하도록 리팩터링됨. `generate()` 는 `require.main === module` 일 때만 실행되어 테스트 import 시 부작용 없음.
 - 외부 의존성은 테스트하지 않는다: `Badges` 테스트는 `next/image`·`next/link` 를 mock 해 우리 컴포넌트의 분기 로직만 검증한다(CLAUDE.md 규칙).
 

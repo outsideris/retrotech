@@ -151,7 +151,7 @@ module.exports = withNextra(nextConfig)
 - `pages/episodes/` 를 읽어 `.mdx`/`.md` 프론트매터를 `gray-matter` 로 파싱, `rss` 라이브러리로 `public/feed.xml` 생성.
 - iTunes 네임스페이스(`itunes:owner`, `itunes:author`, `itunes:image`, `itunes:category=Technology`, `itunes:explicit=no`, `itunes:duration`) 포함 → Apple Podcasts 등록 규격을 만족.
 - 각 아이템: 제목, `url`(웹 에피소드 페이지), `date`(`<date> 09:00`), `description`(+`description2`), `enclosure`(mp3), `duration`.
-- `index.*` 파일은 건너뛴다. 에피소드 배열을 `reverse()` 하여 피드 순서를 맞춘다.
+- `index.*` 파일은 건너뛴다. 항목은 발행일 내림차순(최신순)으로 **결정적 정렬**(`sortByDateDesc`, 동일 날짜는 name 내림차순)해 피드에 추가한다. (과거엔 동시 읽기 중 `feed.item()` 을 호출해 순서가 비결정적이었음 — guid·pubDate 는 불변이라 구독자 영향은 없었으나 빌드마다 순서가 바뀜)
 - **`SITE_URL = 'https://retrotech.outsider.dev'`** 가 스크립트에 하드코딩되어 있다.
 
 ## 배포
