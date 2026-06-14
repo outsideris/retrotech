@@ -35,11 +35,13 @@
 - [ ] (선택) 배포 성공 시 텔레그램 알림 설정 — 방법은 [DEPLOYMENT.md](./DEPLOYMENT.md#배포-알림--텔레그램) 참고.
 - [ ] (장기) Next 13/Nextra 2-beta → 최신 메이저 업그레이드 호환성 검토.
 
-## Phase 5 — 테스트 도입
+## Phase 5 — 테스트 도입 ✅
 
-- [ ] `scripts/gen-rss.js` 의 프론트매터→RSS 변환 로직 단위 테스트(가장 테스트 가치 높음).
-- [ ] `Badges` 의 google 유무에 따른 Google↔RSS 배지 토글 렌더 테스트.
-- 상세: [TESTS.md](./TESTS.md)
+- [x] Vitest 도입(`npm test`). `vitest.config.ts`, `gen-rss.js` 를 테스트 가능하게 리팩터(`episodeToItem`/`shouldSkip` export).
+- [x] `scripts/gen-rss.test.js` — 프론트매터→RSS 변환(`episodeToItem`) + `index.*` 제외(`shouldSkip`).
+- [x] `components/Badges.test.tsx` — Google↔RSS 토글 + 플랫폼 배지 렌더(next/image·link mock).
+- 합계 2파일·10테스트 통과. 상세: [TESTS.md](./TESTS.md)
+- [ ] (향후) 에피소드 디렉터리→피드 생성 end-to-end 테스트.
 
 ## 운영(미검증, 확인 필요)
 

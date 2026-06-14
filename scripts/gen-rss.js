@@ -5,6 +5,35 @@ const matter = require('gray-matter')
 
 const SITE_URL = 'https://retrotech.outsider.dev'
 
+// Index listing pages are not episodes and must be left out of the feed.
+function shouldSkip(name) {
+  return name.startsWith('index.')
+}
+
+// Map a parsed episode frontmatter (matter().data) to an RSS feed item.
+function episodeToItem(name, data) {
+  let description = data.description
+  if (data.description2) {
+    description += `\n${data.description2}`
+  }
+
+  return {
+    title: data.title,
+    url: `${SITE_URL}/episodes/${name.replace(/\.mdx?/, '')}`,
+    date: `${data.date} 09:00`,
+    description,
+    author: data.author,
+    enclosure: data.enclosure,
+    duration: data.duration,
+    custom_elements: [
+      { duration: data.duration },
+      { 'itunes:duration': data.duration },
+      { 'itunes:explicit': 'no' },
+      { 'itunes:author': 'Outsider' },
+    ],
+  }
+}
+
 async function generate() {
   const feedOption = {
     title: 'RetroTech 팟캐스트',
@@ -46,33 +75,13 @@ async function generate() {
 
   await Promise.all(
     episodes.reverse().map(async (name) => {
-      if (name.startsWith('index.')) return
+      if (shouldSkip(name)) return
 
       const content = await fs.readFile(
         path.join(__dirname, '..', 'pages', 'episodes', name)
       )
       const frontmatter = matter(content)
-      let description = frontmatter.data.description
-      if (frontmatter.data.description2) {
-        description += `\n${frontmatter.data.description2}`
-      }
-
-
-      feed.item({
-        title: frontmatter.data.title,
-        url: `${SITE_URL}/episodes/${name.replace(/\.mdx?/, '')}`,
-        date: `${frontmatter.data.date} 09:00`,
-        description,
-        author: frontmatter.data.author,
-        enclosure: frontmatter.data.enclosure,
-        duration: frontmatter.data.duration,
-        custom_elements: [
-          {'duration': frontmatter.data.duration},
-          {'itunes:duration': frontmatter.data.duration},
-          {'itunes:explicit': 'no'},
-          {'itunes:author': 'Outsider'},
-        ]
-      })
+      feed.item(episodeToItem(name, frontmatter.data))
     })
   )
 
@@ -80,4 +89,8 @@ async function generate() {
   console.log('RSS feed generated!')
 }
 
-generate()
+if (require.main === module) {
+  generate()
+}
+
+module.exports = { episodeToItem, shouldSkip, generate }

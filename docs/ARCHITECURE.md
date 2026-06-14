@@ -170,4 +170,4 @@ module.exports = withNextra(nextConfig)
 
 ## 테스트
 
-- 현재 자동화 테스트 없음. 상세는 [TESTS.md](./TESTS.md), 검증 기준은 [QUALITY_GATE.md](./QUALITY_GATE.md).
+- Vitest 단위/컴포넌트 테스트(`npm test`). `gen-rss.js` 는 `episodeToItem`/`shouldSkip` 를 export 해 순수 변환 로직을 테스트한다. 상세는 [TESTS.md](./TESTS.md), 검증 기준은 [QUALITY_GATE.md](./QUALITY_GATE.md).

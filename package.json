@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "next",
     "build": "node ./scripts/gen-rss.js && next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "vitest run"
   },
   "repository": {
     "type": "git",
@@ -31,9 +32,13 @@
     "rss": "^1.2.2"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^20.4.5",
     "@types/react": "^18.0.14",
     "@types/react-dom": "^18.0.5",
-    "typescript": "^5.1.6"
+    "@vitejs/plugin-react": "^6.0.2",
+    "jsdom": "^29.1.1",
+    "typescript": "^5.1.6",
+    "vitest": "^4.1.8"
   }
 }
