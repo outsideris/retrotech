@@ -7,7 +7,7 @@
 
 - [x] **`cover.svg` 경량화.** SVGO 적용 — 402KB→143KB(64.5%↓, path 436→306, 렌더 동일 확인). 콜드 첫 방문 LCP·파싱/CPU 개선.
 - [x] **히어로 이미지 CLS 제거.** `index.mdx` 히어로를 `width={3000} height={3000}` + `height:auto` 로(1:1 비율 예약). 트레이스 CLS 0.00 확인.
-- [ ] **`outsider.png` (110 KB)** 를 표시 크기(≈240px@2x)로 리사이즈 + WebP 변환.
+- [x] **`outsider.png` 최적화.** 240px WebP 로 교체(110KB→5KB, 95%↓). png 제거, `theme.config.js` 에서 `outsider.webp` 참조 + width/height 지정.
 - [ ] 배지 SVG(apple/youtube/spotify/google/rss) SVGO 최적화.
 
 ## Phase 2 — 성능: 캐시 / 서드파티 (전 페이지 공통)

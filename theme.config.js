@@ -26,7 +26,7 @@ export default {
       <iframe src="https://github.com/sponsors/outsideris/button" title="Sponsor outsideris" height="32" width="114"></iframe>
       <h3>Host:</h3>
       <div>
-        <img src="/images/outsider.png" alt="Outsider" width="120px" className="profile" />
+        <img src="/images/outsider.webp" alt="Outsider" width="120" height="120" className="profile" />
         <strong>Outsider</strong><br/>
         <TwitterIcon className="social-icon" /> <a href="https://twitter.com/outsideris">outsideris</a><br/>
         <GitHubIcon className="social-icon" /> <a href="https://github.com/outsideris">outsideris</a><br/>

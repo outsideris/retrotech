@@ -19,7 +19,7 @@
 | 3 🟠 | 접근성 | 아이콘 링크 `aria-label`, `<main>` 랜드마크 | A11y 94→100 |
 | 4 🟠 | 성능(CLS) | 히어로 이미지 높이 예약(`width/height` 또는 `aspect-ratio`) | 간헐 CLS 0.25 → 0 |
 | 5 🟡 | 성능(LCP) | 히어로 이미지 preload / 렌더블로킹 CSS 축소 | LCP load delay 439ms 단축 |
-| 6 ◑ | 성능(이미지) | ✅ `cover.svg` SVGO(402→143KB) · ⬜ `outsider.png` 리사이즈+WebP | 콜드 첫 방문 LCP·파싱/CPU 절감 |
+| 6 ✅ | 성능(이미지) | `cover.svg` SVGO(402→143KB) · `outsider.png`→WebP(110→5KB) | 콜드 첫 방문 LCP·파싱/CPU 절감 |
 | 7 🟡 | 성능(서드파티) | GitHub Sponsors iframe 지연, GTM+GA4 중복 검토 | 메인스레드/요청 절감 |
 
 > ✅ **이미 좋은 점:** Brotli 압축 ON(HTML/CSS/JS/SVG), HTTP/3, LCP·CLS 양호 등급, SEO·Best Practices 100, 정적 익스포트.
@@ -79,7 +79,7 @@
 | --- | --- | --- | --- |
 | `images/cover.svg` | 홈 히어로(LCP) | ~~402 KB~~ → **143 KB** (SVGO 적용) | 벡터 일러스트(path 436→306 병합). SVGO 로 64.5% 감소(렌더 동일 확인), brotli ~50KB. 배포 전 운영값은 402KB/brotli 118KB |
 | `images/cover.jpg` | OG/iTunes(비표시) | 233 KB | 페이지 로드와 무관 |
-| `images/outsider.png` | 푸터(120px 표시) | 110 KB | PNG 라 brotli 효과 거의 없음 → 리사이즈+WebP |
+| `images/outsider.webp` | 푸터(120px 표시) | ~~110 KB(png)~~ → **5 KB** | 240px WebP 로 교체(95%↓) |
 | 배지 SVG ×4 | 구독 배지 | 9~25 KB | SVGO 가능 |
 
 ## 네트워크 (홈, 33 요청)
