@@ -6,7 +6,7 @@
 ## Phase 1 — 성능: 이미지 / CLS
 
 - [x] **`cover.svg` 경량화.** SVGO 적용 — 402KB→143KB(64.5%↓, path 436→306, 렌더 동일 확인). 콜드 첫 방문 LCP·파싱/CPU 개선.
-- [ ] **히어로 이미지 CLS 제거.** `width={0} height={0}` → 실제 가로·세로 비율 지정 또는 `aspect-ratio` 로 공간 예약. (Lighthouse CLS 0.25 → 0 목표)
+- [x] **히어로 이미지 CLS 제거.** `index.mdx` 히어로를 `width={3000} height={3000}` + `height:auto` 로(1:1 비율 예약). 트레이스 CLS 0.00 확인.
 - [ ] **`outsider.png` (110 KB)** 를 표시 크기(≈240px@2x)로 리사이즈 + WebP 변환.
 - [ ] 배지 SVG(apple/youtube/spotify/google/rss) SVGO 최적화.
 
