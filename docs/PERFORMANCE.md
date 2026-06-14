@@ -73,6 +73,8 @@
 - 정적 HTML **27p**. 홈 First Load JS **104 kB**(공유 84.4 kB + 페이지). CSS 9 kB(br).
 - 공유 청크: framework 45.2 + main 28.5 + _app/webpack ~1.6 (kB, br 기준).
 
+> 참고: Lighthouse "레거시 JS"(~12KiB)는 Next 의 framework/main/polyfills **내장 청크**에 있어 `browserslist`·`tsconfig target` 으로 줄지 않는다(설정 변경에도 청크 해시 동일 확인). 줄이려면 Next 업그레이드가 필요하다.
+
 ## 자산 용량 (원본; 운영은 brotli 전송)
 
 | 자산 | 용도 | 원본 | 비고 |

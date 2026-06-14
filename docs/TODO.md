@@ -29,7 +29,8 @@
 
 - [ ] `public/feed.xml` 을 `.gitignore` 에 추가(빌드 산출물 — 매 빌드마다 untracked 로 생성됨).
 - [ ] Nextra 권고대로 `_app.tsx → _app.mdx` 검토.
-- [ ] `npx update-browserslist-db@latest` (caniuse-lite 갱신).
+- [x] `npx update-browserslist-db@latest` (caniuse-lite 1.0.30001517→…1799). 빌드의 "caniuse-lite is outdated" 경고 제거.
+- ℹ️ **레거시 JS(12KiB)는 설정으로 못 줄임.** Next 의 framework/main/polyfills 내장 청크라 `browserslist`/`tsconfig target` 변경에도 청크 해시 동일. 모던 browserslist 는 호환성만 좁혀 되돌림. → Next 업그레이드 시 재검토.
 - [ ] `gen-rss.js` 의 `SITE_URL` 하드코딩을 환경변수/공유 상수로 추출(여러 곳에 도메인 중복).
 - [ ] (선택) 배포 성공 시 텔레그램 알림 설정 — 방법은 [DEPLOYMENT.md](./DEPLOYMENT.md#배포-알림--텔레그램) 참고.
 - [ ] (장기) Next 13/Nextra 2-beta → 최신 메이저 업그레이드 호환성 검토.
