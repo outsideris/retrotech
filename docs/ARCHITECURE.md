@@ -155,9 +155,10 @@ module.exports = withNextra(nextConfig)
 
 ## 배포
 
-- **정적 호스팅.** `dist/` 를 정적 호스트에 업로드하는 형태(서버리스). 운영 도메인: `https://retrotech.outsider.dev`.
+- **Cloudflare** 로 정적 익스포트 결과(`dist/`)를 배포한다(서버리스 정적 호스팅). 운영 도메인 `https://retrotech.outsider.dev`.
 - 오디오 파일(mp3)은 사이트와 분리된 `retrotech-episodes.outsider.dev` 에 호스팅된다.
-- `dist/` 는 `.gitignore` 대상이라 저장소에 포함되지 않는다(매 배포 시 빌드).
+- 별도 CI(GitHub Actions 등)는 없다. `dist/` 는 `.gitignore` 대상이라 저장소에 포함되지 않는다(매 배포 시 빌드).
+- 빌드 설정, Git/직접 업로드 구분, **배포 알림(텔레그램) 옵션**은 → [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ## 알려진 제약 / 주의사항 (작업 전 반드시 확인)
 

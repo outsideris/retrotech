@@ -28,6 +28,7 @@
 - [ ] Nextra 권고대로 `_app.tsx → _app.mdx` 검토.
 - [ ] `npx update-browserslist-db@latest` (caniuse-lite 갱신).
 - [ ] `gen-rss.js` 의 `SITE_URL` 하드코딩을 환경변수/공유 상수로 추출(여러 곳에 도메인 중복).
+- [ ] (선택) 배포 성공 시 텔레그램 알림 설정 — 방법은 [DEPLOYMENT.md](./DEPLOYMENT.md#배포-알림--텔레그램) 참고.
 - [ ] (장기) Next 13/Nextra 2-beta → 최신 메이저 업그레이드 호환성 검토.
 
 ## Phase 5 — 테스트 도입

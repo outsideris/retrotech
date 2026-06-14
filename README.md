@@ -20,7 +20,7 @@ npm run dev      # 개발 서버 (next)
 npm run build    # RSS 생성(scripts/gen-rss.js) → 정적 익스포트 (dist/)
 ```
 
-- 빌드 산출물은 `dist/` 에 생성되며(`.gitignore` 대상), 정적 호스트에 배포한다.
+- 빌드 산출물은 `dist/` 에 생성되며(`.gitignore` 대상), **Cloudflare**로 배포한다. 자세한 배포·알림은 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 - 별도의 test/lint/typecheck 스크립트는 없다. 타입체크는 `npm run build` 가 수행한다.
 
 ## 환경 / 외부 의존성
@@ -41,6 +41,7 @@ npm run build    # RSS 생성(scripts/gen-rss.js) → 정적 익스포트 (dist/
 | 문서 | 내용 |
 | --- | --- |
 | [docs/ARCHITECURE.md](docs/ARCHITECURE.md) | 아키텍처·구성·빌드 파이프라인·외부 통합·주의사항 |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | 배포(Cloudflare) 방식·빌드 설정·텔레그램 알림 옵션 |
 | [docs/DESIGN.md](docs/DESIGN.md) | 제품/기획 의도, UX, 도메인 규칙, 의사결정 |
 | [docs/PERFORMANCE.md](docs/PERFORMANCE.md) | 성능 감사 결과(2026-06-14)와 개선 우선순위 |
 | [docs/TODO.md](docs/TODO.md) | 개선 백로그(Phase/Todo) |
