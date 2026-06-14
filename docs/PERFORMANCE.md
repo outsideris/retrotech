@@ -121,7 +121,7 @@
 `<Image src="/images/cover.svg" width={0} height={0} style={{width:'100%'}}/>` 는 세로 공간을 예약하지 않아 로드 시 밀림(간헐 CLS 0.25). 실제 가로·세로 비율 지정 또는 `aspect-ratio` 적용.
 
 ### 5. LCP load delay
-히어로 이미지를 `<link rel="preload" as="image">` 로 미리 받거나(`priority` preload 가 실제 emit 되는지 확인), 렌더블로킹 CSS(테마 CSS)를 줄여 발견 시점을 앞당긴다. (LCP 는 이미 양호라 우선순위는 낮음)
+히어로는 이미 `priority` 로 프리로드된다. 문제는 **배지 이미지들도 전부 `priority`** 였던 점 — 히어로와 함께 high-priority 프리로드되어 느린 망에서 대역폭을 경쟁했다. → `Badges.tsx` 에서 배지 `priority` 제거(✅ 적용, 히어로 priority 는 유지). 추가 여지: 렌더블로킹 테마 CSS 축소, 히어로 래스터화(AVIF/WebP)로 디코드 비용 절감.
 
 ### 6. 이미지 다이어트
 - **`cover.svg`** (436 path, raw 402KB / **brotli 118KB**): path 좌표가 소수점 6자리(예: `3002.000000`)라 SVGO 로 정밀도를 1~2자리로 낮추면 크게 줄어든다(콜드 첫 방문 LCP + 파싱/CPU 개선). 복잡한 일러스트라 AVIF/WebP 래스터 대안도 비교해볼 만하다.

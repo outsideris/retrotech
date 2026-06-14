@@ -11,22 +11,22 @@ export default function Badges({
     return (
         <div className="badges">
             <Link href={apple}>
-                <Image src="/badges/apple.svg" alt="Listen on Apple Podcasts" width={300} height={0} priority className="badge" />
+                <Image src="/badges/apple.svg" alt="Listen on Apple Podcasts" width={300} height={0} className="badge" />
             </Link>
             <Link href={youtube} className="youtube">
-                <Image src="/badges/youtube.svg" alt="Available on YouTube" width={240} height={0} priority className="badge youtube" />
+                <Image src="/badges/youtube.svg" alt="Available on YouTube" width={240} height={0} className="badge youtube" />
             </Link>
             <Link href={spotify}>
-              <Image src="/badges/spotify.svg" alt="Listen on Spotify" width={300} height={0} priority className="badge spotify" />
+              <Image src="/badges/spotify.svg" alt="Listen on Spotify" width={300} height={0} className="badge spotify" />
             </Link>
             {google &&
               <Link href={google}>
-                <Image src="/badges/google.svg" alt="Listen on Google Podcasts" width={300} height={0} priority className="badge" />
+                <Image src="/badges/google.svg" alt="Listen on Google Podcasts" width={300} height={0} className="badge" />
               </Link>
             }
             {!google &&
               <Link href={rss}>
-                <Image src="/badges/rss.svg" alt="Get the RSS Feed" width={300} height={0} priority className="badge" />
+                <Image src="/badges/rss.svg" alt="Get the RSS Feed" width={300} height={0} className="badge" />
               </Link>
             }
         </div>

@@ -9,6 +9,7 @@
 - [x] **히어로 이미지 CLS 제거.** `index.mdx` 히어로를 `width={3000} height={3000}` + `height:auto` 로(1:1 비율 예약). 트레이스 CLS 0.00 확인.
 - [x] **`outsider.png` 최적화.** 240px WebP 로 교체(110KB→5KB, 95%↓). png 제거, `theme.config.js` 에서 `outsider.webp` 참조 + width/height 지정.
 - [ ] 배지 SVG(apple/youtube/spotify/google/rss) SVGO 최적화.
+- [x] **배지 이미지 preload 경쟁 제거 (LCP).** `Badges.tsx` 의 `<Image priority>` 제거(배지는 히어로 아래라 LCP 무관). 히어로만 프리로드되도록 해 LCP 개선.
 
 ## Phase 2 — 성능: 캐시 / 서드파티 (전 페이지 공통)
 
