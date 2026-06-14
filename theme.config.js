@@ -1,4 +1,5 @@
 import { useBlogContext } from 'nextra-theme-blog'
+import { TwitterIcon, GitHubIcon, BlogIcon, RssIcon } from './components/Icons'
 
 const YEAR = new Date().getFullYear()
 
@@ -27,14 +28,14 @@ export default {
       <div>
         <img src="/images/outsider.png" alt="Outsider" width="120px" className="profile" />
         <strong>Outsider</strong><br/>
-        <i className="fa-brands fa-twitter" aria-hidden="true"></i> <a href="https://twitter.com/outsideris">outsideris</a><br/>
-        <i className="fa-brands fa-github" aria-hidden="true"></i> <a href="https://github.com/outsideris">outsideris</a><br/>
-        <i className="fa-solid fa-blog" aria-hidden="true"></i> <a href="https://blog.outsider.ne.kr/">blog.outsider.ne.kr</a>
+        <TwitterIcon className="social-icon" /> <a href="https://twitter.com/outsideris">outsideris</a><br/>
+        <GitHubIcon className="social-icon" /> <a href="https://github.com/outsideris">outsideris</a><br/>
+        <BlogIcon className="social-icon" /> <a href="https://blog.outsider.ne.kr/">blog.outsider.ne.kr</a>
       </div>
       <small>
         <time>{YEAR}</time> © Outsider.
         <a href="/feed.xml" aria-label="RSS 피드">
-          <i className="fa-solid fa-rss" aria-hidden="true"></i>
+          <RssIcon className="rss-icon" />
         </a>
       </small>
       <style jsx>{`

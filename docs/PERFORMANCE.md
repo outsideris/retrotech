@@ -15,7 +15,7 @@
 | 순위 | 영역 | 개선점 | 효과 |
 | --- | --- | --- | --- |
 | 1 ✅ | 성능(캐시) | `public/_headers` 로 `/_next/static/*` → 1년 immutable (적용; 배포 시 반영) | 재방문 속도 ↑ (최대 ROI) |
-| 2 🟠 | 성능(서드파티) | FontAwesome Pro 킷 풀로드(아이콘 4개) → 아이콘만 인라인/서브셋 | 외부 요청 ~9개·웹폰트 3개 제거(전 페이지) |
+| 2 ✅ | 성능(서드파티) | FontAwesome 킷 제거 → 4개 아이콘 인라인 SVG(`components/Icons.tsx`) | 외부 요청 ~9개·웹폰트 3개 제거(전 페이지) |
 | 3 🟠 | 접근성 | 아이콘 링크 `aria-label`, `<main>` 랜드마크 | A11y 94→100 |
 | 4 🟠 | 성능(CLS) | 히어로 이미지 높이 예약(`width/height` 또는 `aspect-ratio`) | 간헐 CLS 0.25 → 0 |
 | 5 🟡 | 성능(LCP) | 히어로 이미지 preload / 렌더블로킹 CSS 축소 | LCP load delay 439ms 단축 |

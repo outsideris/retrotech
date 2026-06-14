@@ -32,7 +32,6 @@ export default function Document() {
         </noscript>
         <Main />
         <NextScript />
-        <script src="https://kit.fontawesome.com/bba8fa6a15.js" crossOrigin="anonymous"></script>
       </body>
     </Html>
   )
