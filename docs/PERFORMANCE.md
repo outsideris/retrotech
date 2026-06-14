@@ -19,7 +19,7 @@
 | 3 🟠 | 접근성 | 아이콘 링크 `aria-label`, `<main>` 랜드마크 | A11y 94→100 |
 | 4 🟠 | 성능(CLS) | 히어로 이미지 높이 예약(`width/height` 또는 `aspect-ratio`) | 간헐 CLS 0.25 → 0 |
 | 5 🟡 | 성능(LCP) | 히어로 이미지 preload / 렌더블로킹 CSS 축소 | LCP load delay 439ms 단축 |
-| 6 🟡 | 성능(이미지) | `cover.svg` SVGO, `outsider.png` 리사이즈+WebP | 파싱/CPU/바이트 절감 |
+| 6 🟡 | 성능(이미지) | `cover.svg` SVGO(좌표 정밀도↓), `outsider.png` 리사이즈+WebP | 콜드 첫 방문 LCP·파싱/CPU 절감 |
 | 7 🟡 | 성능(서드파티) | GitHub Sponsors iframe 지연, GTM+GA4 중복 검토 | 메인스레드/요청 절감 |
 
 > ✅ **이미 좋은 점:** Brotli 압축 ON(HTML/CSS/JS/SVG), HTTP/3, LCP·CLS 양호 등급, SEO·Best Practices 100, 정적 익스포트.
@@ -34,7 +34,7 @@
 
 **LCP 분해** (요소 = 홈 히어로 `cover.svg` IMG):
 - TTFB 322ms (31.5%)
-- **Resource load delay 439ms (42.9%) ← 가장 큼.** 이미지가 늦게 발견됨(HTML 본문 참조, preload 미적용/렌더블로킹 CSS 뒤). 이미지 자체 다운로드는 **4ms**(brotli+h3)라 원본 402KB가 LCP 병목은 아님.
+- **Resource load delay 439ms (42.9%) ← 가장 큼.** 이미지가 늦게 발견됨(HTML 본문 참조, preload 미적용/렌더블로킹 CSS 뒤). 단, 측정된 이미지 다운로드 **4ms 는 재방문 캐시 적중** 값이고, **콜드 첫 방문**에는 brotli 118KB 를 받아야 하므로(Slow 4G ≈ 0.6s) cover.svg 크기가 첫 방문 LCP 에는 실제로 영향을 준다.
 - Load duration 5ms (0.5%)
 - Render delay 256ms (25%)
 
@@ -75,7 +75,7 @@
 
 | 자산 | 용도 | 원본 | 비고 |
 | --- | --- | --- | --- |
-| `images/cover.svg` | 홈 히어로(LCP) | 402 KB | brotli+h3 로 전송은 빠름(4ms). 단 파싱/CPU/메모리엔 부담 → SVGO 권장 |
+| `images/cover.svg` | 홈 히어로(LCP) | 402 KB → **brotli 118 KB** | 436개 `<path>` 벡터 일러스트(임베디드 비트맵 아님). 재방문은 캐시로 빠르지만 콜드 첫 방문은 118KB 다운로드 → SVGO(좌표 정밀도↓)로 대폭 축소 가능 |
 | `images/cover.jpg` | OG/iTunes(비표시) | 233 KB | 페이지 로드와 무관 |
 | `images/outsider.png` | 푸터(120px 표시) | 110 KB | PNG 라 brotli 효과 거의 없음 → 리사이즈+WebP |
 | 배지 SVG ×4 | 구독 배지 | 9~25 KB | SVGO 가능 |
@@ -98,7 +98,12 @@
     Cache-Control: public, max-age=31536000, immutable
   ```
   단, Cloudflare 대시보드의 **Browser Cache TTL** 이 "Respect existing headers" 여야 origin 헤더가 반영된다(현재 4h 고정이면 override 중일 수 있음).
-- **(또는) Cloudflare Cache Rule** — `/_next/static/*` 경로에 Edge/Browser TTL 1년 지정.
+- **(또는) Cloudflare Cache Rule (가장 확실)** — 대시보드에서 도메인 선택 → **Caching → Cache Rules → Create rule**:
+  - 식(expression): `URI Path` `starts with` `/_next/static/`
+  - Cache eligibility: Eligible for cache
+  - Edge TTL: "Ignore cache-control header and use this TTL" → **1년(31536000s)**
+  - Browser TTL: "Override origin" → **1년**
+  - 전역 기본값(현재 4시간)은 **Caching → Configuration → Browser Cache TTL** 에 있다. "Respect Existing Headers" 로 두면 `_headers`/origin 헤더가 반영된다.
 - (선택) HTML 은 배포 시 purge 를 전제로 엣지 캐시(cache-everything + 짧은 TTL)도 가능.
 
 ### 2. FontAwesome 경량화
@@ -115,7 +120,8 @@
 히어로 이미지를 `<link rel="preload" as="image">` 로 미리 받거나(`priority` preload 가 실제 emit 되는지 확인), 렌더블로킹 CSS(테마 CSS)를 줄여 발견 시점을 앞당긴다. (LCP 는 이미 양호라 우선순위는 낮음)
 
 ### 6. 이미지 다이어트
-`cover.svg` SVGO 최적화(파싱/CPU/메모리), `outsider.png` 를 표시 크기(≈240px@2x) WebP 로.
+- **`cover.svg`** (436 path, raw 402KB / **brotli 118KB**): path 좌표가 소수점 6자리(예: `3002.000000`)라 SVGO 로 정밀도를 1~2자리로 낮추면 크게 줄어든다(콜드 첫 방문 LCP + 파싱/CPU 개선). 복잡한 일러스트라 AVIF/WebP 래스터 대안도 비교해볼 만하다.
+- **`outsider.png`** (110KB, PNG): 표시 크기(≈240px@2x)로 리사이즈 + WebP.
 
 ### 7. 기타 서드파티
 GitHub Sponsors iframe 지연 로드(또는 정적 링크), GTM+GA4 동시 사용 필요성 재검토.
