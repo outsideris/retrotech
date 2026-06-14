@@ -37,12 +37,15 @@ h5 {
   margin-top: 0;
 }
 
-/* Footer inline SVG icons (replaced the Font Awesome kit) */
-.social-icon {
+/* Footer inline SVG icons (replaced the Font Awesome kit).
+   The theme's preflight sets `svg { display: block }`, which would stack each
+   icon on its own line — force inline so they sit next to the link text. */
+.social-icon,
+.rss-icon {
+  display: inline-block;
   vertical-align: -0.125em;
-  margin-right: 0.4em;
 }
 
-.rss-icon {
-  vertical-align: -0.125em;
+.social-icon {
+  margin-right: 0.4em;
 }
