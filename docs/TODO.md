@@ -3,15 +3,16 @@
 > 작업 단위는 Phase > Todo. 상세 구현 계획이 필요해지면 `docs/plan/` 에 문서를 만들고 해당 Todo에서 링크한다.
 > 근거: [PERFORMANCE.md](./PERFORMANCE.md), [ARCHITECURE.md](./ARCHITECURE.md), [DESIGN.md](./DESIGN.md).
 
-## Phase 1 — 성능: 이미지 (효과 최대)
+## Phase 1 — 성능: 이미지 / CLS
 
-- [ ] **`cover.svg` (402 KB) 경량화.** SVGO 최적화 또는 적정 해상도 래스터(WebP/AVIF)로 교체.
+- [ ] **`cover.svg` (402 KB) 경량화.** SVGO 최적화 또는 적정 해상도 래스터(WebP/AVIF)로 교체. (운영은 brotli 전송이라 LCP 영향은 작고, 파싱·CPU·메모리 절감 목적)
 - [ ] **히어로 이미지 CLS 제거.** `width={0} height={0}` → 실제 가로·세로 비율 지정 또는 `aspect-ratio` 로 공간 예약. (Lighthouse CLS 0.25 → 0 목표)
 - [ ] **`outsider.png` (110 KB)** 를 표시 크기(≈240px@2x)로 리사이즈 + WebP 변환.
 - [ ] 배지 SVG(apple/youtube/spotify/google/rss) SVGO 최적화.
 
-## Phase 2 — 성능: 서드파티 / 전 페이지 공통 비용
+## Phase 2 — 성능: 캐시 / 서드파티 (전 페이지 공통)
 
+- [ ] **정적 자산 캐시 연장 (최대 ROI).** `/_next/static/*` 등 해시 자산을 1년 `immutable` 로 (현재 4시간뿐 — Cloudflare Browser Cache TTL 기본값). `public/_headers` 파일 또는 Cloudflare Cache Rule 사용. → [PERFORMANCE.md](./PERFORMANCE.md#호스팅-동작-운영-실측-헤더), [DEPLOYMENT.md](./DEPLOYMENT.md)
 - [ ] **FontAwesome Pro 킷 풀로드 제거.** 실제 사용 아이콘(twitter, github, blog, rss) 4개만 SVG 인라인 또는 부분 번들로 대체. (외부 요청 ~9개 절감)
 - [ ] **GitHub Sponsors iframe** 지연 로드 또는 정적 링크/버튼으로 대체(전 페이지 iframe 비용 제거).
 - [ ] GTM + GA4 동시 사용 필요성 재검토(중복 시 하나로 통합).
