@@ -32,7 +32,7 @@
 - [x] `npx update-browserslist-db@latest` (caniuse-lite 1.0.30001517→…1799). 빌드의 "caniuse-lite is outdated" 경고 제거.
 - ℹ️ **레거시 JS(12KiB)는 설정으로 못 줄임.** Next 의 framework/main/polyfills 내장 청크라 `browserslist`/`tsconfig target` 변경에도 청크 해시 동일. 모던 browserslist 는 호환성만 좁혀 되돌림. → Next 업그레이드 시 재검토.
 - [ ] `gen-rss.js` 의 `SITE_URL` 하드코딩을 환경변수/공유 상수로 추출(여러 곳에 도메인 중복).
-- [x] 배포 성공/실패 텔레그램 알림 — `scripts/cf-build.sh` 빌드 래퍼가 결과를 Worker(`cf-webhook…`)로 POST. **대시보드에서** Build command=`bash scripts/cf-build.sh` + 암호화 환경변수 `DEPLOY_WEBHOOK_URL` 설정 필요. → [DEPLOYMENT.md](./DEPLOYMENT.md#배포-알림--텔레그램)
+- [x] 배포 성공/실패 텔레그램 알림 — `scripts/cf-build.sh` 빌드 래퍼가 결과를 Worker(`cf-webhook…`)로 POST. **대시보드에서** Build command=`bash scripts/cf-build.sh` + 암호화 환경변수 `DEPLOY_WEBHOOK_URL`(워커의 **`/webhook/generic`** 엔드포인트) 설정 필요. → [DEPLOYMENT.md](./DEPLOYMENT.md#배포-알림--텔레그램)
 - [ ] (장기) Next 13/Nextra 2-beta → 최신 메이저 업그레이드 호환성 검토.
 
 ## Phase 5 — 테스트 도입 ✅
