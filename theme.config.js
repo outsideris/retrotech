@@ -27,14 +27,14 @@ export default {
       <div>
         <img src="/images/outsider.png" alt="Outsider" width="120px" className="profile" />
         <strong>Outsider</strong><br/>
-        <i className="fa-brands fa-twitter"></i> <a href="https://twitter.com/outsideris">outsideris</a><br/>
-        <i className="fa-brands fa-github"></i> <a href="https://github.com/outsideris">outsideris</a><br/>
-        <i className="fa-solid fa-blog"></i> <a href="https://blog.outsider.ne.kr/">blog.outsider.ne.kr</a>
+        <i className="fa-brands fa-twitter" aria-hidden="true"></i> <a href="https://twitter.com/outsideris">outsideris</a><br/>
+        <i className="fa-brands fa-github" aria-hidden="true"></i> <a href="https://github.com/outsideris">outsideris</a><br/>
+        <i className="fa-solid fa-blog" aria-hidden="true"></i> <a href="https://blog.outsider.ne.kr/">blog.outsider.ne.kr</a>
       </div>
       <small>
         <time>{YEAR}</time> © Outsider.
-        <a href="/feed.xml">
-          <i className="fa-solid fa-rss"></i>
+        <a href="/feed.xml" aria-label="RSS 피드">
+          <i className="fa-solid fa-rss" aria-hidden="true"></i>
         </a>
       </small>
       <style jsx>{`

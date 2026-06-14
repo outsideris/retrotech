@@ -18,10 +18,11 @@
 - [ ] GTM + GA4 동시 사용 필요성 재검토(중복 시 하나로 통합).
 - [ ] (경미) 홈의 `episodes-*.js` 중복 프리페치 원인 확인.
 
-## Phase 3 — 접근성
+## Phase 3 — 접근성 ✅
 
-- [ ] 아이콘 전용 링크에 `aria-label` 부여(특히 푸터 RSS/소셜). (`link-name` 감사)
-- [ ] `<main>` 랜드마크 확보(`landmark-one-main`).
+- [x] 아이콘 전용 링크에 `aria-label` 부여(푸터 RSS) + 장식 아이콘 `aria-hidden`. (`link-name`)
+- [x] `<main>` 랜드마크 확보 — `_app.tsx` 에서 `<article>` 에 `role="main"` 부여(테마가 main 미렌더). (`landmark-one-main`)
+- 결과: Lighthouse 접근성 94→100, Agentic 25→100.
 
 ## Phase 4 — 유지보수 / 구성
 
