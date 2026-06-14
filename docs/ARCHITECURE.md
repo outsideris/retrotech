@@ -47,6 +47,7 @@ retrotech/
 │  ├─ images/                 # cover.svg, cover.jpg, outsider.png
 │  ├─ badges/                 # apple/youtube/spotify/google/rss .svg
 │  ├─ favicon.ico, favicon-*.png, apple-touch-icon.png, android-chrome-*.png, site.webmanifest  # 파비콘/PWA
+│  ├─ _headers               # Cloudflare Pages 응답 헤더(정적 자산 캐시) — DEPLOYMENT.md
 │  ├─ robots.txt, ads.txt
 │  └─ (feed.xml)              # 빌드가 생성 — 저장소엔 커밋되지 않음
 ├─ next.config.js             # 정적 익스포트 + Nextra + 이미지 로더 설정

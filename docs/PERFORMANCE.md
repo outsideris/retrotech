@@ -14,15 +14,17 @@
 
 | 순위 | 영역 | 개선점 | 효과 |
 | --- | --- | --- | --- |
-| 1 🔴 | 성능(캐시) | 해시 정적자산(`/_next/static/*`)이 **4시간 캐시**뿐 → **1년 immutable** 로 | 재방문 속도 ↑ (최대 ROI) |
+| 1 ✅ | 성능(캐시) | `public/_headers` 로 `/_next/static/*` → 1년 immutable (적용; 배포 시 반영) | 재방문 속도 ↑ (최대 ROI) |
 | 2 🟠 | 성능(서드파티) | FontAwesome Pro 킷 풀로드(아이콘 4개) → 아이콘만 인라인/서브셋 | 외부 요청 ~9개·웹폰트 3개 제거(전 페이지) |
 | 3 🟠 | 접근성 | 아이콘 링크 `aria-label`, `<main>` 랜드마크 | A11y 94→100 |
 | 4 🟠 | 성능(CLS) | 히어로 이미지 높이 예약(`width/height` 또는 `aspect-ratio`) | 간헐 CLS 0.25 → 0 |
 | 5 🟡 | 성능(LCP) | 히어로 이미지 preload / 렌더블로킹 CSS 축소 | LCP load delay 439ms 단축 |
-| 6 🟡 | 성능(이미지) | `cover.svg` SVGO(좌표 정밀도↓), `outsider.png` 리사이즈+WebP | 콜드 첫 방문 LCP·파싱/CPU 절감 |
+| 6 ◑ | 성능(이미지) | ✅ `cover.svg` SVGO(402→143KB) · ⬜ `outsider.png` 리사이즈+WebP | 콜드 첫 방문 LCP·파싱/CPU 절감 |
 | 7 🟡 | 성능(서드파티) | GitHub Sponsors iframe 지연, GTM+GA4 중복 검토 | 메인스레드/요청 절감 |
 
 > ✅ **이미 좋은 점:** Brotli 압축 ON(HTML/CSS/JS/SVG), HTTP/3, LCP·CLS 양호 등급, SEO·Best Practices 100, 정적 익스포트.
+
+> **적용 현황 (2026-06-14, 배포 시 반영):** ① `public/_headers` 추가 — `/_next/static/*` 를 `max-age=31536000, immutable` 로(Cloudflare 기본 4시간 override). ② `cover.svg` SVGO 최적화 — 402KB→143KB(브라우저 렌더 동일 확인). **아래 운영 측정값은 이 변경 이전 기준이다.**
 
 ## Core Web Vitals (운영, 모바일 Slow 4G / CPU 4×)
 
@@ -75,7 +77,7 @@
 
 | 자산 | 용도 | 원본 | 비고 |
 | --- | --- | --- | --- |
-| `images/cover.svg` | 홈 히어로(LCP) | 402 KB → **brotli 118 KB** | 436개 `<path>` 벡터 일러스트(임베디드 비트맵 아님). 재방문은 캐시로 빠르지만 콜드 첫 방문은 118KB 다운로드 → SVGO(좌표 정밀도↓)로 대폭 축소 가능 |
+| `images/cover.svg` | 홈 히어로(LCP) | ~~402 KB~~ → **143 KB** (SVGO 적용) | 벡터 일러스트(path 436→306 병합). SVGO 로 64.5% 감소(렌더 동일 확인), brotli ~50KB. 배포 전 운영값은 402KB/brotli 118KB |
 | `images/cover.jpg` | OG/iTunes(비표시) | 233 KB | 페이지 로드와 무관 |
 | `images/outsider.png` | 푸터(120px 표시) | 110 KB | PNG 라 brotli 효과 거의 없음 → 리사이즈+WebP |
 | 배지 SVG ×4 | 구독 배지 | 9~25 KB | SVGO 가능 |
@@ -91,6 +93,8 @@
 ## 개선 상세
 
 ### 1. 캐시 (최대 ROI) — `/_next/static/*` 1년 immutable
+> ✅ **적용됨:** `public/_headers` 추가 완료(배포 시 반영). 아래는 배경과 대안.
+
 해시 자산은 내용이 바뀌면 파일명도 바뀌므로 영구 캐시가 안전하다. 두 가지 방법:
 - **(권장) `public/_headers` 파일** (Cloudflare Pages가 인식):
   ```

@@ -10,6 +10,7 @@
 - **CI:** 현재 GitHub Actions 등 별도 CI 파이프라인은 없다. 배포는 Cloudflare 쪽에서 처리한다.
 - `dist/` 는 `.gitignore` 대상 — 저장소에 포함되지 않고 매 배포 시 빌드한다.
 - Cloudflare 연결 방식(Pages Git 연동 / 직접 업로드 / Workers 등)의 구체 설정은 운영자가 별도로 관리한다. 아래 빌드 설정만 코드 기준으로 명시한다.
+- **정적 자산 캐시:** 저장소의 `public/_headers` 가 `/_next/static/*` 를 1년 `immutable` 로 지정한다(Cloudflare Pages 가 대시보드 설정 없이 자동 적용, 기본값 override). 비해시 자산(`/images` 등)은 URL 이 고정이라 의도적으로 기본 TTL 유지. 배경/대안은 [PERFORMANCE.md](./PERFORMANCE.md) 참고.
 
 ## 빌드 설정 (Cloudflare에서 빌드하는 경우)
 
