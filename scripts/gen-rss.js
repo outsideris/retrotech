@@ -4,6 +4,35 @@ const RSS = require('rss')
 const matter = require('gray-matter')
 
 const SITE_URL = 'https://retrotech.outsider.dev'
+const EPISODES_DIR = path.join(__dirname, '..', 'pages', 'episodes')
+
+const feedOption = {
+  title: 'RetroTech 팟캐스트',
+  site_url: SITE_URL,
+  feed_url: `${SITE_URL}/feed.xml`,
+  language: 'ko',
+  custom_namespaces: {
+    'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd'
+  },
+  custom_elements: [
+    {'itunes:owner': [
+        {'itunes:name': 'Outsider'},
+        {'itunes:email': 'outsideris@gmail.com'}
+    ]},
+    {'itunes:author': 'Outsider'},
+    {'itunes:image': {
+        _attr: {
+          href: `${SITE_URL}/images/cover.jpg`
+        }
+    }},
+    {'itunes:explicit': 'no'},
+    {'itunes:category': [
+        {_attr: {
+            text: 'Technology'
+        }},
+    ]}
+  ],
+}
 
 // Index listing pages are not episodes and must be left out of the feed.
 function shouldSkip(name) {
@@ -43,62 +72,37 @@ function sortByDateDesc(episodes) {
   })
 }
 
-async function generate() {
-  const feedOption = {
-    title: 'RetroTech 팟캐스트',
-    site_url: SITE_URL,
-    feed_url: `${SITE_URL}/feed.xml`,
-    language: 'ko',
-    custom_namespaces: {
-      'itunes': 'http://www.itunes.com/dtds/podcast-1.0.dtd'
-    },
-    custom_elements: [
-      {'itunes:owner': [
-          {'itunes:name': 'Outsider'},
-          {'itunes:email': 'outsideris@gmail.com'}
-      ]},
-      {'itunes:author': 'Outsider'},
-      {'itunes:image': {
-          _attr: {
-            href: `${SITE_URL}/images/cover.jpg`
-          }
-      }},
-      {'itunes:explicit': 'no'},
-      {'itunes:category': [
-          {_attr: {
-              text: 'Technology'
-          }},
-      ]}
-    ],
-  }
+// Pure: build the feed XML string from parsed episodes (`{ name, data }[]`).
+function buildFeedXml(episodes) {
   const feed = new RSS(feedOption)
+  sortByDateDesc(episodes).forEach(({ name, data }) => feed.item(episodeToItem(name, data)))
+  return feed.xml({ indent: true })
+}
 
-  const episodeFiles = await fs.readdir(path.join(__dirname, '..', 'pages', 'episodes'))
-  const episodes = (await Promise.all(episodeFiles.map(async (name) => {
-    if (!name.endsWith('.mdx') && !name.endsWith('.md')) {
-      return (await fs.readdir(path.join(__dirname, '..', 'pages', 'episodes', name))).map((file) => `${name}/${file}`)
-    }
+// Read and parse every episode file under pages/episodes (skipping index pages).
+async function readEpisodes() {
+  const names = (await Promise.all(
+    (await fs.readdir(EPISODES_DIR)).map(async (name) => {
+      if (!name.endsWith('.mdx') && !name.endsWith('.md')) {
+        return (await fs.readdir(path.join(EPISODES_DIR, name))).map((file) => `${name}/${file}`)
+      }
+      return name
+    })
+  )).flat()
 
-    return name
-  }))).flat()
-
-  // Read all episodes concurrently, then add them in a deterministic
-  // newest-first order. feed.item() must run AFTER sorting — calling it inside
-  // the concurrent reads makes item order depend on file-read completion timing.
-  const parsed = await Promise.all(
-    episodes
+  return Promise.all(
+    names
       .filter((name) => !shouldSkip(name))
       .map(async (name) => {
-        const content = await fs.readFile(
-          path.join(__dirname, '..', 'pages', 'episodes', name)
-        )
+        const content = await fs.readFile(path.join(EPISODES_DIR, name))
         return { name, data: matter(content).data }
       })
   )
+}
 
-  sortByDateDesc(parsed).forEach(({ name, data }) => feed.item(episodeToItem(name, data)))
-
-  await fs.writeFile('./public/feed.xml', feed.xml({ indent: true }))
+async function generate() {
+  const episodes = await readEpisodes()
+  await fs.writeFile('./public/feed.xml', buildFeedXml(episodes))
   console.log('RSS feed generated!')
 }
 
@@ -106,4 +110,4 @@ if (require.main === module) {
   generate()
 }
 
-module.exports = { episodeToItem, shouldSkip, sortByDateDesc, generate }
+module.exports = { episodeToItem, shouldSkip, sortByDateDesc, buildFeedXml, readEpisodes, generate }

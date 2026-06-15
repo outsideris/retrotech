@@ -12,12 +12,14 @@
 | `npm test` | `vitest run` (단위/컴포넌트 테스트) |
 
 > `lint` / `format` / `typecheck` 전용 스크립트는 없다(타입체크는 `next build` 가 내부적으로 `tsc` 로 수행). 테스트는 `npm test`(Vitest).
+>
+> **CI:** GitHub Actions(`.github/workflows/ci.yml`)가 push(main)/PR 마다 `npm test` + `npm run build` 를 실행한다(RSS 포맷·데이터 회귀 + 빌드 자동 검증).
 
 ## 필수 확인 항목
 
 - [ ] **빌드:** `npm run build` 성공. *(2026-06-14 기준 통과)*
 - [ ] **타입체크:** 위 빌드의 "Linting and checking validity of types" 단계 통과(별도 명령 없음).
-- [ ] **테스트:** `npm test` (Vitest) 통과. 현재 2개 파일·10개 테스트.
+- [ ] **테스트:** `npm test` (Vitest) 통과. 현재 2개 파일·16개 테스트(RSS 포맷 스냅샷·실제 데이터 유효성 포함).
 - [ ] **RSS 생성:** `public/feed.xml` 이 생성되고 iTunes 필드가 포함되는지 확인(`scripts/gen-rss.js`).
 - [ ] **정적 산출물:** `dist/` 에 HTML 27개(홈/episodes/에피소드들/404)와 자산이 생성되는지 확인.
 - [ ] **수동 구동 확인:** `cd dist && python3 -m http.server <port>` 로 홈·에피소드 페이지가 정상 렌더되는지 확인.
@@ -43,4 +45,5 @@
 
 ## 마지막 검토
 
+- **2026-06-15:** RSS 포맷 스냅샷 + 실제 에피소드 데이터 유효성 테스트 추가(총 16개), GitHub Actions CI 도입(push/PR 에서 `npm test`+`npm run build`).
 - **2026-06-14:** 최초 작성 후 Vitest 도입 — `npm test`(2파일·10테스트)를 필수 확인 항목에 추가. `npm run build` 통과, 접근성 100 달성.

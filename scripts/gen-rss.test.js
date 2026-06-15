@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { episodeToItem, shouldSkip, sortByDateDesc } from './gen-rss.js'
+import { episodeToItem, shouldSkip, sortByDateDesc, buildFeedXml, readEpisodes } from './gen-rss.js'
 
 const baseData = {
   title: '2g. VCS: SourceForge',
@@ -87,5 +87,71 @@ describe('sortByDateDesc', () => {
     const before = input.map((e) => e.name)
     sortByDateDesc(input)
     expect(input.map((e) => e.name)).toEqual(before)
+  })
+})
+
+// Format/structure regression guard: render a fixed fixture feed and snapshot it.
+// Catches unintended changes to the feed's shape (fields, iTunes namespace,
+// ordering, escaping) from refactors or dependency bumps. Stable across real
+// episode changes because it uses fixtures, not pages/episodes.
+describe('buildFeedXml (format)', () => {
+  it('renders channel + items in the expected structure (newest first, escaped)', () => {
+    const fixtures = [
+      {
+        name: '1a.mdx',
+        data: {
+          title: 'First & Oldest',
+          date: '2024/01/01',
+          description: 'one < two',
+          author: 'Outsider',
+          enclosure: { url: 'https://retrotech-episodes.outsider.dev/1a.mp3', size: 1000 },
+          duration: '10:00',
+        },
+      },
+      {
+        name: '2b.mdx',
+        data: {
+          title: 'Second',
+          date: '2024/02/02',
+          description: 'desc',
+          description2: 'extra line',
+          author: 'Outsider',
+          enclosure: { url: 'https://retrotech-episodes.outsider.dev/2b.mp3', size: 2000 },
+          duration: '20:00',
+        },
+      },
+    ]
+    const xml = buildFeedXml(fixtures).replace(
+      /<lastBuildDate>.*?<\/lastBuildDate>/,
+      '<lastBuildDate>NORMALIZED</lastBuildDate>'
+    )
+    expect(xml).toMatchSnapshot()
+  })
+})
+
+// Data validity guard: run against the REAL episodes. Stable across additions
+// (no snapshot of content) but fails if any episode is missing/malformed.
+describe('feed from real episodes', () => {
+  it('every episode has the fields the feed requires', async () => {
+    const episodes = await readEpisodes()
+    expect(episodes.length).toBeGreaterThan(20)
+
+    const problems = []
+    for (const { name, data } of episodes) {
+      if (!data.title) problems.push(`${name}: missing title`)
+      if (!data.date || Number.isNaN(Date.parse(data.date))) problems.push(`${name}: bad/missing date`)
+      if (!data.duration) problems.push(`${name}: missing duration`)
+      if (!data.description) problems.push(`${name}: missing description`)
+      if (!/\.mp3$/.test(data.enclosure?.url || '')) problems.push(`${name}: bad enclosure.url`)
+    }
+    expect(problems).toEqual([])
+  })
+
+  it('builds a feed including every episode exactly once', async () => {
+    const episodes = await readEpisodes()
+    const xml = buildFeedXml(episodes)
+    expect(xml).toContain('<rss')
+    expect((xml.match(/<item>/g) || []).length).toBe(episodes.length)
+    expect(episodes.some(({ name }) => shouldSkip(name))).toBe(false)
   })
 })

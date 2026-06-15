@@ -1,0 +1,20 @@
+name: CI
+
+# RSS 피드(포맷 스냅샷 + 실제 데이터 유효성)와 빌드를 검증한다.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
