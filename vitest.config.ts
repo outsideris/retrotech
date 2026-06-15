@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig, configDefaults } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
@@ -7,5 +7,7 @@ export default defineConfig({
     globals: true,
     // Default to Node; component tests opt into jsdom via `// @vitest-environment jsdom`.
     environment: 'node',
+    // Don't pick up test copies inside Claude Code worktrees (.claude/worktrees/*).
+    exclude: [...configDefaults.exclude, '**/.claude/**'],
   },
 })

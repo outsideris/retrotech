@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 #
 # Cloudflare Pages build command wrapper.
-# Runs the normal build, then notifies the Telegram webhook worker of the
-# result (success/failure), and exits with the build's own status so Pages
-# still marks the deployment correctly.
+# Runs the test suite as a gate, then the build, then notifies the Telegram
+# webhook worker of the result. A failing test OR build exits non-zero, so
+# Cloudflare marks the deployment failed and the bad version is never
+# published (the previous deploy stays live).
 #
 # Cloudflare Pages setup:
 #   - Build command:          bash scripts/cf-build.sh
@@ -17,8 +18,17 @@
 # The token stays in the Pages env var (a secret), never in the repo.
 set -uo pipefail
 
-npm run build
+# Gate: tests must pass before building/deploying. `phase` lets the
+# notification say which step failed.
+phase="test"
+npm test
 code=$?
+
+if [ "$code" -eq 0 ]; then
+  phase="build"
+  npm run build
+  code=$?
+fi
 
 # Cloudflare Pages build-time variables (empty locally). The worker ignores
 # empty fields, so they can always be included.
@@ -31,7 +41,7 @@ if [ "$code" -eq 0 ]; then
   message=""
 else
   status="failure"
-  message="build exit ${code}"
+  message="${phase} failed (exit ${code})"
 fi
 
 if [ -n "${DEPLOY_WEBHOOK_URL:-}" ]; then
