@@ -33,7 +33,7 @@
 - ℹ️ **레거시 JS(12KiB)는 설정으로 못 줄임.** Next 의 framework/main/polyfills 내장 청크라 `browserslist`/`tsconfig target` 변경에도 청크 해시 동일. 모던 browserslist 는 호환성만 좁혀 되돌림. → Next 업그레이드 시 재검토.
 - [ ] `gen-rss.js` 의 `SITE_URL` 하드코딩을 환경변수/공유 상수로 추출(여러 곳에 도메인 중복).
 - [x] 배포 성공/실패 텔레그램 알림 — `scripts/cf-build.sh` 빌드 래퍼가 결과를 Worker(`cf-webhook…`)로 POST. **대시보드에서** Build command=`bash scripts/cf-build.sh` + 암호화 환경변수 `DEPLOY_WEBHOOK_URL`(워커의 **`/webhook/generic`** 엔드포인트) 설정 필요. → [DEPLOYMENT.md](./DEPLOYMENT.md#배포-알림--텔레그램)
-- [ ] (장기) Next 13/Nextra 2-beta → 최신 메이저 업그레이드 호환성 검토.
+- [ ] ~~(장기) Next 13/Nextra 2-beta → 최신 메이저 업그레이드 호환성 검토.~~ → **Phase 6(Go 마이그레이션)으로 대체.** 프레임워크 자체를 걷어내므로 업그레이드 트레드밀이 사라진다.
 
 ## Phase 5 — 테스트 도입 ✅
 
@@ -42,6 +42,21 @@
 - [x] `components/Badges.test.tsx` — Google↔RSS 토글 + 플랫폼 배지 렌더(next/image·link mock).
 - 합계 2파일·10테스트 통과. 상세: [TESTS.md](./TESTS.md)
 - [ ] (향후) 에피소드 디렉터리→피드 생성 end-to-end 테스트.
+
+## Phase 6 — Go 정적 생성기 마이그레이션 (Nextra/Next 제거)
+
+> 자체 제작 Go 정적 생성기로 전환해 프레임워크 의존성을 제거한다(범위: 빌드/프레임워크만, GA4·Sponsors 유지).
+> 상세 계획·불변식·위험: **[plan/go-static-migration.md](./plan/go-static-migration.md)**. 참고 구현: `blog.outsider.ne.kr`.
+> 안전 원칙: 기존 Next를 건드리지 않고 Go 생성기를 **병행 구축** → 패리티 통과 후 배포 전환·Next 제거.
+
+- [ ] **A. 스캐폴딩** — `go.mod`, `cmd/build` 골격, `internal/parser`(프론트매터+goldmark). 파일럿 1편 파싱 + 단위 테스트.
+- [ ] **B. RSS 패리티 (최우선 리스크).** `feed.go`(encoding/xml) + 골든 테스트 — 현 `feed.xml`과 24편 항목 단위 동일(guid·enclosure·pubDate). → [DESIGN.md](./DESIGN.md) 구독 UX
+- [ ] **C. Badges + 콘텐츠 변환 규칙 확정** — `badges.go` + Badges 마커 방식 결정, 1편 렌더 검증.
+- [ ] **D. 템플릿 & 페이지 생성** — home/episodes/episode/404. 현 산출물과 URL·경로·트레일링슬래시 대조.
+- [ ] **E. "똑같은 형태"** — 테마 CSS 복제 + 다크모드 인라인 스크립트 + GA 마커. 스크린샷 diff.
+- [ ] **F. 콘텐츠 일괄 이관** — 24편 `.mdx`→`content/episodes/*.md`. 골든·시각 회귀 재확인.
+- [ ] **G. 빌드/배포/CI 전환** — `ci.yml`을 `go vet`+`go test`+build로, 배포를 GitHub Actions→`wrangler pages deploy dist`로. → [DEPLOYMENT.md](./DEPLOYMENT.md)
+- [ ] **H. Next 제거 & 문서 정리** — `pages/`·`components/`·`theme.config.js`·`next.config.js`·`package.json`·vitest 제거. ARCHITECURE/DESIGN/QUALITY_GATE/TESTS 갱신.
 
 ## 운영(미검증, 확인 필요)
 
