@@ -7,3 +7,8 @@ npm-debug.log*
 next-env.d.ts
 /dist/
 /public/feed.xml
+
+# Go migration
+/_ref_dist/
+/retrotech
+*.out
