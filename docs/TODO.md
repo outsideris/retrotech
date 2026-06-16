@@ -17,7 +17,7 @@
 - [x] **FontAwesome Pro 킷 풀로드 제거.** 4개 아이콘(twitter/github/blog/rss)을 `components/Icons.tsx` 인라인 SVG(FA Free, CC BY 4.0)로 대체, `_document.tsx` 의 kit 스크립트 제거. 외부 요청 ~9개 + 웹폰트 3개 절감.
 - [ ] **GitHub Sponsors iframe** 지연 로드 또는 정적 링크/버튼으로 대체(전 페이지 iframe 비용 제거).
 - [x] **GTM 제거, GA4 직접 로드만 유지.** `_app.tsx` 의 GTM 컨테이너 + `_document.tsx` 의 GTM `noscript` 제거(사용자 결정: GA4만 직접). 미사용 JS 중복·이중 집계 위험 해소.
-- [ ] (경미) 홈의 `episodes-*.js` 중복 프리페치 원인 확인.
+- [x] ~~(경미) 홈의 `episodes-*.js` 중복 프리페치 원인 확인.~~ → Go 마이그레이션으로 해소(프레임워크 JS 자체가 사라짐).
 
 ## Phase 3 — 접근성 ✅
 
@@ -28,10 +28,10 @@
 ## Phase 4 — 유지보수 / 구성
 
 - [x] `public/feed.xml` 을 `.gitignore` 에 추가(빌드 산출물).
-- [ ] Nextra 권고대로 `_app.tsx → _app.mdx` 검토.
+- [x] ~~Nextra 권고대로 `_app.tsx → _app.mdx` 검토.~~ → 무의미(Go 마이그레이션으로 `_app.tsx` 제거).
 - [x] `npx update-browserslist-db@latest` (caniuse-lite 1.0.30001517→…1799). 빌드의 "caniuse-lite is outdated" 경고 제거.
 - ℹ️ **레거시 JS(12KiB)는 설정으로 못 줄임.** Next 의 framework/main/polyfills 내장 청크라 `browserslist`/`tsconfig target` 변경에도 청크 해시 동일. 모던 browserslist 는 호환성만 좁혀 되돌림. → Next 업그레이드 시 재검토.
-- [ ] `gen-rss.js` 의 `SITE_URL` 하드코딩을 환경변수/공유 상수로 추출(여러 곳에 도메인 중복).
+- [ ] `SITE_URL`(`internal/builder/feed.go`·`cmd/build`) 하드코딩을 공유 상수로 추출(도메인 중복).
 - [x] 배포 성공/실패 텔레그램 알림 — `scripts/cf-build.sh` 빌드 래퍼가 결과를 Worker(`cf-webhook…`)로 POST. **대시보드에서** Build command=`bash scripts/cf-build.sh` + 암호화 환경변수 `DEPLOY_WEBHOOK_URL`(워커의 **`/webhook/generic`** 엔드포인트) 설정 필요. → [DEPLOYMENT.md](./DEPLOYMENT.md#배포-알림--텔레그램)
 - [ ] ~~(장기) Next 13/Nextra 2-beta → 최신 메이저 업그레이드 호환성 검토.~~ → **Phase 6(Go 마이그레이션)으로 대체.** 프레임워크 자체를 걷어내므로 업그레이드 트레드밀이 사라진다.
 

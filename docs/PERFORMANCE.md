@@ -3,6 +3,8 @@
 > 최초 측정 2026-06-14. **운영 사이트(https://retrotech.outsider.dev, Cloudflare)** 기준으로 갱신.
 > 구조·구성은 [ARCHITECURE.md](./ARCHITECURE.md), 배포/호스팅은 [DEPLOYMENT.md](./DEPLOYMENT.md), 개선 백로그는 [TODO.md](./TODO.md).
 
+> ⚠️ **2026-06-16 갱신 필요:** 이 감사는 **마이그레이션 전 Next/Nextra 사이트** 기준이다. Go 정적 생성기로 전환하며 **브라우저 프레임워크 JS(이전 First Load ~104KB)와 FontAwesome 킷·GTM 등 서드파티가 제거**되어 JS 관련 항목 다수가 무효화됐다([plan/go-static-migration.md](./plan/go-static-migration.md)). 운영 배포 후 재측정 예정. 아래 수치는 이전 사이트 기준으로 보존한다.
+
 ## 측정 방법
 
 - **대상:** 운영 사이트 `https://retrotech.outsider.dev` (Cloudflare, HTTP/3).
