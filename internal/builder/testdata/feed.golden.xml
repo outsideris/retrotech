@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+    <channel>
+        <title><![CDATA[RetroTech 팟캐스트]]></title>
+        <description><![CDATA[RetroTech 팟캐스트]]></description>
+        <link>https://retrotech.outsider.dev</link>
+        <generator>RSS for Node</generator>
+        <lastBuildDate>Tue, 16 Jun 2026 15:55:39 GMT</lastBuildDate>
+        <atom:link href="https://retrotech.outsider.dev/feed.xml" rel="self" type="application/rss+xml"/>
+        <language><![CDATA[ko]]></language>
+        <itunes:owner>
+            <itunes:name>Outsider</itunes:name>
+            <itunes:email>outsideris@gmail.com</itunes:email>
+        </itunes:owner>
+        <itunes:author>Outsider</itunes:author>
+        <itunes:image href="https://retrotech.outsider.dev/images/cover.jpg"/>
+        <itunes:explicit>no</itunes:explicit>
+        <itunes:category text="Technology">
+        </itunes:category>
+        <item>
+            <title><![CDATA[2g. VCS: SourceForge
+]]></title>
+            <description><![CDATA[VCS(Version Control System)는 소스코드의 버전을 관리하는 시스템입니다.
+Linux가 세상에 공개되고 오픈소스가 등장하기 시작한 1990년대 중후반 Linux 워크스테이션을 판매하는 VA Research는 성공적인 상장 이후 오픈소스 생태계와의 연결을 강화하기 위해 SourceForge를 만들어서 공개합니다.
+CVS를 중심으로 한 VCS 저장소 무료 호스팅을 포함해서 최초로 만들어진 오픈소스 협업 플랫폼이었습니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/2g
+
+Music from #Uppbeat
+https://uppbeat.io/t/zoo/breathtaker
+License code: BZQDWP5YE60MQ8J7
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/2g</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/2g</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Sat, 07 Mar 2026 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/2g.mp3" length="66997696" type="audio/mpeg"/>
+            <duration>55:50</duration>
+            <itunes:duration>55:50</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[2f. VCS: Perforce
+]]></title>
+            <description><![CDATA[VCS(Version Control System)는 소스코드의 버전을 관리하는 시스템입니다.
+Christopher Seiwald가 회사를 퇴사한 이후 차고에서 혼자 만들기 시작한 Perforce는 1996년 차고에서 벗어나 회사를 차리면서 세상으로 나옵니다.
+1990년대 소프트웨어 업계의 변화에서 기회를 본 Perforce는 다른 VCS보다 훨씬 빠르고 좋은 성능으로 고객을 빠르게 확보해 갑니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/2f
+
+Music from #Uppbeat
+https://uppbeat.io/t/zoo/breathtaker
+License code: 0E1SIBV35LLCGQFZ
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/2f</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/2f</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Fri, 26 Dec 2025 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/2f.mp3" length="54213376" type="audio/mpeg"/>
+            <duration>45:10</duration>
+            <itunes:duration>45:10</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[2e. VCS: Visual SourceSafe
+]]></title>
+            <description><![CDATA[VCS(Version Control System)는 소스코드의 버전을 관리하는 시스템입니다.
+One Tree Software에서 만든 SourceSafe는 Windows에서 GUI 기반으로 바뀌던 개발자 환경에 맞게 버전 컨트롤 시스템을 GUI로 제공해서 편리하게 소스코드를 관리할 수 있게 제공했습니다.
+이 SourceSafe는 Microsoft에 인수되면서 Microsoft Visual SourceSafe가 됩니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/2e
+
+Music from #Uppbeat
+https://uppbeat.io/t/zoo/breathtaker
+License code: SDKBAXIY40QX4YEC
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/2e</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/2e</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Wed, 08 Oct 2025 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/2e.mp3" length="35647456" type="audio/mpeg"/>
+            <duration>29:42</duration>
+            <itunes:duration>29:42</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[2d. VCS: ClearCase
+]]></title>
+            <description><![CDATA[VCS(Version Control System)는 소스코드의 버전을 관리하는 시스템입니다.
+Apollo Computer의 리비전 관리 기능이 있던 DSEE를 만든 경험이 있던 엔지니어들이 Atria Software를 만들어서 ClearCase를 만들고 이 ClearCase를 상업적으로 성공한 첫번째 VCS가 됩니다.
+높은 시장 점유율을 차지한 ClearCase는 이후 Pure Software, Rational Software, IBM에 인수되면서 최종적으로 IBM의 Rational ClearCase가 됩니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/2d
+
+Music from #Uppbeat
+https://uppbeat.io/t/zoo/breathtaker
+License code: NECFKWPV8LMJR2A2
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/2d</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/2d</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Thu, 28 Aug 2025 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/2d.mp3" length="49820416" type="audio/mpeg"/>
+            <duration>41:31</duration>
+            <itunes:duration>41:31</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[2c. VCS: CVS, Concurrent Versioning System
+]]></title>
+            <description><![CDATA[VCS(Version Control System)는 소스코드의 버전을 관리하는 시스템입니다.
+SCCS와 RCS에 이어 Dick Grune가 동시에 협업하는 불편함을 해결하기 위해 RCS를 감싸서 만든 쉘 스크립트인 CVS를 만들고 이 아이디어를 C로 다시 작성한 Brian Berliner와 Jeff Polk의 CVS가 인기를 끌기 시작합니다.
+이 CVS에 서버/클라이언트 기능을 추가해서 원격에서 CVS를 사용할 수 있게 만든 Jim Kingdon이 새로운 VCS의 시대를 엽니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/2c
+
+Music from #Uppbeat
+https://uppbeat.io/t/zoo/breathtaker
+License code: Y7VAW5OTLIBXK4S0
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/2c</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/2c</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Tue, 29 Jul 2025 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/2c.mp3" length="84752416" type="audio/mpeg"/>
+            <duration>1:10:37</duration>
+            <itunes:duration>1:10:37</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[2b. VCS: RCS, Revision Control System
+]]></title>
+            <description><![CDATA[VCS(Version Control System)는 소스코드의 버전을 관리하는 시스템입니다. SCCS에 이은 두번째 VCS는 1982년 Walter Tichy가 공개한 RCS(Revision Control System)입니다.
+SCCS가 있는 상황에서 SCCS와는 다른 접근방법인 Reversed Delta는 어떤 방식이고 SCCS의 어떤 문제를 해결하기 위해 Walter Tichy가 RCS를 만들었는지를 이야기합니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/2b
+
+Music from #Uppbeat
+https://uppbeat.io/t/zoo/breathtaker
+License code: OHYWOPIWIYBA7MIX
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/2b</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/2b</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Sun, 08 Jun 2025 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/2b.mp3" length="38703616" type="audio/mpeg"/>
+            <duration>32:15</duration>
+            <itunes:duration>32:15</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[2a. VCS: SCCS, Source Code Control System
+]]></title>
+            <description><![CDATA[VCS(Version Control System)는 소스코드의 버전을 관리하는 시스템입니다. 첫 번째 VCS는 1972년 Bell Labs의 Marc Rochkind가 만든 SCCS(Source Code Control System)입니다.
+SCCS를 살펴보기 전에 왜 VCS가 필요했는지를 이해하기 위해 1950년대부터 1960년대까지 소프트웨어 엔지니어링이 어떻게 발전해 왔는지를 살펴보고 그러한 상황에서 만들어진 SCCS가 어떤 기능을 제공했고 어떻게 만들어졌는지를 설명합니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/2a
+
+Music from #Uppbeat
+https://uppbeat.io/t/zoo/breathtaker
+License code: GOPJALIBWXB2MMCT
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/2a</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/2a</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Sun, 11 May 2025 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/2a.mp3" length="52165216" type="audio/mpeg"/>
+            <duration>43:28</duration>
+            <itunes:duration>43:28</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[Breaks
+]]></title>
+            <description><![CDATA[쉬어가는 잡담의 시간입니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/250127-breaks
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/250127-breaks</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/250127-breaks</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Mon, 27 Jan 2025 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/250127-breaks.mp3" length="20942656" type="audio/mpeg"/>
+            <duration>17:27</duration>
+            <itunes:duration>17:27</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[1n. JavaScript Framework: Svelte, Preact, SolidJS, Alpine.js, Lit
+]]></title>
+            <description><![CDATA[Angular, React, Vue.js가 3대 프론트엔드 프레임워크로 자리 잡고 가장 많이 관심을 받는 중에 React가 가장 많은 인기를 누리고 있지만 그 이후에도 새로운 자바스크립트 프레임워크는 계속 등장하고 있습니다.
+이후에 등장해서 지금도 어느 정도 사용자층이 있는 Svelte, Preact, SolidJS, Alpine.js, Lit가 어떻게 만들어지고 어떤 문제를 해결하려고 했는지를 살펴봅니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/1n
+
+Music from #Uppbeat
+https://uppbeat.io/t/zoo/clarity
+License code: DEG8IR0VQV5JZPP9
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/1n</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/1n</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Tue, 31 Dec 2024 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/1n.mp3" length="124166656" type="audio/mpeg"/>
+            <duration>1:43:28</duration>
+            <itunes:duration>1:43:28</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[1m. JavaScript Framework: Vue.js
+]]></title>
+            <description><![CDATA[2014년 Evan You가 공개한 Vue.js는 개인 사이드 프로젝트로 시작되었지만 커뮤니티 기반으로 차근차근 인기를 얻어 Angular, React와 함께 가장 인기 있는 3개 프레임워크 중 하나로 성장했습니다.
+Evan You가 Vue.js로 만들어서 성장시킨 과정과 회사에 다니다가 그만두고 독립 오픈소스 개발자로 Vue.js에 풀타임으로 전념하게 된 과정을 살펴봅니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/1m
+
+Music from #Uppbeat
+https://uppbeat.io/t/zoo/breathtaker
+License code: YKFJEEXBSJS42VDY
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/1m</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/1m</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Wed, 18 Sep 2024 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/1m.mp3" length="89391136" type="audio/mpeg"/>
+            <duration>1:14:29</duration>
+            <itunes:duration>1:14:29</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[1l. JavaScript Framework: Isomorphic JavaScript Framework - Meteor
+]]></title>
+            <description><![CDATA[2009년 Node.js가 나오면서 JavaScript로 서버도 작성할 수 있게 되자 서버와 클라이언트에서 코드를 공유하고자 하는 Isomorphic JavaScript, 즉, 동형 자바스크립트라는 개념이 등장합니다.
+Isomorphic JavaScript Framework 중 가장 인기를 끌었던 Meteor는 커뮤니티에 주목을 받으며 오픈소스 프레임워크를 만드는 회사로서는 고무적으로 큰 투자도 받으면서 성장해 갑니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/1l
+
+Music from #Uppbeat
+https://uppbeat.io/t/zoo/breathtaker
+License code: 4GX2KBM7YZ9B7EDU
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/1l</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/1l</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Fri, 19 Jul 2024 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/1l.mp3" length="84711616" type="audio/mpeg"/>
+            <duration>1:10:35</duration>
+            <itunes:duration>1:10:35</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[1k. JavaScript Framework: 오픈소스로 공개된 React.js
+]]></title>
+            <description><![CDATA[Facebook과 Instagram에 적용하면서 React.js가 안정적으로 되자 Facebook은 JSConf US 2013에서 React.js를 오픈소스로 공개하기로 합니다.
+JSConf US에서 청중의 반응은 좋지 않았지만 React.js에 접근방법을 좋아하는 사람들을 중심으로 React.js의 생태계는 점점 켜집니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/1k
+
+Music from #Uppbeat
+https://uppbeat.io/t/zoo/breathtaker
+License code: RYV5OOZAWYXIYWDY
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/1k</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/1k</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Tue, 30 Apr 2024 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/1k.mp3" length="106102816" type="audio/mpeg"/>
+            <duration>1:28:25</duration>
+            <itunes:duration>1:28:25</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[1j. JavaScript Framework: React.js가 만들어지기까지
+]]></title>
+            <description><![CDATA[2012년 Facebook에서 Bolt.js라는 프레임워크가 공개되고 이를 사용하던 Jordan Walke가 Bolt.js에서 아쉬운 부분을 개선하기 위해 사이트 프로젝트 FaxJS를 만들면서 React.js의 초기 아이디어가 구현되기 시작하고 FaxJS가 FBolt로 발전되었다가 React.js로 이름이 변경되게 됩니다.
+이렇게 만들어진 React.js가 2012년부터 2013년까지 Facebook 내부에 적용되기 시작하면서 발전하게 됩니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/1j
+
+
+Music from #Uppbeat (free for Creators!):
+https://uppbeat.io/t/zoo/breathtaker
+License code: F6PXAESK6VHJL23I
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/1j</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/1j</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Sun, 31 Mar 2024 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/1j.mp3" length="82804096" type="audio/mpeg"/>
+            <duration>1:09:00</duration>
+            <itunes:duration>1:09:00</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[1i. JavaScript Framework: Angular.js
+]]></title>
+            <description><![CDATA[2008년에서 2009년 사이 Misko Hevery와 Adam Abrons가 사이드 프로젝트로 만들기 시작한 Angular.js는 이후 당시 Google에 다니던 Misko Hevery가 내부 프로젝트에 적용하기 시작하면서 오픈소스 프로젝트로 발전하게 됩니다.
+구글이 공식적으로 지원하면서 엔터프라이즈 자바스크립트 웹 어플리케이션을 만들기 위한 프레임워크로 자리잡게 됩니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/1i
+
+Music from #Uppbeat (free for Creators!):
+https://uppbeat.io/t/zoo/breathtaker
+License code: O7MBWRN0ZNSSPDJJ
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/1i</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/1i</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Tue, 30 Jan 2024 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/1i.mp3" length="96303136" type="audio/mpeg"/>
+            <duration>1:20:15</duration>
+            <itunes:duration>1:20:15</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[1h. JavaScript Framework: Backbone.js, Knockout.js
+]]></title>
+            <description><![CDATA[웹 프론트엔드가 복잡해지면서 자바스크립트 코드도 복잡해지기 시작하고 이를 해결하기 위해 MVC 패턴을 적용한 프레임워크가 등장합니다.
+MVC 프레임워크로 나온 Backbone.js는 언론쪽에서 나와서 웹에 영향을 많이 주고 MVC에 대한 관심을 업계 전반에서 높아지는데 큰 기여를 했고 MVVM 패턴을 적용한 Knockout.js는 2-way 바인딩이라는 새로운 접근 방법을 보여줍니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/1h
+
+Music from #Uppbeat (free for Creators!):
+https://uppbeat.io/t/zoo/breathtaker
+License code: A3JZRBFIC4IX28ZW
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/1h</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/1h</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Sun, 31 Dec 2023 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/1h-updated.mp3" length="86480896" type="audio/mpeg"/>
+            <duration>1:12:04</duration>
+            <itunes:duration>1:12:04</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[1g. JavaScript Framework: SproutCore, Ember.js, Cappuccino, JavaScriptMVC
+]]></title>
+            <description><![CDATA[웹이 발전하면서 점점 고도화된 웹에 대한 요구사항이 많아지기 시작합니다.
+웹이라고 다르게 생각하지 않고 데스크톱과 구별할 수 없을 정도의 애플리케이션을 만들기 위한 요구사항이 생기고 이를 위한 프레임워크 뿐 아니라 웹사이트도 이전보다 훨씬 복잡한 애플리케이션을 만들기 위해 MVC 패턴을 적용하기 시작합니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/1g
+
+Music from #Uppbeat (free for Creators!):
+https://uppbeat.io/t/zoo/breathtaker
+License code: ADYEMHPNJCID3QYY
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/1g</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/1g</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Mon, 13 Nov 2023 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/1g.mp3" length="102875776" type="audio/mpeg"/>
+            <duration>1:25:44</duration>
+            <itunes:duration>1:25:44</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[1f. JavaScript Framework: YUI, Ext.js
+]]></title>
+            <description><![CDATA[Ajax가 등장하고 다양한 JavaScript 프레임워크가 등장하는 가운데 2006년에는 프로덕션에서 바로 쓸 수 있는 수준의 UI 프레임워크가 등장하기 시작합니다.
+당시 글로벌에서도 가장 큰 웹포털중 하나인 Yahoo!에서 Yahoo! UI Library(YUI)를 오픈소스로 공개하고 YUI 뿐 아니라 생태계에 도움될 많은 정보를 공개적으로 공유합니다.
+그리고 YUI가 나온 덕에 YUI를 기반으로 한 Ext.js가 등장하고 Ext.js는 오픈소스이면서도 상업적 수익을 목표로 수준높은 위젯을 제공하기 시작합니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/1f
+
+Music from #Uppbeat (free for Creators!):
+https://uppbeat.io/t/zoo/breathtaker
+License code: OOQ5LF77RJBSLDP3
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/1f</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/1f</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Mon, 16 Oct 2023 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/1f.mp3" length="88215616" type="audio/mpeg"/>
+            <duration>1:13:31</duration>
+            <itunes:duration>1:13:31</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[1e. JavaScript Framework: Rico, MochiKit, MooTools
+]]></title>
+            <description><![CDATA[Rico는 Sabre Airline Solutions에서 2005년 오픈소스로 공개한 prototype 기반의 UI 라이브러리입니다.
+MochiKit은 Bob Ippolito가 2005년 공개한 프레임워크이고 MooTools는 Valerio Proietti가 2006년 공개한 프레임워크입니다.
+각 프레임워크가 어떻게 만들어지게 되었는지 각각이 철학과 특징을 살펴봅니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/1e
+
+Music from #Uppbeat (free for Creators!):
+https://uppbeat.io/t/zoo/breathtaker
+License code: ZWN6SASYCBFJNFHZ
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/1e</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/1e</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Mon, 25 Sep 2023 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/1e.mp3" length="104058496" type="audio/mpeg"/>
+            <duration>1:26:43</duration>
+            <itunes:duration>1:26:43</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[1d. JavaScript Framework: Dojo Toolkit
+]]></title>
+            <description><![CDATA[2005년에 나온 Dojo Toolkit은 Alex Russell을 중심으로 DHTML 커뮤니티의 사람들이 모여서 만든 엔터프라이즈용 JavaScript 프레임워크였습니다.
+Dojo Toolkit 이전에 DHTML 생태계에 어떤 움직임이 있었고 어떻게 Dojo 재단까지 만들면서 프레임워크를 만들게 되었는지, Dojo는 JavaScript 생태계에 어떤 영향을 끼쳤는지 살펴봅니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/1d
+
+Music from #Uppbeat (free for Creators!):
+https://uppbeat.io/t/zoo/breathtaker
+License code: K7BJC4IOKIL9O0QT
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/1d</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/1d</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Mon, 11 Sep 2023 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/1d.mp3" length="76628416" type="audio/mpeg"/>
+            <duration>1:03:51</duration>
+            <itunes:duration>1:03:51</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[1c. JavaScript Framework: jQuery는 무엇을 잘했는가?
+]]></title>
+            <description><![CDATA[jQuery는 2000년대 후반부터 가장 있기있는 자바스크립트 프레임워크가 됩니다.
+jQuery가 다른 프레임워크에 비해 무엇을 더 잘했고 prototype.js는 어떤 실수를 했는지 살펴봅니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/1c
+
+Music from #Uppbeat (free for Creators!):
+https://uppbeat.io/t/zoo/breathtaker
+License code: MQ1BFXEPOQ2OKXPN
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/1c</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/1c</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Mon, 28 Aug 2023 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/1c.mp3" length="105843136" type="audio/mpeg"/>
+            <duration>1:28:12</duration>
+            <itunes:duration>1:28:12</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[1b. JavaScript Framework: jQuery
+]]></title>
+            <description><![CDATA[John Resig이 2006년에 공개한 jQuery가 어떻게 만들어졌고, 릴리스 된 이후 발전하게 된 과정을 설명합니다.
+jQuery 팀의 프로젝트인 jQuery UI와 jQuery Mobile도 함께 살펴봅니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/1b
+
+Music from #Uppbeat (free for Creators!):
+https://uppbeat.io/t/zoo/breathtaker
+License code: DEE3F7LCBCBCJESY
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/1b</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/1b</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Mon, 14 Aug 2023 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/1b.mp3" length="112965376" type="audio/mpeg"/>
+            <duration>1:34:08</duration>
+            <itunes:duration>1:34:08</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[1a. JavaScript Framework: prototype
+]]></title>
+            <description><![CDATA[첫 자바스크립트 프레임워크인 prototype.js를 설명합니다.
+당시의 시대 배경을 이해하기 위해 Web 1.0에서 Web 2.0으로 넘어간 과정과 당시 브라우저와 웹 표준, 웹 개발 환경을 설명합니다.
+prototype.js와 script.aculo.us를 살펴보면서 Ajax, RIA도 함께 설명합니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/1a
+
+Music from #Uppbeat (free for Creators!):
+https://uppbeat.io/t/zoo/breathtaker
+License code: C8OT90O3UU90OEAI
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/1a</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/1a</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Mon, 31 Jul 2023 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/1a.mp3" length="117592576" type="audio/mpeg"/>
+            <duration>1:37:59</duration>
+            <itunes:duration>1:37:59</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+        <item>
+            <title><![CDATA[0. Pilot]]></title>
+            <description><![CDATA[본격적인 팟캐스트를 시작하기 전에 테스트 목적으로 녹음을 해보는 에피소드입니다.
+
+이 팟캐스트에서 본격적으로 얘기하려는 내용은 없고 잡담과 왜 팟캐스트를 시작하려고 했는지, 주제를 어떻게 정했는지를 설명합니다.
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/0</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/0</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Mon, 24 Jul 2023 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/0.mp3" length="37621260" type="audio/mpeg"/>
+            <duration>19:36</duration>
+            <itunes:duration>19:36</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
+    </channel>
+</rss>

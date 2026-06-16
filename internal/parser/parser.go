@@ -25,8 +25,11 @@ var (
 	errNoFrontmatter     = errors.New("frontmatter not found")
 )
 
-// dateLayout is the source date form used in episode frontmatter ("2026/03/07").
-const dateLayout = "2006/01/02"
+// dateLayout is the source date form used in episode frontmatter. Months and
+// days are not always zero-padded ("2024/9/18" as well as "2025/01/27"), so the
+// non-padded reference layout is used — it accepts both one- and two-digit
+// fields.
+const dateLayout = "2006/1/2"
 
 // Enclosure is the podcast audio attachment referenced by an episode.
 type Enclosure struct {
@@ -167,6 +170,14 @@ func LoadEpisodes(dir string) ([]Episode, error) {
 		episodes = append(episodes, ep)
 	}
 
+	SortEpisodes(episodes)
+	return episodes, nil
+}
+
+// SortEpisodes orders episodes in place newest-first. Same-date episodes fall
+// back to id descending so the order is stable across builds and filesystems —
+// matching scripts/gen-rss.js's sortByDateDesc.
+func SortEpisodes(episodes []Episode) {
 	sort.SliceStable(episodes, func(i, j int) bool {
 		di, dj := episodes[i].ParsedDate(), episodes[j].ParsedDate()
 		if !di.Equal(dj) {
@@ -174,8 +185,6 @@ func LoadEpisodes(dir string) ([]Episode, error) {
 		}
 		return episodes[i].ID > episodes[j].ID
 	})
-
-	return episodes, nil
 }
 
 // SplitFrontmatterAndBody splits a markdown file's content into frontmatter and
