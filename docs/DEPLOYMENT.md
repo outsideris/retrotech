@@ -4,20 +4,21 @@
 
 ## 배포 개요
 
-- **호스팅: Cloudflare Pages.** 정적 익스포트 결과(`dist/`)를 배포한다(서버리스 정적 호스팅).
+- **호스팅: Cloudflare Pages.** 자체 Go 정적 생성기(`go run ./cmd/build`)의 산출물(`dist/`)을 배포한다(서버리스 정적 호스팅).
 - **운영 도메인:** <https://retrotech.outsider.dev>
 - **오디오(mp3):** 사이트와 분리된 `retrotech-episodes.outsider.dev` 에 별도 호스팅(에피소드 프론트매터 `enclosure.url`).
-- **CI:** 별도 GitHub Actions 등은 없다. 빌드/배포는 Cloudflare Pages 가 처리한다.
+- **CI:** GitHub Actions(`.github/workflows/ci.yml`)가 push(main)/PR 마다 `go vet`·`go test`(피드 골든 포함)·`go run ./cmd/build` 를 실행한다. 배포 자체는 Cloudflare Pages 가 git 연동으로 처리한다.
 - `dist/` 는 `.gitignore` 대상 — 저장소에 포함되지 않고 매 배포 시 빌드한다.
-- **정적 자산 캐시:** 저장소의 `public/_headers` 가 `/_next/static/*` 를 1년 `immutable` 로 지정한다(Cloudflare Pages 가 대시보드 설정 없이 자동 적용, 기본값 override). 비해시 자산(`/images` 등)은 URL 이 고정이라 의도적으로 기본 TTL 유지. 배경/대안은 [PERFORMANCE.md](./PERFORMANCE.md) 참고.
+- **정적 자산 캐시:** 저장소의 `public/_headers` 가 콘텐츠 해시 자산 `/assets/*`(해시된 스타일시트 `styles.<hash>.css`)를 1년 `immutable` 로 지정한다(Cloudflare Pages 가 대시보드 설정 없이 자동 적용). 비해시 자산(`/images` 등)은 URL 이 고정이라 의도적으로 기본 TTL 유지. 배경/대안은 [PERFORMANCE.md](./PERFORMANCE.md) 참고.
 
 ## 빌드 설정 (Cloudflare Pages 대시보드)
 
 | 항목 | 값 | 비고 |
 | --- | --- | --- |
-| 빌드 명령 | `bash scripts/cf-build.sh` | `npm test`(게이트) → `npm run build`(gen-rss → next build) → 배포 결과를 텔레그램 Worker 로 통지. **테스트/빌드 실패 시 non-zero 종료 → 배포 차단** |
-| 출력 디렉터리 | `dist` | ⚠️ Cloudflare 의 Next.js 프리셋 기본값은 `out` 이지만, 이 프로젝트는 `next.config.js` 에서 `distDir: 'dist'` 로 바꿨으므로 **`dist` 로 지정해야 한다** |
-| Node 버전 | Next 13 / Nextra 2 빌드 가능한 버전 | 필요 시 빌드 환경변수 `NODE_VERSION` 으로 고정 |
+| 빌드 명령 | `bash scripts/cf-build.sh` | `go run ./cmd/build` 실행 후 배포 결과를 텔레그램 Worker 로 통지. 알림이 필요 없으면 `go run ./cmd/build` 만으로도 됨 |
+| 출력 디렉터리 | `dist` | `cmd/build` 가 `dist/` 에 생성 |
+| `GO_VERSION` (환경변수) | `1.26.2` | **필요** — Cloudflare 빌드 이미지에 Go 를 준비시킨다(`go.mod` 의 go 버전과 일치) |
+| `ANALYTICS_ID` (환경변수, 프로덕션) | GA4 측정 ID(예 `G-PVJ12C7HR6`) | 설정 시에만 GA 스니펫을 주입. 미설정(프리뷰/로컬/CI)이면 분석 코드 미포함 |
 
 ## 배포 알림 → 텔레그램
 
@@ -26,17 +27,15 @@
 텔레그램 전송 자체는 별도 Cloudflare Worker(`cf-webhook.outsideris.workers.dev`)가 담당하고, 이 사이트는 **빌드 종료 코드(0=성공)에 따라** 그 Worker 로 결과를 POST 한다. (Cloudflare 네이티브 알림 웹훅은 자체 스키마라 이 Worker 의 커스텀 페이로드와 맞지 않아 빌드 래퍼 방식을 쓴다.)
 
 ### 동작 — `scripts/cf-build.sh`
-1. **`npm test` (게이트)** 실행 → 통과하면 `npm run build` 실행. 둘 중 하나라도 실패하면 멈추고 non-zero 로 종료한다.
-2. 종료 코드 = Cloudflare 의 배포 판정. **non-zero → 빌드 실패 → 배포 차단(직전 버전 유지)**, 0 → 배포.
-3. 결과(성공/실패)에 따라 Worker 의 **`/webhook/generic`** 으로 POST(상태 이모지·라벨은 Worker 가 붙임). 실패 메시지엔 실패 단계 표시:
+1. `go run ./cmd/build` 실행 후 종료 코드 캡처(Cloudflare Pages 는 이 종료 코드로 성공/실패를 판정).
+2. 성공(0)/실패(≠0)에 따라 Worker 의 **`/webhook/generic`** 으로 POST(상태 이모지·라벨은 Worker 가 붙인다):
    ```json
-   {"status":"success|failure","project":"retrotech","branch":"<CF_PAGES_BRANCH>","commitSha":"<CF_PAGES_COMMIT_SHA>","url":"<CF_PAGES_URL>","message":"실패 시 'test|build failed (exit N)'"}
+   {"status":"success|failure","project":"retrotech","branch":"<CF_PAGES_BRANCH>","commitSha":"<CF_PAGES_COMMIT_SHA>","url":"<CF_PAGES_URL>","message":"실패 시 build exit N"}
    ```
-4. 종료 코드로 그대로 종료 → Pages 가 성공/실패를 정확히 표시.
+3. 빌드의 종료 코드로 그대로 종료 → Pages 가 성공/실패를 정확히 표시.
 
 - 웹훅 전송 실패는 무시한다(배포 결과에 영향 없음). `DEPLOY_WEBHOOK_URL` 미설정이면 알림만 건너뛴다.
 - 빈 필드는 Worker 가 자동 생략하므로 항상 포함해 보낸다. generic 어댑터가 `status`(`failure`→`failed`)·`project`·`branch`·`commitSha`·`url`·`message` 를 최상위 키에서 읽는다.
-- **게이트 동작 조건:** 빌드 환경에 devDependencies(`vitest` 등)가 설치돼야 한다. Cloudflare Pages 는 기본 설치하지만 `NODE_ENV=production` 을 빌드 환경변수로 두면 빠지니 주의. Node 18+ 필요.
 
 ### Cloudflare Pages 설정 (대시보드에서 1회)
 - **Build command:** `bash scripts/cf-build.sh`

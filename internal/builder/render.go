@@ -35,11 +35,22 @@ var md = goldmark.New(
 )
 
 // Site carries build-wide values that vary by environment: the copyright year
-// shown in the footer and the GA4 measurement id (empty in local/CI builds, so
-// no analytics is shipped — only the deploy build sets it).
+// shown in the footer, the GA4 measurement id (empty in local/CI builds, so no
+// analytics is shipped — only the deploy build sets it), and the content-hashed
+// stylesheet href (empty falls back to the unhashed path, e.g. in tests).
 type Site struct {
-	Year        int
-	AnalyticsID string
+	Year           int
+	AnalyticsID    string
+	StylesheetHref string
+}
+
+// stylesheet returns the stylesheet href for the page, defaulting to the
+// unhashed path when the build has not provided a hashed one.
+func (s Site) stylesheet() string {
+	if s.StylesheetHref != "" {
+		return s.StylesheetHref
+	}
+	return stylesheetPath
 }
 
 // BuildEpisodePage renders one episode page.

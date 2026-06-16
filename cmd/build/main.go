@@ -5,6 +5,8 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
@@ -55,6 +57,15 @@ func run() error {
 		return fmt.Errorf("copying public: %w", err)
 	}
 
+	// Content-hash the stylesheet and move it under /assets/ so it can be cached
+	// forever (public/_headers caches /assets/* immutably); the pages reference
+	// the hashed href.
+	href, err := fingerprintStylesheet(distDir)
+	if err != nil {
+		return fmt.Errorf("fingerprinting stylesheet: %w", err)
+	}
+	site.StylesheetHref = href
+
 	episodes, err := parser.LoadEpisodes(contentDir)
 	if err != nil {
 		return fmt.Errorf("loading episodes: %w", err)
@@ -88,6 +99,30 @@ func run() error {
 
 	fmt.Printf("Built %d episodes + home/episodes/404/feed in %v\n", len(episodes), time.Since(start))
 	return nil
+}
+
+// fingerprintStylesheet moves dist/styles.css to dist/assets/styles.<hash>.css
+// and returns its href. The hash lets the file be cached immutably while a
+// content change produces a new URL.
+func fingerprintStylesheet(distDir string) (string, error) {
+	src := filepath.Join(distDir, "styles.css")
+	data, err := os.ReadFile(src)
+	if err != nil {
+		return "", err
+	}
+	sum := sha256.Sum256(data)
+	h := hex.EncodeToString(sum[:])[:8]
+	name := "styles." + h + ".css"
+	if err := os.MkdirAll(filepath.Join(distDir, "assets"), 0755); err != nil {
+		return "", err
+	}
+	if err := os.WriteFile(filepath.Join(distDir, "assets", name), data, 0644); err != nil {
+		return "", err
+	}
+	if err := os.Remove(src); err != nil {
+		return "", err
+	}
+	return "/assets/" + name, nil
 }
 
 // writeFile writes content to path, creating parent directories.

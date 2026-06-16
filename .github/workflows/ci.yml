@@ -1,6 +1,7 @@
 name: CI
 
-# RSS 피드(포맷 스냅샷 + 실제 데이터 유효성)와 빌드를 검증한다.
+# Verifies the Go build and tests — including the RSS feed golden test that
+# guards the subscriber-facing feed against unintended changes.
 on:
   push:
     branches: [main]
@@ -11,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-go@v5
         with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
-      - run: npm test
-      - run: npm run build
+          go-version: '1.26.2'
+          cache: true
+      - run: go vet ./...
+      - run: go test ./...
+      - run: go run ./cmd/build

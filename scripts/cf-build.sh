@@ -9,11 +9,13 @@
 # Cloudflare Pages setup:
 #   - Build command:          bash scripts/cf-build.sh
 #   - Build output directory: dist
+#   - Environment variable: GO_VERSION (e.g. 1.26.2) so the build image has Go
 #   - Environment variable (encrypted): DEPLOY_WEBHOOK_URL
 #       Use the worker's GENERIC endpoint (it reads top-level status/project/...):
 #       e.g. https://cf-webhook.outsideris.workers.dev/webhook/generic?token=<SECRET_TOKEN>
 #       (the /webhook/cloudflare endpoint is for Cloudflare's NATIVE notification
 #        payload, not this custom one.)
+#   - Set ANALYTICS_ID (GA4 id) for production builds to ship analytics.
 #
 # The token stays in the Pages env var (a secret), never in the repo.
 set -uo pipefail
@@ -21,12 +23,12 @@ set -uo pipefail
 # Gate: tests must pass before building/deploying. `phase` lets the
 # notification say which step failed.
 phase="test"
-npm test
+go test ./...
 code=$?
 
 if [ "$code" -eq 0 ]; then
   phase="build"
-  npm run build
+  go run ./cmd/build
   code=$?
 fi
 

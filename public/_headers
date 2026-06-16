@@ -1,8 +1,9 @@
 # Cloudflare Pages _headers — https://developers.cloudflare.com/pages/configuration/headers/
 # Applied automatically on deploy (no dashboard config needed); overrides Cloudflare defaults.
 
-# Content-hashed build assets: filename changes whenever content changes, so cache forever.
-/_next/static/*
+# Content-hashed build assets (the stylesheet): filename changes whenever the
+# content changes, so cache forever.
+/assets/*
   Cache-Control: public, max-age=31536000, immutable
 
 # Note: non-hashed assets under /images, /badges, favicon.* keep the default TTL on purpose,
