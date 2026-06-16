@@ -1,6 +1,6 @@
 # Plan — Go 정적 생성기로 마이그레이션 (Nextra/Next 제거)
 
-> 상태: **계획 (착수 전)** · 결정일 2026-06-16
+> 상태: **완료** (구현·검증·문서 반영 완료) · 결정/완료일 2026-06-16
 > 관련 문서: [ARCHITECURE.md](../ARCHITECURE.md), [DESIGN.md](../DESIGN.md), [DEPLOYMENT.md](../DEPLOYMENT.md), [QUALITY_GATE.md](../QUALITY_GATE.md), [TODO.md](../TODO.md) Phase 6
 > 참고 구현: `blog.outsider.ne.kr` — 같은 저자의 Go 정적 블로그 빌더(동일 패턴을 차용한다)
 
@@ -239,9 +239,11 @@ go run ./cmd/build
 
 ## 11. 완료 기준
 
-- [ ] `go test ./...` 통과(feed 골든 포함), `go run ./cmd/build` 성공
-- [ ] `feed.xml` 가입자 계약(I2) 보존 확인
-- [ ] URL(I1)·정적 자산 경로(I4) 동일 확인
-- [ ] 시각 패리티(I3) 확인
-- [ ] 배포 전환 + CI 전환 완료
-- [ ] Next/Nextra/React/npm 의존성 제거, 문서 갱신
+- [x] `go test ./...` 통과(feed 골든 포함), `go run ./cmd/build` 성공
+- [x] `feed.xml` 가입자 계약(I2) 보존 확인 — 골든 바이트 동일, guid/enclosure/pubDate 불변
+- [x] URL(I1)·정적 자산 경로(I4) 동일 확인 — 평면 `.html`, `/images`·`/badges`·루트 파비콘 유지
+- [x] 시각 패리티(I3) 확인 — 홈·에피소드·다크모드 스크린샷 픽셀 일치
+- [x] 배포 전환 + CI 전환 완료 — cf-build.sh(Go)·ci.yml(Go)
+- [x] Next/Nextra/React/npm 의존성 제거, 문서 갱신
+
+> 결과: 외부 의존성은 `goldmark` + `yaml.v3` 2개로 축소(이전 수백 개 npm 트리). 브라우저 프레임워크 JS 0. 시각·동작·피드는 이전과 동일.

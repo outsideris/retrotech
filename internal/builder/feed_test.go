@@ -11,9 +11,8 @@ import (
 	"github.com/outsideris/retrotech/internal/parser"
 )
 
-// episodeSourceDir is where episode markdown currently lives. Phase F moves the
-// content to ../../content/episodes and this constant is updated then.
-const episodeSourceDir = "../../pages/episodes"
+// episodeSourceDir is where episode markdown lives.
+const episodeSourceDir = "../../content/episodes"
 
 // lastBuildDate is the one feed element that legitimately changes every build,
 // so it is normalised out before comparing against the golden.

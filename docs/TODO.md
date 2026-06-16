@@ -49,14 +49,16 @@
 > 상세 계획·불변식·위험: **[plan/go-static-migration.md](./plan/go-static-migration.md)**. 참고 구현: `blog.outsider.ne.kr`.
 > 안전 원칙: 기존 Next를 건드리지 않고 Go 생성기를 **병행 구축** → 패리티 통과 후 배포 전환·Next 제거.
 
-- [ ] **A. 스캐폴딩** — `go.mod`, `cmd/build` 골격, `internal/parser`(프론트매터+goldmark). 파일럿 1편 파싱 + 단위 테스트.
-- [ ] **B. RSS 패리티 (최우선 리스크).** `feed.go`(encoding/xml) + 골든 테스트 — 현 `feed.xml`과 24편 항목 단위 동일(guid·enclosure·pubDate). → [DESIGN.md](./DESIGN.md) 구독 UX
-- [ ] **C. Badges + 콘텐츠 변환 규칙 확정** — `badges.go` + Badges 마커 방식 결정, 1편 렌더 검증.
-- [ ] **D. 템플릿 & 페이지 생성** — home/episodes/episode/404. 현 산출물과 URL·경로·트레일링슬래시 대조.
-- [ ] **E. "똑같은 형태"** — 테마 CSS 복제 + 다크모드 인라인 스크립트 + GA 마커. 스크린샷 diff.
-- [ ] **F. 콘텐츠 일괄 이관** — 24편 `.mdx`→`content/episodes/*.md`. 골든·시각 회귀 재확인.
-- [ ] **G. 빌드/배포/CI 전환** — `ci.yml`을 `go vet`+`go test`+build로, 배포를 GitHub Actions→`wrangler pages deploy dist`로. → [DEPLOYMENT.md](./DEPLOYMENT.md)
-- [ ] **H. Next 제거 & 문서 정리** — `pages/`·`components/`·`theme.config.js`·`next.config.js`·`package.json`·vitest 제거. ARCHITECURE/DESIGN/QUALITY_GATE/TESTS 갱신.
+- [x] **A. 스캐폴딩** — `go.mod`(goldmark+yaml.v3), `cmd/build`, `internal/parser`. 단위 테스트.
+- [x] **B. RSS 패리티 (최우선 리스크).** `feed.go` + 골든 테스트 — 현 `feed.xml`과 23편 항목 바이트 동일(guid·enclosure·pubDate). pubDate 는 운영 기준 09:00 UTC 로 고정.
+- [x] **C. Badges + 콘텐츠 변환 규칙 확정** — `badges.go` + 프론트매터 `badges:` + 본문 `<!--badges-->` 마커. `scripts/convert` 도구.
+- [x] **D. 템플릿 & 페이지 생성** — home/episodes/episode/404. 평면 `.html`, URL 동일.
+- [x] **E. "똑같은 형태"** — 테마 CSS 재사용 + 다크모드 인라인 스크립트 + 해/달 스왑 + GA 마커. 스크린샷 픽셀 일치.
+- [x] **F. 콘텐츠 일괄 이관** — 23편 `.mdx`→`content/episodes/*.md`. 골든·시각 회귀 통과.
+- [x] **G. 빌드/배포/CI 전환** — `ci.yml`(Go), `cf-build.sh`(Go), CSS 핑거프린트(`/assets/*` immutable). Cloudflare Pages git-build 유지. → [DEPLOYMENT.md](./DEPLOYMENT.md)
+- [x] **H. Next 제거 & 문서 정리** — `pages/`·`components/`·`theme.config.js`·`next.config.js`·`package.json`·vitest·`gen-rss*` 제거. README/ARCHITECURE/DESIGN/QUALITY_GATE/TESTS 갱신.
+
+**완료(2026-06-16).** 외부 의존성 2개로 축소, 브라우저 프레임워크 JS 0, 시각·동작·피드 동일. 상세: [plan/go-static-migration.md](./plan/go-static-migration.md).
 
 ## 운영(미검증, 확인 필요)
 

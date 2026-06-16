@@ -8,43 +8,49 @@
 
 ## 기술 스택
 
-[Next.js 13](https://nextjs.org/) (정적 익스포트) + [Nextra](https://nextra.site/) 블로그 테마 기반의 정적 사이트.
-에피소드 한 편은 `pages/episodes/*.mdx` 파일 하나이며, 프론트매터가 메타데이터·본문이 쇼노트다.
+**의존성을 최소화한 자체 제작 Go 정적 사이트 생성기.** 외부 의존성은 두 개뿐이다 —
+[goldmark](https://github.com/yuin/goldmark)(마크다운)와 [yaml.v3](https://gopkg.in/yaml.v3)(프론트매터).
+나머지(HTML 템플릿, RSS XML, 파일 처리, 테스트)는 모두 Go 표준 라이브러리로 처리한다.
+브라우저로 전달되는 프레임워크 JS 는 없다(다크모드 토글용 인라인 스크립트뿐).
+
+에피소드 한 편은 `content/episodes/*.md` 파일 하나이며, 프론트매터가 메타데이터·본문이 쇼노트다.
 
 ## 개발 / 빌드
 
 ```bash
-npm install
-
-npm run dev      # 개발 서버 (next)
-npm run build    # RSS 생성(scripts/gen-rss.js) → 정적 익스포트 (dist/)
+go run ./cmd/build    # content/ + public/ → dist/ (HTML + feed.xml + 자산)
+go run ./cmd/serve    # dist/ 를 http://localhost:8080 에서 미리보기(clean URL 지원)
+go test ./...         # 단위 + 피드 골든 테스트
 ```
 
-- 빌드 산출물은 `dist/` 에 생성되며(`.gitignore` 대상), **Cloudflare**로 배포한다. 자세한 배포·알림은 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
-- 별도의 test/lint/typecheck 스크립트는 없다. 타입체크는 `npm run build` 가 수행한다.
+- 빌드 산출물은 `dist/` 에 생성되며(`.gitignore` 대상), **Cloudflare Pages**로 배포한다. 자세한 배포·알림은 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+- 별도의 lint 도구는 두지 않는다. `go vet ./...` 으로 정적 검사한다.
+- 분석(GA4)은 `ANALYTICS_ID` 환경변수가 있을 때만 주입된다 — 배포 빌드에서만 설정한다.
 
 ## 환경 / 외부 의존성
 
-- 분석: Google Tag Manager(`GTM-P368DQ3M`) + GA4(`G-PVJ12C7HR6`) — `pages/_app.tsx`.
-- 아이콘: FontAwesome Kit — `pages/_document.tsx`.
+- 분석: GA4(`G-PVJ12C7HR6`) — 배포 빌드에서 `ANALYTICS_ID` 로 주입.
 - 오디오(mp3): `retrotech-episodes.outsider.dev` 에 별도 호스팅(에피소드 프론트매터 `enclosure`).
-- 별도의 `.env` 환경변수는 사용하지 않는다(주요 값은 코드에 상수로 존재).
+- 푸터 아이콘: 인라인 SVG(Font Awesome Free, CC BY 4.0). 외부 요청 없음.
+- 빌드용 `.env` 환경변수는 사용하지 않는다(주요 값은 코드에 상수로 존재).
 
 ## 새 에피소드 추가
 
-1. `pages/episodes/<id>.mdx` 생성(예: `2h.mdx`). 프론트매터 스키마는 [docs/ARCHITECURE.md](docs/ARCHITECURE.md#라우팅--콘텐츠-모델).
-2. 본문에 `<Badges .../>` 로 플랫폼별 구독 링크, `<div className="refs">` 로 레퍼런스 작성.
-3. `npm run build` → `feed.xml` 갱신 및 정적 페이지 생성.
+1. `content/episodes/<id>.md` 생성(예: `2h.md`). 프론트매터 스키마는 [docs/ARCHITECURE.md](docs/ARCHITECURE.md#라우팅--콘텐츠-모델).
+2. 본문 끝부분에 `<!--badges-->` 마커(구독 배지 위치)와 `<div class="refs">` 로 레퍼런스를 작성하고,
+   회차별 구독 딥링크는 프론트매터 `badges:` 에 넣는다.
+3. `go run ./cmd/build` → `feed.xml` 갱신 및 정적 페이지 생성.
 
 ## 문서
 
 | 문서 | 내용 |
 | --- | --- |
 | [docs/ARCHITECURE.md](docs/ARCHITECURE.md) | 아키텍처·구성·빌드 파이프라인·외부 통합·주의사항 |
-| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | 배포(Cloudflare) 방식·빌드 설정·텔레그램 알림 옵션 |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | 배포(Cloudflare Pages)·빌드 설정·텔레그램 알림 |
 | [docs/DESIGN.md](docs/DESIGN.md) | 제품/기획 의도, UX, 도메인 규칙, 의사결정 |
-| [docs/PERFORMANCE.md](docs/PERFORMANCE.md) | 성능 감사 결과(2026-06-14)와 개선 우선순위 |
+| [docs/PERFORMANCE.md](docs/PERFORMANCE.md) | 성능 감사 결과와 개선 우선순위 |
 | [docs/TODO.md](docs/TODO.md) | 개선 백로그(Phase/Todo) |
 | [docs/QUALITY_GATE.md](docs/QUALITY_GATE.md) | 빌드/검증 기준 |
 | [docs/TESTS.md](docs/TESTS.md) | 테스트 현황과 후보 |
+| [docs/plan/](docs/plan/) | 상세 구현 계획(Go 마이그레이션 등) |
 | [docs/worklog/](docs/worklog/) | 월별 작업 로그 |
