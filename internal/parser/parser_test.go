@@ -83,22 +83,6 @@ duration: "55:50"
 	}
 }
 
-// The show notes keep a raw `<div class="refs">` block; WithUnsafe must let it
-// (and the markdown inside) through unchanged.
-func TestRenderMarkdownKeepsRawHTML(t *testing.T) {
-	out, err := RenderMarkdown([]byte("intro\n\n<div class=\"refs\">\n\n* [a](https://example.com)\n\n</div>\n"))
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	s := string(out)
-	if !strings.Contains(s, `<div class="refs">`) {
-		t.Errorf("refs div dropped: %s", s)
-	}
-	if !strings.Contains(s, `<a href="https://example.com">a</a>`) {
-		t.Errorf("inner link not rendered: %s", s)
-	}
-}
-
 func TestLoadEpisodesOrderAndSkip(t *testing.T) {
 	dir := t.TempDir()
 	write := func(name, date string) {

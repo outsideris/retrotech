@@ -15,8 +15,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yuin/goldmark"
-	"github.com/yuin/goldmark/renderer/html"
 	"gopkg.in/yaml.v3"
 )
 
@@ -78,12 +76,14 @@ func (f Frontmatter) ParsedDate() time.Time {
 	return t
 }
 
-// Episode is a fully parsed episode: its frontmatter, the id derived from the
-// filename (the URL slug — "2g", "0", "250127-breaks"), and the rendered body.
+// Episode is a parsed episode: its frontmatter, the id derived from the
+// filename (the URL slug — "2g", "0", "250127-breaks"), and the raw markdown
+// body. Rendering the body to HTML is the builder's job (it needs GFM and the
+// Nextra-equivalent transforms), so the parser keeps the source verbatim.
 type Episode struct {
 	Frontmatter
-	ID          string
-	ContentHTML string
+	ID   string
+	Body string
 }
 
 // ParseFrontmatter unmarshals YAML frontmatter bytes into a Frontmatter.
@@ -93,23 +93,6 @@ func ParseFrontmatter(data []byte) (Frontmatter, error) {
 		return Frontmatter{}, err
 	}
 	return fm, nil
-}
-
-// RenderMarkdown converts episode-body markdown to HTML.
-//
-// WithUnsafe keeps the raw HTML the show notes rely on — the
-// `<div class="refs">` reference block and any inline tags in the prose — which
-// goldmark would otherwise strip. The episode bodies contain no fenced code, so
-// no syntax-highlighting extension is needed.
-func RenderMarkdown(source []byte) ([]byte, error) {
-	var buf bytes.Buffer
-	md := goldmark.New(
-		goldmark.WithRendererOptions(html.WithUnsafe()),
-	)
-	if err := md.Convert(source, &buf); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
 }
 
 // LoadEpisode reads one markdown file and parses it into an Episode. The id is
@@ -130,18 +113,13 @@ func LoadEpisode(path string) (Episode, error) {
 		return Episode{}, fmt.Errorf("parsing frontmatter in %s: %w", path, err)
 	}
 
-	contentHTML, err := RenderMarkdown(bodyBytes)
-	if err != nil {
-		return Episode{}, fmt.Errorf("rendering %s: %w", path, err)
-	}
-
 	base := filepath.Base(path)
 	id := strings.TrimSuffix(base, filepath.Ext(base))
 
 	return Episode{
 		Frontmatter: fm,
 		ID:          id,
-		ContentHTML: string(contentHTML),
+		Body:        string(bodyBytes),
 	}, nil
 }
 

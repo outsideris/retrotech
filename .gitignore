@@ -12,3 +12,4 @@ next-env.d.ts
 /_ref_dist/
 /retrotech
 *.out
+/_shots/
