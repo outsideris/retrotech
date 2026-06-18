@@ -17,8 +17,9 @@
 | --- | --- | --- |
 | 빌드 명령 | `bash scripts/cf-build.sh` | `go run ./cmd/build` 실행 후 배포 결과를 텔레그램 Worker 로 통지. 알림이 필요 없으면 `go run ./cmd/build` 만으로도 됨 |
 | 출력 디렉터리 | `dist` | `cmd/build` 가 `dist/` 에 생성 |
-| `GO_VERSION` (환경변수) | `1.26.2` | **필요** — Cloudflare 빌드 이미지에 Go 를 준비시킨다(`go.mod` 의 go 버전과 일치) |
 | `ANALYTICS_ID` (환경변수, 프로덕션) | GA4 측정 ID(예 `G-PVJ12C7HR6`) | 설정 시에만 GA 스니펫을 주입. 미설정(프리뷰/로컬/CI)이면 분석 코드 미포함 |
+
+> **Go 버전:** Cloudflare Pages 가 `go.mod` 의 `go` 지시자에서 버전을 자동 감지하므로 `GO_VERSION` 환경변수는 **보통 불필요**하다(같은 패턴의 `blog.outsider.ne.kr` 도 미설정으로 빌드된다). 빌드가 Go 버전 문제로 실패할 때만 `GO_VERSION` 으로 고정한다.
 
 ## 배포 알림 → 텔레그램
 

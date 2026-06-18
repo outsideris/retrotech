@@ -60,6 +60,16 @@
 
 **완료(2026-06-16).** 외부 의존성 2개로 축소, 브라우저 프레임워크 JS 0, 시각·동작·피드 동일. 상세: [plan/go-static-migration.md](./plan/go-static-migration.md).
 
+## Phase 7 — 마이그레이션 후속 정리 (보류, 사용자 재확인 예정)
+
+> 마이그레이션 완료 후 정리 후보. 동작·시각엔 영향 없음. 작업 후 함께 검토하기로 함(2026-06-16).
+
+- [ ] **Nextra 잔재 네이밍 정리.** 페이지 셸의 `<div id="__next">` 래퍼와 CSS 의 `nx-*` 클래스명은 Nextra 흔적이다. 중립 이름으로 바꾸려면 재사용 중인 테마 CSS(`public/styles.css`) 전체를 다시 써야 해 비용이 있다. 동작엔 무관.
+- [ ] **홈 본문을 마크다운으로.** 커버·소개·이슈 문구가 `internal/builder/render.go`(`BuildHomePage`)에 하드코딩돼 있다. 마크다운으로 편집하고 싶으면 `content/index.md` 도입 검토.
+- [ ] **`scripts/convert` 제거 검토.** mdx→md 1회성 마이그레이션 도구. 입력(`pages/`)이 제거돼 더는 동작 경로가 아니다. 기록용으로 남겨둠 — 지워도 됨.
+- [ ] **피드 `<generator>` 문자열.** 현재 `RSS for Node`(옛 rss 라이브러리 잔재, 부정확). `RetroTech` 등으로 바꾸거나 둘지 결정. (채널 `<description>` 은 2026-06-16 에 실제 설명으로 교체 완료.)
+- ℹ️ **비가시 차이(조치 불필요, 렌더 동일):** 에피소드 h1 후행 개행 없음, `<time dateTime>` 속성이 UTC(표시는 동일), 본문 아포스트로피 `'`↔`&#x27;`(둘 다 `'` 로 렌더), next/image 내부 속성(`data-nimg` 등) 생략.
+
 ## 운영(미검증, 확인 필요)
 
 - [ ] 운영 호스트의 gzip/brotli 압축·정적 자산 캐시 헤더 설정 확인(로컬에선 검증 불가 — [PERFORMANCE.md](./PERFORMANCE.md#측정-방법--한계-먼저-읽을-것)).

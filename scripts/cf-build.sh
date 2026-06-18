@@ -9,7 +9,8 @@
 # Cloudflare Pages setup:
 #   - Build command:          bash scripts/cf-build.sh
 #   - Build output directory: dist
-#   - Environment variable: GO_VERSION (e.g. 1.26.2) so the build image has Go
+#   - Go is auto-detected from go.mod (no GO_VERSION needed; set it only if a
+#     build fails on the Go version).
 #   - Environment variable (encrypted): DEPLOY_WEBHOOK_URL
 #       Use the worker's GENERIC endpoint (it reads top-level status/project/...):
 #       e.g. https://cf-webhook.outsideris.workers.dev/webhook/generic?token=<SECRET_TOKEN>

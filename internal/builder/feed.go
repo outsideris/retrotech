@@ -28,7 +28,12 @@ const (
 	// "Sat, 07 Mar 2026 00:00:00 GMT".
 	rfc1123GMT = "Mon, 02 Jan 2006 15:04:05 GMT"
 
-	feedTitle    = "RetroTech 팟캐스트"
+	feedTitle = "RetroTech 팟캐스트"
+	// feedDesc is the show description podcast apps (Apple/Spotify) display. The
+	// old gen-rss.js set no description, so the rss library fell back to the
+	// title — apps showed just the show name. This is the site's own self
+	// description (the home page intro), so the feed actually describes the show.
+	feedDesc     = "기술별로 과거 어떤 배경에서 기술이 등장하고 발전해 왔는지 또 왜 어떤 기술은 사라졌는지 기술의 역사를 자세히 설명하는 팟캐스트입니다."
 	feedAuthor   = "Outsider"
 	feedOwnerEml = "outsideris@gmail.com"
 )
@@ -53,7 +58,7 @@ func BuildFeed(episodes []parser.Episode, cfg FeedConfig, buildTime time.Time) [
 	b.WriteString(`<rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">` + "\n")
 	b.WriteString("    <channel>\n")
 	b.WriteString("        <title>" + cdata(feedTitle) + "</title>\n")
-	b.WriteString("        <description>" + cdata(feedTitle) + "</description>\n")
+	b.WriteString("        <description>" + cdata(feedDesc) + "</description>\n")
 	b.WriteString("        <link>" + site + "</link>\n")
 	b.WriteString("        <generator>RSS for Node</generator>\n")
 	b.WriteString("        <lastBuildDate>" + buildTime.UTC().Format(rfc1123GMT) + "</lastBuildDate>\n")
