@@ -26,6 +26,11 @@ const (
 	stylesheetPath  = "/styles.css"
 )
 
+// coverPreload preloads the hero cover image (the LCP element on the home and
+// 404 pages) so the browser starts fetching it before the body is parsed.
+// Episode pages don't show the cover, so they omit it.
+const coverPreload = `<link rel="preload" as="image" href="/images/cover.svg" fetchpriority="high"/>`
+
 // md is configured to match the Nextra/remark pipeline the episodes were
 // authored against: GFM (so bare URLs autolink, as the show notes rely on) and
 // raw-HTML passthrough (the `<div class="refs">` block).
@@ -59,7 +64,7 @@ func BuildEpisodePage(ep parser.Episode, site Site) string {
 	inner := "<h1>" + html.EscapeString(title) + "</h1>" +
 		episodeMeta(ep) +
 		renderEpisodeBody(ep)
-	return pageShell(title, title+" - RetroTech", inner, site)
+	return pageShell(title, title+" - RetroTech", inner, site, "")
 }
 
 // BuildHomePage renders the site home ("/"): cover, intro, default badges, the
@@ -81,7 +86,7 @@ func BuildHomePage(eps []parser.Episode, site Site) string {
 	b.WriteString("<hr/>")
 	b.WriteString("<h2>에피소드</h2>")
 	b.WriteString(renderPostList(eps))
-	return pageShell(siteName, siteName, b.String(), site)
+	return pageShell(siteName, siteName, b.String(), site, coverPreload)
 }
 
 // BuildEpisodesPage renders the "/episodes" listing. The nav row mirrors the
@@ -91,7 +96,7 @@ func BuildEpisodesPage(eps []parser.Episode, site Site) string {
 	inner := "<h1>Episodes</h1>" +
 		listMeta(`<span class="rt-cursor-default dark:rt-text-gray-400 rt-text-gray-600">Episodes</span><a href="/">RetroTech</a>`) +
 		renderPostList(eps)
-	return pageShell("Episodes - RetroTech", "Episodes - RetroTech", inner, site)
+	return pageShell("Episodes - RetroTech", "Episodes - RetroTech", inner, site, "")
 }
 
 // Build404Page renders the 404 page: the RetroTech cover (as on the home page,
@@ -100,7 +105,7 @@ func BuildEpisodesPage(eps []parser.Episode, site Site) string {
 func Build404Page(site Site) string {
 	inner := `<a href="/"><img alt="RetroTech Cover" width="3000" height="3000" style="width:100%;height:auto" src="/images/cover.svg"/></a>` +
 		"<h1>404: Page Not Found</h1>"
-	return pageShell("404: Page Not Found - RetroTech", "404: Page Not Found - RetroTech", inner, site)
+	return pageShell("404: Page Not Found - RetroTech", "404: Page Not Found - RetroTech", inner, site, coverPreload)
 }
 
 // renderPostList renders the list of episodes shown on the home and episodes

@@ -13,10 +13,10 @@ import (
 // dark-mode bootstrap, the prose article container (with the shared footer
 // inside it, as the Nextra theme placed it), and the dark-mode toggle handler.
 // It reproduces the Nextra page chrome minus the Next.js runtime.
-func pageShell(title, ogTitle, articleInner string, site Site) string {
+func pageShell(title, ogTitle, articleInner string, site Site, headExtra string) string {
 	return "<!DOCTYPE html><html lang=\"ko\"><head>" +
 		darkModeInit +
-		headHTML(title, ogTitle, site) +
+		headHTML(title, ogTitle, site, headExtra) +
 		"</head><body>" +
 		`<a class="skip-link" href="#content">본문 바로가기</a>` +
 		"<div id=\"app\">" +
@@ -29,12 +29,14 @@ func pageShell(title, ogTitle, articleInner string, site Site) string {
 		"</body></html>"
 }
 
-// headHTML builds the <head> contents. title/ogTitle vary per page; everything
-// else is constant. The <!-- @analytics --> marker is replaced with the GA
-// snippet only when site.AnalyticsID is set (deploy builds).
-func headHTML(title, ogTitle string, site Site) string {
+// headHTML builds the <head> contents. title/ogTitle vary per page; headExtra
+// carries page-specific head markup (e.g. an LCP image preload on the home
+// page); everything else is constant. The <!-- @analytics --> marker is
+// replaced with the GA snippet only when site.AnalyticsID is set (deploy builds).
+func headHTML(title, ogTitle string, site Site, headExtra string) string {
 	h := `<meta charset="utf-8"/>` +
 		`<meta name="viewport" content="width=device-width"/>` +
+		headExtra +
 		`<link rel="alternate" type="application/rss+xml" title="RSS" href="/feed.xml"/>` +
 		"<title>" + html.EscapeString(title) + "</title>" +
 		`<meta property="og:title" content="` + html.EscapeString(ogTitle) + `"/>` +
