@@ -1,142 +1,86 @@
 # Performance — RetroTech (감사 결과)
 
-> 최초 측정 2026-06-14. **운영 사이트(https://retrotech.outsider.dev, Cloudflare)** 기준으로 갱신.
+> 최초 측정 2026-06-14(마이그레이션 전 Next/Nextra). **2026-06-16 전면 갱신** — Go 정적 생성기 전환 + 접근성/성능 최적화 반영.
 > 구조·구성은 [ARCHITECURE.md](./ARCHITECURE.md), 배포/호스팅은 [DEPLOYMENT.md](./DEPLOYMENT.md), 개선 백로그는 [TODO.md](./TODO.md).
 
-> ⚠️ **2026-06-16 갱신 필요:** 이 감사는 **마이그레이션 전 Next/Nextra 사이트** 기준이다. Go 정적 생성기로 전환하며 **브라우저 프레임워크 JS(이전 First Load ~104KB)와 FontAwesome 킷·GTM 등 서드파티가 제거**되어 JS 관련 항목 다수가 무효화됐다([plan/go-static-migration.md](./plan/go-static-migration.md)). 운영 배포 후 재측정 예정. 아래 수치는 이전 사이트 기준으로 보존한다.
+## 현재 상태 (마이그레이션 후)
 
-## 측정 방법
+Nextra/Next.js → 자체 Go 정적 생성기로 전환하며 이전 감사의 성능 부채 대부분이 **구조적으로 사라졌다**:
 
-- **대상:** 운영 사이트 `https://retrotech.outsider.dev` (Cloudflare, HTTP/3).
-- **도구:** Chrome DevTools 성능 트레이스(Core Web Vitals) + Lighthouse(접근성/모범사례/SEO) + `curl` 응답 헤더 점검.
-- **조건:** 모바일 에뮬레이션 412×915, **Slow 4G, CPU 4×** (PageSpeed 모바일과 유사).
-- 참고: Lighthouse `lighthouse_audit` 도구는 성능 점수를 제외하므로, 성능 지표는 트레이스에서 측정했다. CrUX 필드 데이터는 트래픽이 적어 없음(lab 측정만).
+- **브라우저 프레임워크 JS 제거** — 이전 홈 First Load ~104KB(framework/main/webpack 청크) → 다크모드 토글 인라인 스크립트 한 조각만 남음.
+- **FontAwesome 킷 제거** — 외부 요청 ~9개 + 웹폰트 3개 → 4개 아이콘 인라인 SVG.
+- **GTM 제거** — GA4 만 직접 주입(운영 배포에서 `ANALYTICS_ID` 설정 시에만, 프리뷰/로컬/CI 는 분석 코드 미포함).
+- **이미지 다이어트(마이그레이션 전 적용분 유지)** — `cover.svg` SVGO 402→143KB, 푸터 사진 PNG 110KB→WebP 5KB.
 
-## 요약 (개선 우선순위)
+그 위에 이번 라운드에서 접근성·성능을 마저 끌어올렸다(아래).
 
-| 순위 | 영역 | 개선점 | 효과 |
+## 2026-06-16 적용 — 접근성·성능 최적화
+
+> 사용자 요청 "성능/접근성 최적화" → 분석 후 **P3·P4 제외** 전부 적용. 각 항목 개별 커밋.
+
+| 항목 | 영역 | 변경 | 커밋 |
 | --- | --- | --- | --- |
-| 1 ✅ | 성능(캐시) | `public/_headers` 로 `/_next/static/*` → 1년 immutable (적용; 배포 시 반영) | 재방문 속도 ↑ (최대 ROI) |
-| 2 ✅ | 성능(서드파티) | FontAwesome 킷 제거 → 4개 아이콘 인라인 SVG(`components/Icons.tsx`) | 외부 요청 ~9개·웹폰트 3개 제거(전 페이지) |
-| 3 🟠 | 접근성 | 아이콘 링크 `aria-label`, `<main>` 랜드마크 | A11y 94→100 |
-| 4 🟠 | 성능(CLS) | 히어로 이미지 높이 예약(`width/height` 또는 `aspect-ratio`) | 간헐 CLS 0.25 → 0 |
-| 5 🟡 | 성능(LCP) | 히어로 이미지 preload / 렌더블로킹 CSS 축소 | LCP load delay 439ms 단축 |
-| 6 ✅ | 성능(이미지) | `cover.svg` SVGO(402→143KB) · `outsider.png`→WebP(110→5KB) | 콜드 첫 방문 LCP·파싱/CPU 절감 |
-| 7 ◑ | 성능(서드파티) | ✅ GTM 제거(GA4만 직접) · ⬜ GitHub Sponsors iframe 지연 | 미사용 JS/요청 절감 |
+| A1 | 접근성 | `<article id="content" role="main">` — 페이지당 정확히 하나의 main 랜드마크 | `49cd000` |
+| A3 | 접근성 | "본문 바로가기" skip 링크(`#content`) | `49cd000` |
+| A2 | 접근성 | 다크모드 토글 키보드 조작(Enter/Space, `role`/`tabindex`) | `da6a969` |
+| P1 | 성능 | GitHub Sponsors iframe `loading="lazy"` | `e6313a3` |
+| P2 | 성능(LCP) | 홈·404 히어로 `cover.svg` `<link rel=preload as=image fetchpriority=high>` | `9d73877` |
+| P5 | 성능(캐시) | `_headers` 에 `/images/*`(1주)·`/badges/*`(30일) 추가 | `9d34e88` |
+| A4 | 접근성 | 에피소드 제목 계층 정리(`#### 레퍼런스:`/`배경음악` → `##`, h2·h3 건너뜀 제거) | `ac6da63` |
+| P6 | 성능(CLS) | 배지 `<img>` `height="0"` → SVG 비율 기반 실제 높이 예약 | `a55cd8d` |
 
-> ✅ **이미 좋은 점:** Brotli 압축 ON(HTML/CSS/JS/SVG), HTTP/3, LCP·CLS 양호 등급, SEO·Best Practices 100, 정적 익스포트.
+### 보류 (의도적)
 
-> **적용 현황 (2026-06-14, 배포 시 반영):** ① `public/_headers` 추가 — `/_next/static/*` 를 `max-age=31536000, immutable` 로(Cloudflare 기본 4시간 override). ② `cover.svg` SVGO 최적화 — 402KB→143KB(브라우저 렌더 동일 확인). **아래 운영 측정값은 이 변경 이전 기준이다.**
+- **P3 — `cover.svg` 래스터화(AVIF/WebP).** 콜드 첫 방문 LCP 의 디코드/전송 비용을 더 줄일 수 있으나, 벡터 일러스트를 래스터로 바꾸면 시각 동등성·해상도 트레이드오프가 생기고 현재 LCP 도 양호 등급이라 보류. (SVGO 로 143KB 까지는 이미 줄임.)
+- **P4 — 사용하지 않는 테마 CSS purge.** 재사용한 Nextra 테마 스타일시트에서 죽은 규칙을 더 들어낼 수 있으나(이미 `.nextra-*` 27개·dead 규칙 제거함), 추가 purge 는 시각 회귀 위험 대비 이득이 작아 보류. 현 스타일시트는 콘텐츠 해시(`styles.<hash>.css`)로 1년 immutable 캐시.
 
-## Core Web Vitals (운영, 모바일 Slow 4G / CPU 4×)
+## Lighthouse (로컬 빌드 `dist/`, 모바일)
 
-| 지표 | 값 | 평가 |
+> 로컬 정적 서버(`cmd/serve`)가 배포본과 동일한 `dist/` 산출물을 제공. 접근성·모범사례·SEO·Agentic 은 마크업/레이아웃 기반이라 로컬·운영이 동일하다(네트워크 타이밍 무관). 운영 배포 후 한 번 더 확인 권장.
+
+| 카테고리 | 홈 `/` | 에피소드 `/episodes/2g` |
 | --- | --- | --- |
-| **LCP** | **1,022 ms** | 양호 (<2.5s) |
-| **CLS** | 0.00 (트레이스) / **0.25** (Lighthouse) | 간헐적 — 수정 권장 |
-| TTFB | 322 ms | Cloudflare 왕복(Slow 4G 포함) |
+| Accessibility | **100** | **100** |
+| Best Practices | **100** | **100** |
+| SEO | **100** | **100** |
+| Agentic Browsing | **100** | **100** |
+| (통과/실패) | 54 / 0 | 55 / 0 |
 
-**LCP 분해** (요소 = 홈 히어로 `cover.svg` IMG):
-- TTFB 322ms (31.5%)
-- **Resource load delay 439ms (42.9%) ← 가장 큼.** 이미지가 늦게 발견됨(HTML 본문 참조, preload 미적용/렌더블로킹 CSS 뒤). 단, 측정된 이미지 다운로드 **4ms 는 재방문 캐시 적중** 값이고, **콜드 첫 방문**에는 brotli 118KB 를 받아야 하므로(Slow 4G ≈ 0.6s) cover.svg 크기가 첫 방문 LCP 에는 실제로 영향을 준다.
-- Load duration 5ms (0.5%)
-- Render delay 256ms (25%)
+이전(운영, 마이그레이션 전): 접근성 94(`link-name`+`landmark-one-main` 실패), Agentic 25(CLS 0.25 등). 마이그레이션(인라인 SVG 아이콘 → `link-name` 해소) + A1(main 랜드마크) 로 접근성 100, P6(배지 높이 예약) 로 에피소드 CLS 0.093→0 → Agentic 100.
 
-> 로컬(`http.server`) 측정 때 LCP 419ms 로 보였던 것은 TTFB≈1ms 때문에 낙관적이었던 수치다. 운영 LCP 1,022ms 가 실제값.
+## Core Web Vitals
 
-## Lighthouse (운영, 모바일)
-
-| 카테고리 | 점수 |
-| --- | --- |
-| Accessibility | **94** |
-| Best Practices | 100 |
-| SEO | 100 |
-| Agentic Browsing | 25 |
-
-**실패 항목:**
-- 접근성 `link-name` (가중치 7) — 식별 가능한 이름 없는 링크. 푸터의 아이콘 전용 링크(예: RSS `<a href="/feed.xml"><i class="fa-rss"/></a>`). → `aria-label` 추가.
-- 접근성 `landmark-one-main` (가중치 3) — `<main>` 랜드마크 없음.
-- Agentic `cumulative-layout-shift` — CLS 0.25(히어로 이미지 높이 미예약).
-- Agentic `agent-accessibility-tree` — 접근성 트리 비정형(위 a11y 이슈와 연관).
-
-## 호스팅 동작 (운영 실측 헤더)
-
-| 항목 | 상태 | 비고 |
+| 지표 | 값 | 비고 |
 | --- | --- | --- |
-| 압축 | ✅ **Brotli** (`content-encoding: br`) | HTML/CSS/JS/SVG 모두 |
-| 프로토콜 | ✅ HTTP/3 (h3) | |
-| HTML 캐시 | `max-age=0, must-revalidate` · `cf-cache-status: DYNAMIC` | 엣지 캐시 안 함 |
-| 정적/해시 자산 캐시 | ⚠️ `max-age=14400(4h), must-revalidate` · `REVALIDATED` | **문제:** `/_next/static/*` 처럼 파일명에 해시가 있는 자산도 4시간뿐. 1년 `immutable` 이어야 함 |
+| **CLS** | **0.00** (홈·에피소드 모두) | 홈은 본래 0, 에피소드는 배지 0.093 → P6 로 0 |
+| **LCP** | 양호 등급(<2.5s) | 히어로 `cover.svg`. P2 preload 로 발견 지연 단축. 로컬 TTFB≈0 이라 절대값은 낙관적 — 운영 절대값은 배포 후 측정 |
 
-> 4시간(14400초)·`must-revalidate` 가 HTML 외 모든 자산에 균일 적용된 것은 Cloudflare **Browser Cache TTL 기본값(4h)** 이 적용된 정황이다. → 아래 캐시 개선 참고.
+> LCP 절대값은 로컬(TTFB≈0)에서 낙관적으로 나오므로 운영 재측정 대상이다. 단 **CLS 는 레이아웃 안정성 지표라 로컬·운영이 같고**, P6 이후 두 페이지 모두 0 이다.
 
-## 빌드 산출물
+## 캐시 정책 (`public/_headers`, Cloudflare Pages 자동 적용)
 
-- 정적 HTML **27p**. 홈 First Load JS **104 kB**(공유 84.4 kB + 페이지). CSS 9 kB(br).
-- 공유 청크: framework 45.2 + main 28.5 + _app/webpack ~1.6 (kB, br 기준).
+| 경로 | 정책 | 근거 |
+| --- | --- | --- |
+| `/assets/*` (해시 스타일시트) | `max-age=31536000, immutable` | 내용 바뀌면 파일명(해시)도 바뀜 → 영구 캐시 안전 |
+| `/badges/*` | `max-age=2592000` (30일) | 플랫폼 배지, 사실상 불변 |
+| `/images/*` | `max-age=604800` (1주) | URL 고정이라 immutable 대신 적당 TTL(갱신 시 최대 1주 stale 또는 purge) |
+| 파비콘류 | 기본 TTL | 작고 브라우저 캐시됨 |
 
-> 참고: Lighthouse "레거시 JS"(~12KiB)는 Next 의 framework/main/polyfills **내장 청크**에 있어 `browserslist`·`tsconfig target` 으로 줄지 않는다(설정 변경에도 청크 해시 동일 확인). 줄이려면 Next 업그레이드가 필요하다.
+> 마이그레이션 전 문제였던 "`/_next/static/*` 도 4시간뿐"은 해당 경로 자체가 사라져 무효. 콘텐츠 해시 자산은 `/assets/*` 로 옮겨 1년 immutable.
 
-## 자산 용량 (원본; 운영은 brotli 전송)
+## 이미 좋은 점 (유지)
 
-| 자산 | 용도 | 원본 | 비고 |
-| --- | --- | --- | --- |
-| `images/cover.svg` | 홈 히어로(LCP) | ~~402 KB~~ → **143 KB** (SVGO 적용) | 벡터 일러스트(path 436→306 병합). SVGO 로 64.5% 감소(렌더 동일 확인), brotli ~50KB. 배포 전 운영값은 402KB/brotli 118KB |
-| `images/cover.jpg` | OG/iTunes(비표시) | 233 KB | 페이지 로드와 무관 |
-| `images/outsider.webp` | 푸터(120px 표시) | ~~110 KB(png)~~ → **5 KB** | 240px WebP 로 교체(95%↓) |
-| 배지 SVG ×4 | 구독 배지 | 9~25 KB | SVGO 가능 |
-
-## 네트워크 (홈, 33 요청)
-
-- 동일 출처 ~16 (HTML/CSS/JS/이미지).
-- **FontAwesome ~9** (kit.js + CSS 5 + woff2 3) — 아이콘 4개용.
-- **GitHub Sponsors iframe** 2, **GTM+GA4** 4.
-- 위 외부 요청 다수가 `theme.config.js` 푸터·`_app.tsx` 분석에서 와 **전 페이지 공통 비용**.
-- 서드파티 메인스레드(4× 기준): GTM 176ms.
-
-## 개선 상세
-
-### 1. 캐시 (최대 ROI) — `/_next/static/*` 1년 immutable
-> ✅ **적용됨:** `public/_headers` 추가 완료(배포 시 반영). 아래는 배경과 대안.
-
-해시 자산은 내용이 바뀌면 파일명도 바뀌므로 영구 캐시가 안전하다. 두 가지 방법:
-- **(권장) `public/_headers` 파일** (Cloudflare Pages가 인식):
-  ```
-  /_next/static/*
-    Cache-Control: public, max-age=31536000, immutable
-  ```
-  단, Cloudflare 대시보드의 **Browser Cache TTL** 이 "Respect existing headers" 여야 origin 헤더가 반영된다(현재 4h 고정이면 override 중일 수 있음).
-- **(또는) Cloudflare Cache Rule (가장 확실)** — 대시보드에서 도메인 선택 → **Caching → Cache Rules → Create rule**:
-  - 식(expression): `URI Path` `starts with` `/_next/static/`
-  - Cache eligibility: Eligible for cache
-  - Edge TTL: "Ignore cache-control header and use this TTL" → **1년(31536000s)**
-  - Browser TTL: "Override origin" → **1년**
-  - 전역 기본값(현재 4시간)은 **Caching → Configuration → Browser Cache TTL** 에 있다. "Respect Existing Headers" 로 두면 `_headers`/origin 헤더가 반영된다.
-- (선택) HTML 은 배포 시 purge 를 전제로 엣지 캐시(cache-everything + 짧은 TTL)도 가능.
-
-### 2. FontAwesome 경량화
-푸터 아이콘은 4개(twitter/github/blog/rss). Pro 킷 풀로드 대신 해당 아이콘 **SVG 인라인** 또는 부분 번들로 대체 → 외부 요청 ~9개 + 웹폰트 3개 제거(전 페이지).
-
-### 3. 접근성
-- 아이콘 전용 링크에 `aria-label`(특히 푸터 RSS/소셜).
-- 페이지 본문을 `<main>` 으로 감싸 랜드마크 확보(테마 제약 확인 필요).
-
-### 4. CLS — 히어로 이미지
-`<Image src="/images/cover.svg" width={0} height={0} style={{width:'100%'}}/>` 는 세로 공간을 예약하지 않아 로드 시 밀림(간헐 CLS 0.25). 실제 가로·세로 비율 지정 또는 `aspect-ratio` 적용.
-
-### 5. LCP load delay
-히어로는 이미 `priority` 로 프리로드된다. 문제는 **배지 이미지들도 전부 `priority`** 였던 점 — 히어로와 함께 high-priority 프리로드되어 느린 망에서 대역폭을 경쟁했다. → `Badges.tsx` 에서 배지 `priority` 제거(✅ 적용, 히어로 priority 는 유지). 추가 여지: 렌더블로킹 테마 CSS 축소, 히어로 래스터화(AVIF/WebP)로 디코드 비용 절감.
-
-### 6. 이미지 다이어트
-- **`cover.svg`** (436 path, raw 402KB / **brotli 118KB**): path 좌표가 소수점 6자리(예: `3002.000000`)라 SVGO 로 정밀도를 1~2자리로 낮추면 크게 줄어든다(콜드 첫 방문 LCP + 파싱/CPU 개선). 복잡한 일러스트라 AVIF/WebP 래스터 대안도 비교해볼 만하다.
-- **`outsider.png`** (110KB, PNG): 표시 크기(≈240px@2x)로 리사이즈 + WebP.
-
-### 7. 기타 서드파티
-GitHub Sponsors iframe 지연 로드(또는 정적 링크), GTM+GA4 동시 사용 필요성 재검토.
+- 프레임워크 런타임 JS 없음(정적 HTML + 인라인 토글 스크립트 한 조각).
+- 정적 산출물 — Cloudflare 엣지에서 Brotli + HTTP/3 전송.
+- 콘텐츠 해시 스타일시트 1년 immutable, SEO·Best Practices 100.
+- 히어로 `cover.svg` SVGO(143KB), 푸터 WebP(5KB).
 
 ## 재현 방법
+
 ```bash
-# 운영 사이트 헤더 확인
-curl -sI -H 'Accept-Encoding: br, gzip' https://retrotech.outsider.dev/_next/static/css/<hash>.css
-# Lighthouse / DevTools 트레이스로 https://retrotech.outsider.dev 측정 (모바일, Slow 4G, CPU 4x)
+# 빌드 후 로컬 서버 기동(빈 포트 자동 선택; $PORT 로 고정 가능)
+go run ./cmd/build && PORT=8099 go run ./cmd/serve
+# Lighthouse: 모바일, http://localhost:8099/ 및 /episodes/<id>
+# 운영 절대 타이밍(LCP/TTFB)은 배포 후 https://retrotech.outsider.dev 에서 DevTools 트레이스로 측정
+curl -sI -H 'Accept-Encoding: br, gzip' https://retrotech.outsider.dev/assets/<hash>.css   # 캐시 헤더 확인
 ```
