@@ -7,7 +7,7 @@
 | 명령 | 내용 |
 | --- | --- |
 | `go run ./cmd/build` | `content/` + `public/` → `dist/` (HTML + feed.xml + 자산) |
-| `go run ./cmd/serve` | `dist/` 를 `http://localhost:8080` 에서 미리보기(clean URL) |
+| `go run ./cmd/serve` | `dist/` 미리보기. 빈 포트 자동 선택(8080 회피)·URL 출력. `PORT` 로 고정 가능. clean URL |
 | `go test ./...` | 단위 + 피드 골든 테스트 |
 | `go vet ./...` | 표준 정적 검사 |
 | `go build ./...` | 컴파일 확인 |

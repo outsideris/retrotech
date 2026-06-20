@@ -19,7 +19,7 @@
 
 ```bash
 go run ./cmd/build    # content/ + public/ → dist/ (HTML + feed.xml + 자산)
-go run ./cmd/serve    # dist/ 를 http://localhost:8080 에서 미리보기(clean URL 지원)
+go run ./cmd/serve    # dist/ 미리보기. 빈 포트를 자동 선택해(8080 회피) URL 을 출력한다. clean URL 지원
 go test ./...         # 단위 + 피드 골든 테스트
 ```
 
