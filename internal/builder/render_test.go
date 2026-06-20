@@ -52,3 +52,20 @@ func TestEpisodePageRendersTitleAndBadges(t *testing.T) {
 		t.Error("footer missing")
 	}
 }
+
+// The references list is authored as plain markdown under "#### 레퍼런스:"; the
+// builder wraps it in <div class="refs"> so no raw HTML lives in the content.
+func TestReferencesAutoWrapped(t *testing.T) {
+	ep := parser.Episode{
+		Frontmatter: parser.Frontmatter{Title: "x", Date: "2026/03/07", Author: "Outsider"},
+		ID:          "x",
+		Body:        "intro\n\n<!--badges-->\n\n#### 레퍼런스:\n\n* [a](https://example.com)\n* [b](https://example.org)\n",
+	}
+	h := BuildEpisodePage(ep, testSite)
+	if !strings.Contains(h, `<div class="refs"><ul>`) {
+		t.Errorf("references list not wrapped in .refs:\n%s", h)
+	}
+	if !strings.Contains(h, "</ul></div>") {
+		t.Error("refs wrapper not closed")
+	}
+}

@@ -129,6 +129,7 @@ func renderEpisodeBody(ep parser.Episode) string {
 		return ""
 	}
 	out := buf.String()
+	out = wrapReferences(out)
 	out = decorateExternalLinks(out)
 	out = decorateHeadings(out)
 	out = strings.ReplaceAll(out, "<!--badges-->", RenderBadges(ep.Badges))
@@ -140,7 +141,19 @@ var (
 	externalAnchorRE = regexp.MustCompile(`<a href="(https?://[^"]+)">(.*?)</a>`)
 	headingRE        = regexp.MustCompile(`(?s)<h([2-6])>(.*?)</h[2-6]>`)
 	tagRE            = regexp.MustCompile(`<[^>]+>`)
+	// The list following a "#### 레퍼런스:" heading is the references block. The
+	// builder wraps it in <div class="refs"> so the show notes stay plain
+	// markdown (no raw HTML), while the .refs styling (smaller, denser) is the
+	// same as before. Runs before decorateHeadings, on the bare <h4>.
+	referencesRE = regexp.MustCompile(`(?s)(<h4>레퍼런스:</h4>\s*)(<ul>.*?</ul>)`)
 )
+
+// wrapReferences wraps the reference list under the "레퍼런스:" heading in
+// <div class="refs">, reproducing the markup the show notes used to carry
+// inline.
+func wrapReferences(s string) string {
+	return referencesRE.ReplaceAllString(s, `${1}<div class="refs">${2}</div>`)
+}
 
 // decorateExternalLinks rewrites external anchors to open in a new tab with the
 // screen-reader hint, matching Nextra's link handling.

@@ -83,7 +83,7 @@ retrotech/
   ---
   ```
 
-  - 본문에서는 제목 h1 을 쓰지 않는다(템플릿이 프론트매터 title 로 emit). 구독 배지는 `<!--badges-->` 마커 위치에 주입되고, 레퍼런스는 `#### 레퍼런스:` 아래 `<div class="refs">`(앞뒤 빈 줄 + 최상위 리스트) 로 둔다.
+  - 본문에서는 제목 h1 을 쓰지 않는다(템플릿이 프론트매터 title 로 emit). 구독 배지는 `<!--badges-->` 마커 위치에 주입되고, 레퍼런스는 `#### 레퍼런스:` 헤딩 + 일반 마크다운 리스트로 작성한다(본문에 raw HTML 불필요 — 빌더가 그 리스트를 `<div class="refs">` 로 감싸 작은 글씨로 렌더).
 - **목록 페이지.** 홈(`/`)과 `/episodes` 는 `parser.LoadEpisodes` 가 반환한 날짜 내림차순 목록을 `post-item` 으로 렌더한다.
 
 ## 빌드 파이프라인
@@ -105,6 +105,7 @@ go run ./cmd/build
 
 마크다운 본문은 goldmark(GFM + raw-HTML 통과)로 렌더한 뒤, 이전 Nextra 테마와 동작을 맞추기 위해 후처리한다:
 
+- **레퍼런스 래핑**: `#### 레퍼런스:` 헤딩 뒤의 리스트를 `<div class="refs">` 로 감싼다 — 본문은 순수 마크다운으로 두고 `.refs`(작은 글씨) 스타일은 빌더가 입힌다.
 - **외부 링크**(`http(s)://`): `target="_blank" rel="noreferrer"` + 스크린리더용 "(opens in a new tab)" span.
 - **마크다운 heading**(h2–h6): `subheading-h{n}` 클래스 + 퍼머링크 anchor(id 는 github-slugger 규칙).
 - **`<!--badges-->` 마커**: `badges:` 프론트매터로 구성한 배지 블록으로 치환.
