@@ -8,13 +8,14 @@
 | --- | --- |
 | `go run ./cmd/build` | `content/` + `public/` → `dist/` (HTML + feed.xml + 자산) |
 | `go run ./cmd/serve` | `dist/` 미리보기. 빈 포트 자동 선택(8080 회피)·URL 출력. `PORT` 로 고정 가능. clean URL |
-| `go test ./...` | 단위 + 피드 골든 테스트 |
+| `go test ./...` | 단위 + 피드 골든 + **접근성/성능 불변식**(`a11y_perf_test.go`) 테스트 |
 | `go vet ./...` | 표준 정적 검사 |
 | `go build ./...` | 컴파일 확인 |
+| `npx @lhci/cli@0.14.x autorun` | **Lighthouse CI**: `cmd/serve` 자동 기동 → `/`·`/episodes`·에피소드 감사. 설정 `.lighthouserc.json` |
 
-> 별도 lint/format 도구는 두지 않는다(`go vet` + `gofmt` 관례). 빌드용 npm 스크립트는 없다.
+> 별도 lint/format 도구는 두지 않는다(`go vet` + `gofmt` 관례). 빌드용 npm 스크립트는 없다. Lighthouse CI 는 개발/CI 전용(`npx`)이라 산출물 의존성에 영향 없다.
 >
-> **CI:** GitHub Actions(`.github/workflows/ci.yml`)가 push(main)/PR 마다 `go vet`·`go test`·`go run ./cmd/build` 를 실행한다(피드 골든 + 빌드 자동 검증).
+> **CI:** GitHub Actions(`.github/workflows/ci.yml`) 가 push(main)/PR 마다 두 잡을 실행한다. ① `test`: `go vet`·`go test`·`go run ./cmd/build`(피드 골든·접근성/성능 불변식·빌드). ② `lighthouse`: 빌드 후 Lighthouse 감사 — **접근성/SEO/Best-Practices=100 은 하드 게이트**(위반 시 실패), 성능·CLS 는 경고(localhost 절대 타이밍은 비대표적이라). 접근성/성능 검증은 [PERFORMANCE.md](./PERFORMANCE.md) 참고.
 
 ## 필수 확인 항목
 
@@ -24,12 +25,13 @@
 - [ ] **RSS 생성:** `dist/feed.xml` 이 생성되고 iTunes 필드가 포함되는지.
 - [ ] **정적 산출물:** `dist/` 에 HTML 26개(홈/episodes/에피소드 23/404) + `feed.xml` + `sitemap.xml` + 자산(`assets/styles.<hash>.css` 포함)이 생성되는지.
 - [ ] **수동 구동 확인:** `go run ./cmd/serve` 로 홈·에피소드·다크모드 토글이 정상 렌더되는지.
+- [ ] **접근성/성능(불변식):** `go test ./...` 의 `a11y_perf_test.go` 통과(제목 계층·랜드마크·alt·토글 키보드·lazy iframe·배지 높이·preload 등 마크업).
+- [ ] **접근성/성능(Lighthouse):** `npx @lhci/cli@0.14.x autorun` — 접근성/SEO/Best-Practices=100(하드 게이트). CI `lighthouse` 잡과 동일.
 
 ## 선택 확인 항목
 
 - [ ] **시각 패리티/회귀:** 주요 페이지 스크린샷 비교(마이그레이션 기준은 참고 빌드 `_ref_dist`). 절차·기준은 [PERFORMANCE.md](./PERFORMANCE.md).
-- [ ] **접근성:** Lighthouse Accessibility(이전 100). 회귀 감시.
-- [ ] **성능:** Lighthouse / DevTools 트레이스.
+- [ ] **운영 성능 절대값:** 배포 후 `https://retrotech.outsider.dev` 에서 DevTools 트레이스로 LCP/TTFB(로컬은 TTFB≈0 이라 낙관적).
 
 ## 면제 / 미검증 조건
 
@@ -46,5 +48,6 @@
 
 ## 마지막 검토
 
+- **2026-06-16:** 접근성/성능을 CI에서 검증하도록 추가 — `go test` 의 마크업 불변식(`a11y_perf_test.go`) + 새 `lighthouse` 잡(Lighthouse CI, a11y/SEO/BP=100 하드 게이트). 로컬 재현: `npx @lhci/cli@0.14.x autorun`.
 - **2026-06-16:** Go 정적 생성기로 마이그레이션(Next/Nextra 제거). 검증 기준을 `go build`·`go vet`·`go test`·`go run ./cmd/build` 로 교체. CI 를 Go 로 전환.
 - (이전) 2026-06-15: Next 기반 — RSS 포맷 스냅샷 + 데이터 유효성 테스트, GitHub Actions CI 도입.

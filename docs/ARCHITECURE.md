@@ -143,4 +143,5 @@ go run ./cmd/build
 
 ## 테스트
 
-- `go test ./...`. `internal/parser`(프론트매터·정렬), `internal/builder`(배지·**피드 골든**). 상세는 [TESTS.md](./TESTS.md), 검증 기준은 [QUALITY_GATE.md](./QUALITY_GATE.md).
+- `go test ./...`. `internal/parser`(프론트매터·정렬), `internal/builder`(배지·**피드 골든**·**접근성/성능 불변식** `a11y_perf_test.go`). 상세는 [TESTS.md](./TESTS.md), 검증 기준은 [QUALITY_GATE.md](./QUALITY_GATE.md).
+- **접근성/성능 CI**: 마크업 불변식(`go test`, 무의존성)에 더해 Lighthouse CI(`.lighthouserc.json`, `lighthouse` 잡)가 빌드본을 실제 감사한다 — 접근성/SEO/Best-Practices=100 하드 게이트. 측정·근거는 [PERFORMANCE.md](./PERFORMANCE.md).

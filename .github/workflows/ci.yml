@@ -1,7 +1,8 @@
 name: CI
 
 # Verifies the Go build and tests — including the RSS feed golden test that
-# guards the subscriber-facing feed against unintended changes.
+# guards the subscriber-facing feed against unintended changes — plus a
+# Lighthouse audit that gates accessibility/SEO/best-practices on the built site.
 on:
   push:
     branches: [main]
@@ -19,3 +20,30 @@ jobs:
       - run: go vet ./...
       - run: go test ./...
       - run: go run ./cmd/build
+
+  # Real Lighthouse audit of the built site. The Go tests above guard the
+  # accessibility/performance *markup* deterministically; this confirms the
+  # actual scores in a browser. accessibility/SEO/best-practices are hard gates
+  # (verified at 100 and deterministic); performance and CLS are warnings only,
+  # since absolute timing on a localhost runner is not representative.
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.2'
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: go run ./cmd/build
+      # @lhci/cli boots `cmd/serve` (clean-URL routing) itself, audits the URLs
+      # in .lighthouserc.json, and fails the job if a hard-gate assertion breaks.
+      - run: npx --yes @lhci/cli@0.14.x autorun
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-report
+          path: .lighthouseci
+          if-no-files-found: ignore

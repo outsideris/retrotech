@@ -4,6 +4,9 @@
 # Build output
 /dist/
 
+# Lighthouse CI report output (regenerated each run)
+/.lighthouseci/
+
 # Go
 /retrotech
 *.out

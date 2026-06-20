@@ -26,6 +26,13 @@ go test ./internal/builder/ -run TestBuildFeedMatchesGolden -v
 - 피드 테스트는 `content/episodes/` 의 프론트매터만 로드해 빌드한다(본문 불필요). `episodeSourceDir` 상수로 경로 지정.
 - 외부 의존성(goldmark·yaml) 자체는 테스트하지 않고, 우리 코드의 입출력·계약만 검증한다(CLAUDE.md 규칙).
 
+## 접근성/성능 검증 (2층)
+
+`go test` 의 단위 테스트 외에, 접근성·성능은 두 층으로 CI에서 검증한다([PERFORMANCE.md](./PERFORMANCE.md) 참고).
+
+1. **Go 마크업 불변식**(`a11y_perf_test.go`) — 위 표 참고. 무의존성·결정적, 기존 `test` 잡에 포함.
+2. **Lighthouse CI**(`.lighthouserc.json`, `lighthouse` 잡) — 실제 브라우저 감사. 접근성/SEO/Best-Practices=100 하드 게이트. 로컬 실행: `npx @lhci/cli@0.14.x autorun`(`cmd/serve` 를 자동 기동, Node+Chrome 필요).
+
 ## 미검증 영역
 
 - 페이지 HTML 의 시각 렌더는 **스크린샷 비교**(참고 빌드 `_ref_dist` 대비)로 수동 검증했다. 자동 스냅샷은 없음.
