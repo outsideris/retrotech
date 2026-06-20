@@ -9,7 +9,7 @@
 - **오디오(mp3):** 사이트와 분리된 `retrotech-episodes.outsider.dev` 에 별도 호스팅(에피소드 프론트매터 `enclosure.url`).
 - **CI:** GitHub Actions(`.github/workflows/ci.yml`)가 push(main)/PR 마다 `go vet`·`go test`(피드 골든 포함)·`go run ./cmd/build` 를 실행한다. 배포 자체는 Cloudflare Pages 가 git 연동으로 처리한다.
 - `dist/` 는 `.gitignore` 대상 — 저장소에 포함되지 않고 매 배포 시 빌드한다.
-- **정적 자산 캐시:** 저장소의 `public/_headers` 가 콘텐츠 해시 자산 `/assets/*`(해시된 스타일시트 `styles.<hash>.css`)를 1년 `immutable` 로 지정한다(Cloudflare Pages 가 대시보드 설정 없이 자동 적용). 비해시 자산(`/images` 등)은 URL 이 고정이라 의도적으로 기본 TTL 유지. 배경/대안은 [PERFORMANCE.md](./PERFORMANCE.md) 참고.
+- **정적 자산 캐시:** 저장소의 `public/_headers` 가 캐시 정책을 지정한다(Cloudflare Pages 가 대시보드 설정 없이 자동 적용): 콘텐츠 해시 자산 `/assets/*`(해시 스타일시트)는 1년 `immutable`, `/badges/*` 는 30일, `/images/*` 는 1주(URL 고정이라 immutable 대신 적당 TTL — 변경 시 최대 1주 stale 또는 캐시 purge). 파비콘류는 기본 TTL. 배경/대안은 [PERFORMANCE.md](./PERFORMANCE.md) 참고.
 
 ## 빌드 설정 (Cloudflare Pages 대시보드)
 

@@ -6,5 +6,15 @@
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
-# Note: non-hashed assets under /images, /badges, favicon.* keep the default TTL on purpose,
-# because their URLs are stable while content can change (e.g. cover.svg updates).
+# Platform badge logos — stable, effectively never change. 30 days.
+/badges/*
+  Cache-Control: public, max-age=2592000
+
+# Images (cover, host photo) — rarely change at a stable URL, so a 1-week TTL
+# (not immutable) balances repeat-visit speed against being able to update them.
+# A content change is stale for at most a week, or purge the Cloudflare cache.
+/images/*
+  Cache-Control: public, max-age=604800
+
+# favicon.* / apple-touch-icon / android-chrome* keep the default TTL (tiny,
+# browser-cached anyway).
