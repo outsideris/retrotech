@@ -17,8 +17,8 @@ func pageShell(title, ogTitle, articleInner string, site Site) string {
 	return "<!DOCTYPE html><html lang=\"ko\"><head>" +
 		darkModeInit +
 		headHTML(title, ogTitle, site) +
-		"</head><body><div id=\"__next\">" +
-		`<article class="nx-container nx-prose max-md:nx-prose-sm dark:nx-prose-dark" dir="ltr">` +
+		"</head><body><div id=\"app\">" +
+		`<article class="rt-container rt-prose max-md:rt-prose-sm dark:rt-prose-dark" dir="ltr">` +
 		articleInner +
 		footerHTML(site) +
 		"</article>" +
@@ -62,12 +62,12 @@ func headHTML(title, ogTitle string, site Site) string {
 // episodeMeta is the byline row beneath an episode's <h1>: author, date, a Back
 // link and the dark-mode toggle.
 func episodeMeta(ep parser.Episode) string {
-	return `<div class="nx-mb-8 nx-flex nx-gap-3 nx-items-center">` +
-		`<div class="nx-grow dark:nx-text-gray-400 nx-text-gray-600">` +
-		`<div class="nx-not-prose nx-flex nx-flex-wrap nx-items-center nx-gap-1">` +
+	return `<div class="rt-mb-8 rt-flex rt-gap-3 rt-items-center">` +
+		`<div class="rt-grow dark:rt-text-gray-400 rt-text-gray-600">` +
+		`<div class="rt-not-prose rt-flex rt-flex-wrap rt-items-center rt-gap-1">` +
 		html.EscapeString(ep.Author) + `,<time dateTime="` + isoDate(ep.Date) + `">` + displayDate(ep.Date) + `</time>` +
 		`</div></div>` +
-		`<div class="nx-flex nx-items-center nx-gap-3 print:nx-hidden">` +
+		`<div class="rt-flex rt-items-center rt-gap-3 print:rt-hidden">` +
 		`<a href="/episodes">Back</a>` + darkToggle +
 		`</div></div>`
 }
@@ -75,8 +75,8 @@ func episodeMeta(ep parser.Episode) string {
 // listMeta is the nav + toggle row beneath a listing page's <h1>. navInner is
 // the page-specific nav links.
 func listMeta(navInner string) string {
-	return `<div class="nx-mb-8 nx-flex nx-items-center nx-gap-3">` +
-		`<div class="nx-flex nx-grow nx-flex-wrap nx-items-center nx-justify-end nx-gap-3">` +
+	return `<div class="rt-mb-8 rt-flex rt-items-center rt-gap-3">` +
+		`<div class="rt-flex rt-grow rt-flex-wrap rt-items-center rt-justify-end rt-gap-3">` +
 		navInner +
 		`</div>` + darkToggle + `</div>`
 }

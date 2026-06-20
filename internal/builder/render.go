@@ -67,7 +67,7 @@ func BuildEpisodePage(ep parser.Episode, site Site) string {
 func BuildHomePage(eps []parser.Episode, site Site) string {
 	var b strings.Builder
 	b.WriteString("<h1>RetroTech</h1>")
-	b.WriteString(listMeta(`<a href="/episodes">Episodes</a><span class="nx-cursor-default dark:nx-text-gray-400 nx-text-gray-600">RetroTech</span>`))
+	b.WriteString(listMeta(`<a href="/episodes">Episodes</a><span class="rt-cursor-default dark:rt-text-gray-400 rt-text-gray-600">RetroTech</span>`))
 	b.WriteString(`<img alt="RetroTech Cover" fetchpriority="high" width="3000" height="3000" style="width:100%;height:auto" src="/images/cover.svg"/>`)
 	b.WriteString("<p>기술별로 과거 어떤 배경에서 기술이 등장하고 발전해 왔는지 또 왜 어떤 기술은 사라졌는지\n기술의 역사를 자세히 설명하는 팟캐스트입니다.</p>")
 	b.WriteString("<p>아래 팟캐스트 플랫폼에서 구독해서 듣거나\n" +
@@ -89,7 +89,7 @@ func BuildHomePage(eps []parser.Episode, site Site) string {
 // home page ("RetroTech").
 func BuildEpisodesPage(eps []parser.Episode, site Site) string {
 	inner := "<h1>Episodes</h1>" +
-		listMeta(`<span class="nx-cursor-default dark:nx-text-gray-400 nx-text-gray-600">Episodes</span><a href="/">RetroTech</a>`) +
+		listMeta(`<span class="rt-cursor-default dark:rt-text-gray-400 rt-text-gray-600">Episodes</span><a href="/">RetroTech</a>`) +
 		renderPostList(eps)
 	return pageShell("Episodes - RetroTech", "Episodes - RetroTech", inner, site)
 }
@@ -111,11 +111,11 @@ func renderPostList(eps []parser.Episode) string {
 		url := "/episodes/" + ep.ID
 		title := strings.TrimSpace(ep.Title)
 		b.WriteString(`<div class="post-item">`)
-		b.WriteString(`<h3><a class="!nx-no-underline" href="` + url + `">` + html.EscapeString(title) + `</a></h3>`)
-		b.WriteString(`<p class="nx-mb-2 dark:nx-text-gray-400 nx-text-gray-600">` +
+		b.WriteString(`<h3><a class="!rt-no-underline" href="` + url + `">` + html.EscapeString(title) + `</a></h3>`)
+		b.WriteString(`<p class="rt-mb-2 dark:rt-text-gray-400 rt-text-gray-600">` +
 			html.EscapeString(strings.TrimRight(ep.Description, "\n")) +
-			`<a class="post-item-more nx-ml-2" href="` + url + `">Read More →</a></p>`)
-		b.WriteString(`<time class="nx-text-sm dark:nx-text-gray-400 nx-text-gray-600" dateTime="` +
+			`<a class="post-item-more rt-ml-2" href="` + url + `">Read More →</a></p>`)
+		b.WriteString(`<time class="rt-text-sm dark:rt-text-gray-400 rt-text-gray-600" dateTime="` +
 			isoDate(ep.Date) + `">` + displayDate(ep.Date) + `</time>`)
 		b.WriteString(`</div>`)
 	}
@@ -162,14 +162,14 @@ func wrapReferences(s string) string {
 // screen-reader hint, matching Nextra's link handling.
 func decorateExternalLinks(s string) string {
 	return externalAnchorRE.ReplaceAllString(s,
-		`<a target="_blank" rel="noreferrer" href="$1">$2<span class="nx-sr-only nx-select-none"> (opens in a new tab)</span></a>`)
+		`<a target="_blank" rel="noreferrer" href="$1">$2<span class="rt-sr-only rt-select-none"> (opens in a new tab)</span></a>`)
 }
 
 // externalLink builds a single decorated external link (used in the hand-written
 // home copy).
 func externalLink(href, text string) string {
 	return `<a target="_blank" rel="noreferrer" href="` + html.EscapeString(href) + `">` +
-		html.EscapeString(text) + `<span class="nx-sr-only nx-select-none"> (opens in a new tab)</span></a>`
+		html.EscapeString(text) + `<span class="rt-sr-only rt-select-none"> (opens in a new tab)</span></a>`
 }
 
 // decorateHeadings adds Nextra's permalink-anchor structure to markdown
@@ -180,7 +180,7 @@ func decorateHeadings(s string) string {
 		level, inner := sub[1], sub[2]
 		slug := slugify(tagRE.ReplaceAllString(inner, ""))
 		return "<h" + level + ` class="subheading-h` + level + `">` + inner +
-			`<span class="nx-absolute -nx-mt-7" id="` + slug + `"></span>` +
+			`<span class="rt-absolute -rt-mt-7" id="` + slug + `"></span>` +
 			`<a href="#` + slug + `" class="subheading-anchor" aria-label="Permalink for this section"></a>` +
 			"</h" + level + ">"
 	})
