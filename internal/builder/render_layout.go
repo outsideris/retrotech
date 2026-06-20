@@ -88,7 +88,7 @@ func listMeta(navInner string) string {
 // every page. year is the build year shown in the copyright line.
 func footerHTML(site Site) string {
 	return `<footer>` +
-		`<iframe src="https://github.com/sponsors/outsideris/button" title="Sponsor outsideris" height="32" width="114"></iframe>` +
+		`<iframe src="https://github.com/sponsors/outsideris/button" title="Sponsor outsideris" height="32" width="114" loading="lazy"></iframe>` +
 		`<h3>Host:</h3>` +
 		`<div>` +
 		`<img src="/images/outsider.webp" alt="Outsider" width="120" height="120" class="profile"/>` +
