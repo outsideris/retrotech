@@ -19,9 +19,10 @@ import (
 // the specific namespace order, 4-space indentation, self-closing vs.
 // expanded empty elements — which the stdlib marshaller does not reproduce.
 //
-// Some of the reproduced details are artifacts of the old library (the
-// generator string "RSS for Node", the channel <description> duplicating the
-// title). They are kept for byte-parity and flagged for later cleanup.
+// The channel <description> and <generator> were artifacts of the old library
+// (the description duplicated the title; the generator read "RSS for Node");
+// both now carry accurate RetroTech values. Everything else still mirrors the
+// old output so the subscriber-facing items stay byte-stable.
 
 const (
 	// rfc1123GMT matches the date form the `rss` lib emitted, e.g.
@@ -60,7 +61,7 @@ func BuildFeed(episodes []parser.Episode, cfg FeedConfig, buildTime time.Time) [
 	b.WriteString("        <title>" + cdata(feedTitle) + "</title>\n")
 	b.WriteString("        <description>" + cdata(feedDesc) + "</description>\n")
 	b.WriteString("        <link>" + site + "</link>\n")
-	b.WriteString("        <generator>RSS for Node</generator>\n")
+	b.WriteString("        <generator>RetroTech</generator>\n")
 	b.WriteString("        <lastBuildDate>" + buildTime.UTC().Format(rfc1123GMT) + "</lastBuildDate>\n")
 	b.WriteString(`        <atom:link href="` + site + `/feed.xml" rel="self" type="application/rss+xml"/>` + "\n")
 	b.WriteString("        <language>" + cdata("ko") + "</language>\n")

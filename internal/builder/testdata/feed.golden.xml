@@ -3,7 +3,7 @@
         <title><![CDATA[RetroTech 팟캐스트]]></title>
         <description><![CDATA[기술별로 과거 어떤 배경에서 기술이 등장하고 발전해 왔는지 또 왜 어떤 기술은 사라졌는지 기술의 역사를 자세히 설명하는 팟캐스트입니다.]]></description>
         <link>https://retrotech.outsider.dev</link>
-        <generator>RSS for Node</generator>
+        <generator>RetroTech</generator>
         <lastBuildDate>Tue, 16 Jun 2026 15:55:39 GMT</lastBuildDate>
         <atom:link href="https://retrotech.outsider.dev/feed.xml" rel="self" type="application/rss+xml"/>
         <language><![CDATA[ko]]></language>
