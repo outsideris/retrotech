@@ -34,8 +34,17 @@ func main() {
 				return
 			}
 		}
+		// Serve the 404 page with a 404 status. Write it directly rather than
+		// via ServeFile, which would also try to set the status (200) and log a
+		// "superfluous WriteHeader" warning.
+		body, err := os.ReadFile(filepath.Join(dir, "404.html"))
+		if err != nil {
+			http.Error(w, "404 page not found", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusNotFound)
-		http.ServeFile(w, r, filepath.Join(dir, "404.html"))
+		_, _ = w.Write(body)
 	})
 
 	addr := ":" + port
