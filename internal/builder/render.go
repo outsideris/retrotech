@@ -94,9 +94,12 @@ func BuildEpisodesPage(eps []parser.Episode, site Site) string {
 	return pageShell("Episodes - RetroTech", "Episodes - RetroTech", inner, site)
 }
 
-// Build404Page renders the 404 page.
+// Build404Page renders the 404 page: the RetroTech cover (as on the home page,
+// here linking home so a lost visitor has a way back) above the not-found
+// message.
 func Build404Page(site Site) string {
-	inner := "<h1>404: Page Not Found</h1>"
+	inner := `<a href="/"><img alt="RetroTech Cover" width="3000" height="3000" style="width:100%;height:auto" src="/images/cover.svg"/></a>` +
+		"<h1>404: Page Not Found</h1>"
 	return pageShell("404: Page Not Found - RetroTech", "404: Page Not Found - RetroTech", inner, site)
 }
 
