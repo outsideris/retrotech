@@ -84,10 +84,12 @@ func BuildHomePage(eps []parser.Episode, site Site) string {
 	return pageShell(siteName, siteName, b.String(), site)
 }
 
-// BuildEpisodesPage renders the "/episodes" listing.
+// BuildEpisodesPage renders the "/episodes" listing. The nav row mirrors the
+// theme: the current page ("Episodes") as plain text and a link back to the
+// home page ("RetroTech").
 func BuildEpisodesPage(eps []parser.Episode, site Site) string {
 	inner := "<h1>Episodes</h1>" +
-		listMeta(`<span class="nx-cursor-default dark:nx-text-gray-400 nx-text-gray-600">Episodes</span>`) +
+		listMeta(`<span class="nx-cursor-default dark:nx-text-gray-400 nx-text-gray-600">Episodes</span><a href="/">RetroTech</a>`) +
 		renderPostList(eps)
 	return pageShell("Episodes - RetroTech", "Episodes - RetroTech", inner, site)
 }
