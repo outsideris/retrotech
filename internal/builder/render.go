@@ -149,11 +149,11 @@ var (
 	externalAnchorRE = regexp.MustCompile(`<a href="(https?://[^"]+)">(.*?)</a>`)
 	headingRE        = regexp.MustCompile(`(?s)<h([2-6])>(.*?)</h[2-6]>`)
 	tagRE            = regexp.MustCompile(`<[^>]+>`)
-	// The list following a "#### 레퍼런스:" heading is the references block. The
+	// The list following a "## 레퍼런스:" heading is the references block. The
 	// builder wraps it in <div class="refs"> so the show notes stay plain
 	// markdown (no raw HTML), while the .refs styling (smaller, denser) is the
-	// same as before. Runs before decorateHeadings, on the bare <h4>.
-	referencesRE = regexp.MustCompile(`(?s)(<h4>레퍼런스:</h4>\s*)(<ul>.*?</ul>)`)
+	// same as before. Runs before decorateHeadings, on the bare <h2>.
+	referencesRE = regexp.MustCompile(`(?s)(<h2>레퍼런스:</h2>\s*)(<ul>.*?</ul>)`)
 )
 
 // wrapReferences wraps the reference list under the "레퍼런스:" heading in

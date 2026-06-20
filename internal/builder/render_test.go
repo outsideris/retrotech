@@ -74,7 +74,7 @@ func TestReferencesAutoWrapped(t *testing.T) {
 	ep := parser.Episode{
 		Frontmatter: parser.Frontmatter{Title: "x", Date: "2026/03/07", Author: "Outsider"},
 		ID:          "x",
-		Body:        "intro\n\n<!--badges-->\n\n#### 레퍼런스:\n\n* [a](https://example.com)\n* [b](https://example.org)\n",
+		Body:        "intro\n\n<!--badges-->\n\n## 레퍼런스:\n\n* [a](https://example.com)\n* [b](https://example.org)\n",
 	}
 	h := BuildEpisodePage(ep, testSite)
 	if !strings.Contains(h, `<div class="refs"><ul>`) {
