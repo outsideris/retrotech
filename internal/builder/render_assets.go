@@ -15,8 +15,10 @@ const footerStyle = `<style>footer{margin-top:8rem}footer>small{display:block;ma
 const darkModeInit = `<script>(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");document.documentElement.style.colorScheme="dark";}}catch(e){}})();</script>`
 
 // darkModeToggleScript wires the "Toggle Dark Mode" button to flip and persist
-// the theme.
-const darkModeToggleScript = `<script>(function(){var b=document.querySelector('[aria-label="Toggle Dark Mode"]');if(!b)return;b.addEventListener("click",function(){var on=document.documentElement.classList.toggle("dark");document.documentElement.style.colorScheme=on?"dark":"";try{localStorage.setItem("theme",on?"dark":"light");}catch(e){}});})();</script>`
+// the theme. The control is a role="button" span, so it needs an explicit
+// Enter/Space keydown handler to be operable by keyboard (a native click only
+// fires on mouse/tap).
+const darkModeToggleScript = `<script>(function(){var b=document.querySelector('[aria-label="Toggle Dark Mode"]');if(!b)return;function t(){var on=document.documentElement.classList.toggle("dark");document.documentElement.style.colorScheme=on?"dark":"";try{localStorage.setItem("theme",on?"dark":"light");}catch(e){}}b.addEventListener("click",t);b.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();t();}});})();</script>`
 
 // themeToggleStyle swaps the sun/moon icon with the active theme (the framework
 // did this in JS; here a class on <html> drives it via CSS).
