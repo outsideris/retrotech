@@ -22,6 +22,10 @@ const darkModeToggleScript = `<script>(function(){var b=document.querySelector('
 // did this in JS; here a class on <html> drives it via CSS).
 const themeToggleStyle = `<style>.theme-moon{display:none}.dark .theme-sun{display:none}.dark .theme-moon{display:inline}</style>`
 
+// skipLinkStyle hides the "skip to content" link until it is focused (keyboard
+// users tab to it first; everyone else never sees it).
+const skipLinkStyle = `<style>.skip-link{position:absolute;left:-9999px;top:.5rem;z-index:50;padding:.5rem 1rem;background:#fff;color:#000;border-radius:4px}.skip-link:focus{left:.5rem}</style>`
+
 // darkToggle is the toggle button shown in the page meta row. It carries both
 // icons; CSS shows the sun in light mode and the moon in dark mode.
 const darkToggle = `<span role="button" aria-label="Toggle Dark Mode" class="rt-cursor-pointer rt-p-2 rt-text-current" tabindex="0"><svg class="theme-sun" fill="none" viewBox="3 3 18 18" width="12" height="12" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" fill="currentColor" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg><svg class="theme-moon" fill="none" viewBox="3 3 18 18" width="12" height="12" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg></span>`

@@ -53,6 +53,21 @@ func TestEpisodePageRendersTitleAndBadges(t *testing.T) {
 	}
 }
 
+// Every page needs exactly one main landmark and a skip link pointing at it
+// (the old Nextra build's role="main" fix that the migration must keep).
+func TestPageHasMainLandmarkAndSkipLink(t *testing.T) {
+	h := BuildHomePage(nil, testSite)
+	if !strings.Contains(h, `role="main"`) || !strings.Contains(h, `id="content"`) {
+		t.Error("missing main landmark (role=main / id=content)")
+	}
+	if !strings.Contains(h, `<a class="skip-link" href="#content">`) {
+		t.Error("missing skip link to #content")
+	}
+	if strings.Count(h, `role="main"`) != 1 {
+		t.Errorf("want exactly one main landmark, got %d", strings.Count(h, `role="main"`))
+	}
+}
+
 // The references list is authored as plain markdown under "#### 레퍼런스:"; the
 // builder wraps it in <div class="refs"> so no raw HTML lives in the content.
 func TestReferencesAutoWrapped(t *testing.T) {

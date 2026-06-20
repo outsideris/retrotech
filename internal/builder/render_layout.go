@@ -17,8 +17,10 @@ func pageShell(title, ogTitle, articleInner string, site Site) string {
 	return "<!DOCTYPE html><html lang=\"ko\"><head>" +
 		darkModeInit +
 		headHTML(title, ogTitle, site) +
-		"</head><body><div id=\"app\">" +
-		`<article class="rt-container rt-prose max-md:rt-prose-sm dark:rt-prose-dark" dir="ltr">` +
+		"</head><body>" +
+		`<a class="skip-link" href="#content">본문 바로가기</a>` +
+		"<div id=\"app\">" +
+		`<article id="content" role="main" class="rt-container rt-prose max-md:rt-prose-sm dark:rt-prose-dark" dir="ltr">` +
 		articleInner +
 		footerHTML(site) +
 		"</article>" +
@@ -55,6 +57,7 @@ func headHTML(title, ogTitle string, site Site) string {
 		`<link rel="stylesheet" href="` + site.stylesheet() + `"/>` +
 		footerStyle +
 		themeToggleStyle +
+		skipLinkStyle +
 		analyticsTag(site.AnalyticsID)
 	return h
 }
