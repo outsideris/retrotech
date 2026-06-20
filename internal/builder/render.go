@@ -86,7 +86,11 @@ func BuildHomePage(eps []parser.Episode, site Site) string {
 	b.WriteString("<hr/>")
 	b.WriteString("<h2>에피소드</h2>")
 	b.WriteString(renderPostList(eps))
-	return pageShell(siteName, siteName, b.String(), site, coverPreload)
+	// The browser-tab <title> is the bare page name ("RetroTech"); the social
+	// og:title carries the full site name ("RetroTech 팟캐스트"). The original
+	// Nextra build made this distinction on every page — episode pages already
+	// follow it (title vs title+" - RetroTech"), and so must the listings.
+	return pageShell("RetroTech", siteName, b.String(), site, coverPreload)
 }
 
 // BuildEpisodesPage renders the "/episodes" listing. The nav row mirrors the
@@ -100,7 +104,7 @@ func BuildEpisodesPage(eps []parser.Episode, site Site) string {
 		listMeta(`<span class="rt-cursor-default dark:rt-text-gray-400 rt-text-gray-600">Episodes</span><a href="/">RetroTech</a>`) +
 		`<h2 class="rt-sr-only">에피소드</h2>` +
 		renderPostList(eps)
-	return pageShell("Episodes - RetroTech", "Episodes - RetroTech", inner, site, "")
+	return pageShell("Episodes", "Episodes - RetroTech", inner, site, "")
 }
 
 // Build404Page renders the 404 page: the RetroTech cover (as on the home page,
@@ -112,7 +116,7 @@ func Build404Page(site Site) string {
 	inner := `<a href="/"><img alt="RetroTech Cover" width="3000" height="3000" style="width:100%;height:auto" src="/images/cover.svg"/></a>` +
 		"<h1>404: Page Not Found</h1>" +
 		`<h2 class="rt-sr-only">사이트 정보</h2>`
-	return pageShell("404: Page Not Found - RetroTech", "404: Page Not Found - RetroTech", inner, site, coverPreload)
+	return pageShell("404: Page Not Found", "404: Page Not Found - RetroTech", inner, site, coverPreload)
 }
 
 // renderPostList renders the list of episodes shown on the home and episodes

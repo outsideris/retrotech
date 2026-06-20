@@ -68,6 +68,37 @@ func TestPageHasMainLandmarkAndSkipLink(t *testing.T) {
 	}
 }
 
+// The original Nextra build set the browser-tab <title> to the bare page name
+// and the social og:title to the name + site suffix. This must hold on every
+// page type (a regression once made the listing pages' <title> carry the suffix
+// too, diverging from the live site).
+func TestPageTitleConvention(t *testing.T) {
+	ep := parser.Episode{
+		Frontmatter: parser.Frontmatter{Title: "2g. VCS: SourceForge", Date: "2026/03/07", Author: "Outsider"},
+		ID:          "2g",
+		Body:        "intro\n\n<!--badges-->\n",
+	}
+	cases := []struct {
+		name        string
+		html        string
+		wantTitle   string
+		wantOGTitle string
+	}{
+		{"home", BuildHomePage(nil, testSite), "RetroTech", "RetroTech 팟캐스트"},
+		{"episodes", BuildEpisodesPage(nil, testSite), "Episodes", "Episodes - RetroTech"},
+		{"episode", BuildEpisodePage(ep, testSite), "2g. VCS: SourceForge", "2g. VCS: SourceForge - RetroTech"},
+		{"404", Build404Page(testSite), "404: Page Not Found", "404: Page Not Found - RetroTech"},
+	}
+	for _, c := range cases {
+		if !strings.Contains(c.html, "<title>"+c.wantTitle+"</title>") {
+			t.Errorf("%s: want <title>%s</title>", c.name, c.wantTitle)
+		}
+		if !strings.Contains(c.html, `<meta property="og:title" content="`+c.wantOGTitle+`"/>`) {
+			t.Errorf("%s: want og:title %q", c.name, c.wantOGTitle)
+		}
+	}
+}
+
 // The references list is authored as plain markdown under "#### 레퍼런스:"; the
 // builder wraps it in <div class="refs"> so no raw HTML lives in the content.
 func TestReferencesAutoWrapped(t *testing.T) {
