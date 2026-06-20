@@ -92,14 +92,26 @@ func run() error {
 	}
 
 	// Podcast RSS feed.
-	feed := builder.BuildFeed(episodes, builder.FeedConfig{SiteURL: "https://retrotech.outsider.dev"}, time.Now())
+	feed := builder.BuildFeed(episodes, builder.FeedConfig{SiteURL: siteURL}, time.Now())
 	if err := os.WriteFile(filepath.Join(distDir, "feed.xml"), feed, 0644); err != nil {
 		return err
 	}
 
-	fmt.Printf("Built %d episodes + home/episodes/404/feed in %v\n", len(episodes), time.Since(start))
+	// sitemap.xml — regenerated every build, so it reflects new episodes.
+	sitemap, err := builder.BuildSitemap(episodes, siteURL)
+	if err != nil {
+		return fmt.Errorf("building sitemap: %w", err)
+	}
+	if err := os.WriteFile(filepath.Join(distDir, "sitemap.xml"), sitemap, 0644); err != nil {
+		return err
+	}
+
+	fmt.Printf("Built %d episodes + home/episodes/404/feed/sitemap in %v\n", len(episodes), time.Since(start))
 	return nil
 }
+
+// siteURL is the absolute origin used for the feed and sitemap links.
+const siteURL = "https://retrotech.outsider.dev"
 
 // fingerprintStylesheet moves dist/styles.css to dist/assets/styles.<hash>.css
 // and returns its href. The hash lets the file be cached immutably while a

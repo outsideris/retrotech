@@ -95,9 +95,11 @@ go run ./cmd/build
   └─ 4) content/episodes/*.md 로드 → []Episode (날짜 내림차순)
   └─ 5) 페이지 렌더 → dist/ (index, episodes, episodes/<id>, 404)
   └─ 6) feed.xml 생성 → dist/feed.xml
+  └─ 7) sitemap.xml 생성 → dist/sitemap.xml
 ```
 
-- 산출물: `dist/` (HTML 26개 = 홈 + /episodes + 에피소드 23개 + /404, + feed.xml + 자산). 빌드 ~30ms.
+- 산출물: `dist/` (HTML 26개 = 홈 + /episodes + 에피소드 23개 + /404, + feed.xml + sitemap.xml + 자산). 빌드 ~45ms.
+- **sitemap.xml**(`internal/builder/sitemap.go`): 홈·/episodes·각 에피소드 URL 을 `encoding/xml` 로 생성. 랜딩(홈·/episodes)의 `lastmod` 는 최신 에피소드 날짜라 새 에피소드 추가 시 자동 반영. `public/robots.txt` 가 이 사이트맵을 가리킨다. 404·feed 는 제외.
 - SSR/ISR/API 가 없는 순수 정적 산출이다.
 
 ## 프로즈 렌더링(`internal/builder/render.go`)
