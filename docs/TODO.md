@@ -66,7 +66,7 @@
 
 - [ ] **Nextra 잔재 네이밍 정리.** 페이지 셸의 `<div id="__next">` 래퍼와 CSS 의 `nx-*` 클래스명은 Nextra 흔적이다. 중립 이름으로 바꾸려면 재사용 중인 테마 CSS(`public/styles.css`) 전체를 다시 써야 해 비용이 있다. 동작엔 무관.
 - [ ] **홈 본문을 마크다운으로.** 커버·소개·이슈 문구가 `internal/builder/render.go`(`BuildHomePage`)에 하드코딩돼 있다. 마크다운으로 편집하고 싶으면 `content/index.md` 도입 검토.
-- [ ] **`scripts/convert` 제거 검토.** mdx→md 1회성 마이그레이션 도구. 입력(`pages/`)이 제거돼 더는 동작 경로가 아니다. 기록용으로 남겨둠 — 지워도 됨.
+- [x] **`scripts/convert` 삭제(2026-06-16).** mdx→md 1회성 마이그레이션 도구. 입력(`pages/`)이 제거돼 더는 동작하지 않아 제거. 변환 방식은 worklog·plan 에 기록됨.
 - [ ] **피드 `<generator>` 문자열.** 현재 `RSS for Node`(옛 rss 라이브러리 잔재, 부정확). `RetroTech` 등으로 바꾸거나 둘지 결정. (채널 `<description>` 은 2026-06-16 에 실제 설명으로 교체 완료.)
 - ℹ️ **비가시 차이(조치 불필요, 렌더 동일):** 에피소드 h1 후행 개행 없음, `<time dateTime>` 속성이 UTC(표시는 동일), 본문 아포스트로피 `'`↔`&#x27;`(둘 다 `'` 로 렌더), next/image 내부 속성(`data-nimg` 등) 생략.
 

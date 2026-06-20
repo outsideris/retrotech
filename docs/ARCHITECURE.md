@@ -48,8 +48,7 @@ retrotech/
 │  ├─ styles.css           # 테마+보정 CSS 컴파일본(빌드가 /assets/styles.<hash>.css 로 핑거프린트)
 │  └─ _headers             # Cloudflare Pages 응답 헤더(/assets/* 캐시) — DEPLOYMENT.md
 ├─ scripts/
-│  ├─ cf-build.sh          # Cloudflare 빌드 래퍼(go run ./cmd/build + 텔레그램 알림)
-│  └─ convert/main.go      # 1회성 mdx→md 마이그레이션 도구(기록용)
+│  └─ cf-build.sh          # Cloudflare 빌드 래퍼(go run ./cmd/build + 텔레그램 알림)
 ├─ go.mod / go.sum
 └─ dist/                   # 빌드 산출물(gitignore). 배포 대상.
 ```
@@ -138,8 +137,7 @@ go run ./cmd/build
 ## 알려진 제약 / 주의사항
 
 1. **`SITE_URL` 하드코딩.** `feed.go` 와 `cmd/build` 에 도메인이 상수로 존재한다.
-2. **`scripts/convert` 는 1회성 도구.** mdx→md 마이그레이션 기록용이며 정상 빌드 경로는 아니다(입력 `pages/` 는 제거됨).
-3. **이전 빌드 산출물과의 미세 차이**(비가시): 페이지 HTML 은 프레임워크 JS 를 제거했고, 일부 속성(`data-nimg` 등)·엔티티 인코딩(`'`↔`&#x27;`)이 다르다. 시각·동작은 동일(스크린샷 검증). 피드만 바이트 패리티.
+2. **이전 빌드 산출물과의 미세 차이**(비가시): 페이지 HTML 은 프레임워크 JS 를 제거했고, 일부 속성(`data-nimg` 등)·엔티티 인코딩(`'`↔`&#x27;`)이 다르다. 시각·동작은 동일(스크린샷 검증). 피드만 바이트 패리티.
 
 ## 테스트
 
