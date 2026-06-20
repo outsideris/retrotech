@@ -91,20 +91,27 @@ func BuildHomePage(eps []parser.Episode, site Site) string {
 
 // BuildEpisodesPage renders the "/episodes" listing. The nav row mirrors the
 // theme: the current page ("Episodes") as plain text and a link back to the
-// home page ("RetroTech").
+// home page ("RetroTech"). A visually-hidden <h2> introduces the list so the
+// h3 episode titles don't skip a level under the page <h1> (the home page has a
+// visible "에피소드" h2 in the same spot); it stays in the a11y tree, so axe's
+// heading-order check is satisfied without changing the visible layout.
 func BuildEpisodesPage(eps []parser.Episode, site Site) string {
 	inner := "<h1>Episodes</h1>" +
 		listMeta(`<span class="rt-cursor-default dark:rt-text-gray-400 rt-text-gray-600">Episodes</span><a href="/">RetroTech</a>`) +
+		`<h2 class="rt-sr-only">에피소드</h2>` +
 		renderPostList(eps)
 	return pageShell("Episodes - RetroTech", "Episodes - RetroTech", inner, site, "")
 }
 
 // Build404Page renders the 404 page: the RetroTech cover (as on the home page,
 // here linking home so a lost visitor has a way back) above the not-found
-// message.
+// message. A visually-hidden <h2> introduces the shared footer's host section
+// so its <h3> doesn't skip a level under the page <h1> (the 404 has no visible
+// content section between them).
 func Build404Page(site Site) string {
 	inner := `<a href="/"><img alt="RetroTech Cover" width="3000" height="3000" style="width:100%;height:auto" src="/images/cover.svg"/></a>` +
-		"<h1>404: Page Not Found</h1>"
+		"<h1>404: Page Not Found</h1>" +
+		`<h2 class="rt-sr-only">사이트 정보</h2>`
 	return pageShell("404: Page Not Found - RetroTech", "404: Page Not Found - RetroTech", inner, site, coverPreload)
 }
 
