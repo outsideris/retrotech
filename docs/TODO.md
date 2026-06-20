@@ -65,7 +65,7 @@
 > 마이그레이션 완료 후 정리 후보. 동작·시각엔 영향 없음. 작업 후 함께 검토하기로 함(2026-06-16).
 
 - [x] **Nextra 잔재 네이밍 정리(2026-06-16).** `<div id="__next">`→`<div id="app">`, CSS·템플릿의 `nx-*` 접두사→`rt-*`(styles.css 522곳 + 템플릿 53곳 전역 치환). 라이트/다크 스크린샷 픽셀 동일 확인.
-- [ ] **dead `.nextra-*` CSS 제거.** `styles.css` 의 안 쓰는 Nextra 컴포넌트 규칙(`.nextra-button/callout/card/steps/copy-icon/scrollbar` 등). 우리 DOM 미사용 → 제거 후 스크린샷 재확인.
+- [x] **dead Nextra CSS 제거(2026-06-16).** `styles.css` 의 안 쓰는 Nextra 규칙 27개(`.nextra-button/callout/card/steps/copy-icon/scrollbar`, `[data-nextra-word-wrap]`) 제거(3176B↓). CSS 규칙 단위 파서로 `:not()` 제외목록은 보존. dist CSS 의 'nextra' 0개. 홈·에피소드 스크린샷 동일 확인.
 - [ ] **홈 본문을 마크다운으로.** 커버·소개·이슈 문구가 `internal/builder/render.go`(`BuildHomePage`)에 하드코딩돼 있다. 마크다운으로 편집하고 싶으면 `content/index.md` 도입 검토.
 - [x] **`scripts/convert` 삭제(2026-06-16).** mdx→md 1회성 마이그레이션 도구. 입력(`pages/`)이 제거돼 더는 동작하지 않아 제거. 변환 방식은 worklog·plan 에 기록됨.
 - [ ] **피드 `<generator>` 문자열.** 현재 `RSS for Node`(옛 rss 라이브러리 잔재, 부정확). `RetroTech` 등으로 바꾸거나 둘지 결정. (채널 `<description>` 은 2026-06-16 에 실제 설명으로 교체 완료.)
