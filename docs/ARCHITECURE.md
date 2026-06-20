@@ -75,10 +75,10 @@ retrotech/
     url: https://retrotech-episodes.outsider.dev/2g.mp3
     size: 66997696            # 바이트 단위 파일 크기
   duration: "55:50"           # "MM:SS" — RSS의 duration / itunes:duration
-  badges:                     # 회차별 구독 딥링크(없으면 채널 기본값)
-    apple: "..."
-    youtube: "..."
-    spotify: "..."
+  badges:                     # 회차별 구독 딥링크 — 필드별로 비우면 그 플랫폼은
+    apple: "..."              #   쇼/채널 링크로 폴백(홈 루트 아이콘과 동일).
+    youtube: "..."            #   발행 직후엔 통째로 비워두고, 플랫폼에 에피소드가
+    spotify: "..."            #   등록되면 딥링크를 하나씩 채운다.
     # google 이 있으면 Google 배지, 없으면 RSS 배지
   ---
   ```
