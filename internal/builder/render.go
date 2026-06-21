@@ -19,10 +19,13 @@ import (
 // not byte-identity with the framework output.
 
 const (
-	siteURL         = "https://retrotech.outsider.dev"
+	// SiteURL is the canonical production origin, shared by the builder and the
+	// build command (feed, sitemap, cover image) so the domain lives in one
+	// place rather than being duplicated per call site.
+	SiteURL         = "https://retrotech.outsider.dev"
 	siteName        = "RetroTech 팟캐스트"
 	siteDescription = "기술의 역사를 살펴보는 팟캐스트입니다"
-	coverImage      = siteURL + "/images/cover.jpg"
+	coverImage      = SiteURL + "/images/cover.jpg"
 	stylesheetPath  = "/styles.css"
 )
 
