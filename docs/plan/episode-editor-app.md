@@ -1,0 +1,113 @@
+# 에피소드 관리 데스크톱 앱 (RetroTech Editor)
+
+> 에피소드를 마크다운 파일을 직접 편집하지 않고 폼으로 관리하는 데스크톱 앱.
+> 구조·구성 요약은 [ARCHITECURE.md](../ARCHITECURE.md#에피소드-관리-데스크톱-앱-retrotech-editor),
+> 도메인/UX 의도는 [DESIGN.md](../DESIGN.md#에피소드-관리-데스크톱-앱-에디터), 테스트는 [TESTS.md](../TESTS.md).
+> 참고 구현: `blog.outsider.ne.kr` 의 Electron 글쓰기 도구.
+
+## 배경 / 목표
+
+에피소드는 `content/episodes/<id>.md` 한 파일이고, 그동안 손으로 직접 편집했다. 프론트매터 YAML 에는
+손이 많이 가는 함정이 많다 — `duration: "17:27"` 따옴표를 빼면 60진수로 잘못 파싱되고,
+`enclosure.size`(바이트)를 직접 계산해야 하고, 구독 뱃지 딥링크 5종을 공개 후 하나씩 채워야 하고,
+긴 레퍼런스 링크 목록(어떤 회차 ~60개)을 수작업으로 쓴다.
+
+**목표:** 참고 앱의 검증된 구조 — *Electron 은 얇은 셸(창·폴더 선택·생명주기만), 모든 로직은 Go
+사이드카 HTTP 서버, UI 는 바이너리에 임베드된 폼 SPA* — 를 그대로 가져와, 마크다운을 건드리지 않고
+에피소드를 편하게 관리한다. 기존 `internal/parser`(데이터 모델)·`internal/builder.BuildEpisodePage`
+(미리보기)를 재사용한다.
+
+## 아키텍처
+
+```
+Electron(desktop/main.js)  ──spawn──▶  Go 사이드카(cmd/app)  ──serve──▶  임베드 폼 UI(internal/editor/assets)
+   창·폴더 선택·생명주기            EDITOR_PORT 출력·HTTP API            fetch 로 API 호출(IPC 아님)
+```
+
+- **Electron = 얇은 셸.** repo 폴더 결정(env→config.json→네이티브 picker, `content/episodes` 검증)
+  → `server-bin` spawn(`-repo`) → stdout `EDITOR_PORT <n>` 파싱 → `http://127.0.0.1:<port>/_write/`
+  로드. 단일 인스턴스·창 bounds·외부 링크·메뉴·종료 시 서버 kill. preload/IPC 불필요(UI 는 HTTP 만).
+- **Go 사이드카.** 고정 loopback 49218(점유 시 OS 할당). `//go:embed` 로 UI 를 바이너리에 포함 →
+  단일 자산. "IPC" 는 실제로는 `fetch` 로 호출하는 로컬 HTTP API.
+- **패키징.** electron-builder 가 `build:server` 로 Go 바이너리를 먼저 빌드 → `extraResources` 로
+  `.app` 에 동봉(server-bin→editor-server), 런타임에 `process.resourcesPath` 로 탐색.
+
+## 데이터 모델 (`internal/editor/form.go`)
+
+`parser.Frontmatter/Episode/Badges/Enclosure` 를 그대로 쓰고 폼/JSON 뷰만 추가한다.
+
+- `EpisodeForm` — 프론트매터 전 항목 + 본문을 `Intro`(badges 마커 앞) / `References` / `Extra`
+  (레퍼런스 뒤 `## 배경음악` 등)로 **무손실** 분해. 구조가 예상과 다르면 `Structured=false`,
+  전체 본문을 `RawBody` 에 verbatim 보존(데이터 손실 0).
+- `Reference{Text, URL, Indent}` — `[text](url)`(URL 있음) 또는 일반 텍스트(URL 빈값), `Indent` 로
+  중첩(4칸/레벨) 표현. `parseLinkItem` 은 `emit(parse)==원본` 이 성립(괄호 포함 URL·`](` 안전).
+
+## HTTP API (`internal/editor/editor.go`, `/_write/api/...`)
+
+| 메서드·경로 | 동작 |
+| --- | --- |
+| `GET /api/episodes` | 목록(id/title/date/duration, 날짜 내림차순) |
+| `GET /api/episodes/{id}` | `EpisodeForm`(프론트매터 + 본문 파싱) |
+| `POST /api/episodes` | 생성(id 필수·중복 409) |
+| `PUT /api/episodes/{id}` | 수정(path id 기준 — 본문 id 무시 → URL/guid 불변) |
+| `DELETE /api/episodes/{id}` | 삭제 |
+| `POST /api/preview` | 폼 → 메모리 Episode 합성 → `builder.BuildEpisodePage` 렌더 HTML(저장 없이) |
+
+- 그 외 경로는 `public/` 정적 서빙(미리보기가 참조하는 `/styles.css`·`/badges/*`·`/images/*`).
+  `/` → `/_write/` 리다이렉트. 미리보기는 반환 HTML 을 `<iframe srcdoc>` 에 주입(절대경로 자산이
+  에디터 서버 오리진에서 해결).
+- 스토어 에러 → HTTP 코드(400/404/409/500). `decodeForm` 은 `DisallowUnknownFields`.
+
+## 합성기 (`internal/editor/compose.go`) — 핵심 계약
+
+**RSS 피드 골든 테스트는 파싱된 프론트매터 값에만 의존하지 YAML 스타일에는 의존하지 않는다**
+(`feed.go` 는 본문을 읽지 않음). 따라서 합성 결과가 **재파싱 시 동일한 `Frontmatter` 값**을 내면
+`BuildFeed` 는 바이트 동일 → 골든 통과.
+
+- 프론트매터: `yaml.Marshal` 대신 **고정 키 순서 커스텀 직렬화**.
+- title/description/description2: **리터럴 블록 스칼라 `|`** + chomping 지시자로 trailing newline
+  정확 재현(`\n` 0개→`|-`, 1개→`|`, 2+개→`|+`). 콜론(`VCS: SCCS`)·여러 문단도 안전.
+- `duration` 항상 큰따옴표(60진수 함정 차단). `badges` 는 비어있지 않은 필드만 struct 순서로.
+- 본문: `intro + "\n\n<!--badges-->" + (refs? "\n\n## 레퍼런스:\n\n"+목록) + (extra? "\n\n"+extra)`.
+  빈 섹션 생략(레퍼런스 없는 "Breaks" 회차에 빈 헤딩 안 생김).
+
+### 정규화 주의 (1회 한정, 무해)
+
+기존 파일을 도구로 저장하면 **프론트매터 스타일만** 1회 정규화된다(`title: >`→`|`, google 뱃지를
+struct 순서로 이동). 측정: 23편 재출력 시 총 65줄 변경, **전부 프론트매터 스타일**, 본문(중첩
+레퍼런스 포함)은 바이트 동일. **값·피드는 라운드트립/피드 동일성 테스트로 불변 증명**.
+
+## UI (`internal/editor/assets/`, 프레임워크 없음)
+
+- 목록 사이드바(검색·날짜 내림차순) + 구조화 폼(메타/오디오/뱃지/본문).
+- 레퍼런스 행 편집(텍스트+URL+하위 들여쓰기 체크, 드래그 정렬).
+- **로컬 mp3 선택 → size·duration 자동 채움**: `<input type=file>` 로 `file.size`,
+  숨은 `<audio>` 메타데이터로 `MM:SS`. 파일은 업로드하지 않음(mp3 호스팅 별개) — 두 값만 읽음.
+- 미리보기 `<iframe srcdoc>`. 신규 시 id→enclosure URL 자동 생성, 수정 시 id read-only(guid 보호).
+
+## 빌드 / 실행
+
+```bash
+# Go 측(완전 검증 가능)
+go test ./internal/editor/        # 라운드트립·피드 동일성·핸들러·스토어
+go run ./cmd/app -repo .          # 사이드카 단독 기동 → http://127.0.0.1:49218/_write/
+
+# 데스크톱 앱
+cd desktop
+npm install
+npm start                         # build:server + electron .(개발 실행)
+npm run dist                      # → dist/mac-arm64/RetroTech Editor.app (코드사이닝 없음)
+```
+
+## 테스트 (상세: [TESTS.md](../TESTS.md))
+
+- `compose_test.go` — 23편 전수 라운드트립(프론트매터 값 동일 + 구조화 본문 바이트 동일 +
+  `BuildFeed` 바이트 동일), 블록 스칼라 chomping, `parseLinkItem` 가역성, 빈 섹션 생략.
+- `store_test.go` — CRUD·중복·미존재·unsafe id(path traversal)·본문 id 무시.
+- `editor_test.go` — HTTP 핸들러 전수·에러 코드·미리보기·UI/자산 서빙.
+
+## 미검증 / 후속
+
+- **GUI 픽셀 렌더**: 개발 환경(디스플레이/Electron 헤드리스 제약)에서 미수행. 서버/API/자산/JS·
+  패키징은 검증. 실제 화면은 `npm start` 또는 `.app` 으로 확인.
+- 후속 후보: 미리보기에 `## 배경음악` 같은 raw 섹션 구조화, 회차 복제, 정렬/그룹 보기.

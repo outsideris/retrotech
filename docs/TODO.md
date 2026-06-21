@@ -71,6 +71,27 @@
 - [ ] **피드 `<generator>` 문자열.** 현재 `RSS for Node`(옛 rss 라이브러리 잔재, 부정확). `RetroTech` 등으로 바꾸거나 둘지 결정. (채널 `<description>` 은 2026-06-16 에 실제 설명으로 교체 완료.)
 - ℹ️ **비가시 차이(조치 불필요, 렌더 동일):** 에피소드 h1 후행 개행 없음, `<time dateTime>` 속성이 UTC(표시는 동일), 본문 아포스트로피 `'`↔`&#x27;`(둘 다 `'` 로 렌더), next/image 내부 속성(`data-nimg` 등) 생략.
 
+## Phase 8 — 에피소드 관리 데스크톱 앱 (RetroTech Editor)
+
+> 에피소드를 마크다운 직접 편집 없이 폼으로 관리하는 Electron 앱. 참고 앱(`blog.outsider.ne.kr`)의
+> 구조 — Electron 얇은 셸 + Go 사이드카 HTTP 서버 + 임베드 폼 UI — 를 그대로 가져왔다.
+> 상세 계획·설계: **[plan/episode-editor-app.md](./plan/episode-editor-app.md)**.
+
+- [x] **A. 데이터 계층** — `internal/editor` 스토어 + 합성기. `EpisodeForm`↔마크다운 무손실 변환,
+  리터럴 블록 스칼라(chomping)로 trailing newline 보존, atomic write, 슬러그 검증. 23편 전수
+  라운드트립 + `BuildFeed` 바이트 동일성 테스트로 구독자 계약 보호.
+- [x] **B. 웹 계층** — `internal/editor/editor.go` HTTP 서버(`//go:embed` UI + JSON API +
+  `builder.BuildEpisodePage` 재사용 미리보기) + `cmd/app` 사이드카(`EDITOR_PORT` 출력). 핸들러 테스트.
+- [x] **C. 폼 UI** — 목록·구조화 폼·레퍼런스 행 편집(드래그 정렬)·로컬 mp3 → size/duration 자동
+  채움·미리보기 iframe. 프레임워크 없음.
+- [x] **D. Electron 래퍼 + 패키징** — `desktop/`(main.js·package.json·아이콘), electron-builder 로
+  `RetroTech Editor.app` 빌드 검증(Go 서버 동봉).
+
+**완료(2026-06-21).** Go 측 전 구간 테스트·빌드·스모크 검증. 정규화는 1회 한정 프론트매터 스타일만
+(값·피드 불변, 테스트로 증명). GUI 픽셀 렌더는 환경 제약으로 미검증(사용자가 `npm start`/`.app` 로 확인).
+
+- [ ] (후속) 미리보기에 raw 섹션(`## 배경음악`) 구조화, 회차 복제, 정렬/그룹 보기.
+
 ## 운영(미검증, 확인 필요)
 
 - [ ] 운영 호스트의 gzip/brotli 압축·정적 자산 캐시 헤더 설정 확인(로컬에선 검증 불가 — [PERFORMANCE.md](./PERFORMANCE.md#측정-방법--한계-먼저-읽을-것)).
