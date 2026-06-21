@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RetroTech 에피소드 관리</title>
+    <link rel="stylesheet" href="/_write/app.css" />
+  </head>
+  <body>
+    <div class="app">
+      <!-- Episode list -->
+      <aside class="sidebar">
+        <div class="sidebar-head">
+          <h1>에피소드</h1>
+          <button id="btn-new" class="primary" type="button">+ 새 에피소드</button>
+        </div>
+        <input id="filter" class="filter" type="search" placeholder="제목/ID 검색" autocomplete="off" />
+        <ul id="episode-list" class="episode-list" aria-label="에피소드 목록"></ul>
+      </aside>
+
+      <!-- Editor form -->
+      <main class="editor">
+        <div id="empty-state" class="empty-state">
+          <p>왼쪽에서 에피소드를 선택하거나 <strong>새 에피소드</strong>를 만드세요.</p>
+        </div>
+
+        <form id="form" class="form" hidden autocomplete="off">
+          <div class="form-bar">
+            <div class="form-title" id="form-title">에피소드</div>
+            <div class="form-actions">
+              <button id="btn-preview" type="button">미리보기</button>
+              <button id="btn-delete" type="button" class="danger">삭제</button>
+              <button id="btn-save" type="submit" class="primary">저장</button>
+            </div>
+          </div>
+          <div id="status" class="status" role="status" aria-live="polite"></div>
+
+          <fieldset>
+            <legend>메타데이터</legend>
+            <label class="field">
+              <span>ID (파일명 = URL 슬러그)</span>
+              <input id="f-id" name="id" type="text" placeholder="예: 2h" />
+              <small id="id-help" class="hint">저장 후에는 변경할 수 없습니다 (RSS guid 보호).</small>
+            </label>
+            <label class="field">
+              <span>제목</span>
+              <input id="f-title" name="title" type="text" />
+            </label>
+            <div class="row">
+              <label class="field">
+                <span>날짜 (YYYY/MM/DD)</span>
+                <input id="f-date" name="date" type="text" placeholder="2026/06/21" />
+              </label>
+              <label class="field">
+                <span>작성자</span>
+                <input id="f-author" name="author" type="text" />
+              </label>
+            </div>
+            <label class="field">
+              <span>설명 (description)</span>
+              <textarea id="f-description" name="description" rows="3"></textarea>
+            </label>
+            <label class="field">
+              <span>설명2 (description2 — 피드 전용 추가 텍스트, 선택)</span>
+              <textarea id="f-description2" name="description2" rows="3"></textarea>
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>오디오</legend>
+            <label class="field">
+              <span>오디오 URL (enclosure)</span>
+              <input id="f-enclosure-url" name="enclosureUrl" type="text" />
+            </label>
+            <div class="row">
+              <label class="field">
+                <span>크기 (bytes)</span>
+                <input id="f-enclosure-size" name="enclosureSize" type="number" min="0" />
+              </label>
+              <label class="field">
+                <span>길이 (MM:SS)</span>
+                <input id="f-duration" name="duration" type="text" placeholder="17:27" />
+              </label>
+            </div>
+            <label class="field file-pick">
+              <span>로컬 mp3 선택 → 크기·길이 자동 채움</span>
+              <input id="f-audio" type="file" accept=".mp3,audio/mpeg" />
+              <small id="audio-help" class="hint"></small>
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>구독 뱃지 (비우면 쇼 기본값 사용)</legend>
+            <label class="field"><span>Apple</span><input id="f-apple" type="text" /></label>
+            <label class="field"><span>YouTube</span><input id="f-youtube" type="text" /></label>
+            <label class="field"><span>Spotify</span><input id="f-spotify" type="text" /></label>
+            <label class="field"><span>Google</span><input id="f-google" type="text" /></label>
+            <label class="field"><span>RSS</span><input id="f-rss" type="text" /></label>
+          </fieldset>
+
+          <fieldset id="structured-body">
+            <legend>본문</legend>
+            <label class="field">
+              <span>도입부 (intro)</span>
+              <textarea id="f-intro" name="intro" rows="4"></textarea>
+            </label>
+
+            <div class="refs-head">
+              <span>레퍼런스</span>
+              <button id="btn-add-ref" type="button">+ 항목 추가</button>
+            </div>
+            <ol id="refs" class="refs" aria-label="레퍼런스 목록"></ol>
+
+            <label class="field">
+              <span>추가 섹션 (예: ## 배경음악 — 그대로 보존, 선택)</span>
+              <textarea id="f-extra" name="extra" rows="4"></textarea>
+            </label>
+          </fieldset>
+
+          <fieldset id="raw-body" hidden>
+            <legend>본문 (원문 마크다운)</legend>
+            <p class="hint">
+              이 에피소드의 본문은 자동 구조화 형식과 달라(중첩/특수 구성) 원문 그대로 편집합니다.
+            </p>
+            <label class="field">
+              <textarea id="f-rawbody" name="rawBody" rows="20" class="mono"></textarea>
+            </label>
+          </fieldset>
+        </form>
+      </main>
+
+      <!-- Preview -->
+      <section id="preview-panel" class="preview" hidden aria-label="미리보기">
+        <div class="preview-bar">
+          <span>미리보기</span>
+          <button id="btn-close-preview" type="button">닫기</button>
+        </div>
+        <iframe id="preview-frame" title="에피소드 미리보기"></iframe>
+      </section>
+    </div>
+
+    <!-- Reference row template -->
+    <template id="ref-template">
+      <li class="ref-row">
+        <button type="button" class="ref-handle" title="끌어서 순서 변경" aria-hidden="true">⋮⋮</button>
+        <label class="ref-nest" title="하위 항목으로 들여쓰기">
+          <input type="checkbox" class="ref-indent" /> 하위
+        </label>
+        <input type="text" class="ref-text" placeholder="표시 텍스트" />
+        <input type="text" class="ref-url" placeholder="URL (비우면 일반 텍스트)" />
+        <button type="button" class="ref-remove danger" title="삭제">×</button>
+      </li>
+    </template>
+
+    <script src="/_write/app.js" type="module"></script>
+  </body>
+</html>
