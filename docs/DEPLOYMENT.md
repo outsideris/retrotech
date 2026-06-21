@@ -15,7 +15,7 @@
 
 | 항목 | 값 | 비고 |
 | --- | --- | --- |
-| 빌드 명령 | `bash scripts/cf-build.sh` | `go run ./cmd/build` 실행 후 배포 결과를 텔레그램 Worker 로 통지. 알림이 필요 없으면 `go run ./cmd/build` 만으로도 됨 |
+| 빌드 명령 | `bash scripts/cf-build.sh` | `go test ./...`(게이트) → `go run ./cmd/build` → 배포 결과를 텔레그램 Worker 로 통지. **테스트/빌드 실패 시 non-zero 종료 → Cloudflare 가 배포 차단(직전 버전 유지)**. 게이트·알림이 필요 없으면 `go run ./cmd/build` 만으로도 됨 |
 | 출력 디렉터리 | `dist` | `cmd/build` 가 `dist/` 에 생성 |
 | `ANALYTICS_ID` (환경변수, 프로덕션) | GA4 측정 ID(예 `G-PVJ12C7HR6`) | 설정 시에만 GA 스니펫을 주입. 미설정(프리뷰/로컬/CI)이면 분석 코드 미포함 |
 
@@ -28,12 +28,12 @@
 텔레그램 전송 자체는 별도 Cloudflare Worker(`cf-webhook.outsideris.workers.dev`)가 담당하고, 이 사이트는 **빌드 종료 코드(0=성공)에 따라** 그 Worker 로 결과를 POST 한다. (Cloudflare 네이티브 알림 웹훅은 자체 스키마라 이 Worker 의 커스텀 페이로드와 맞지 않아 빌드 래퍼 방식을 쓴다.)
 
 ### 동작 — `scripts/cf-build.sh`
-1. `go run ./cmd/build` 실행 후 종료 코드 캡처(Cloudflare Pages 는 이 종료 코드로 성공/실패를 판정).
-2. 성공(0)/실패(≠0)에 따라 Worker 의 **`/webhook/generic`** 으로 POST(상태 이모지·라벨은 Worker 가 붙인다):
+1. **`go test ./...`(게이트)** → 통과하면 `go run ./cmd/build`. 둘 중 하나라도 실패하면 멈추고 non-zero 로 종료(Cloudflare 는 이 종료 코드로 성공/실패를 판정 → 실패 시 배포 차단, 직전 버전 유지).
+2. 성공(0)/실패(≠0)에 따라 Worker 의 **`/webhook/generic`** 으로 POST(상태 이모지·라벨은 Worker 가 붙인다). 실패 메시지엔 실패 단계(`test`/`build`)를 표시:
    ```json
-   {"status":"success|failure","project":"retrotech","branch":"<CF_PAGES_BRANCH>","commitSha":"<CF_PAGES_COMMIT_SHA>","url":"<CF_PAGES_URL>","message":"실패 시 build exit N"}
+   {"status":"success|failure","project":"retrotech","branch":"<CF_PAGES_BRANCH>","commitSha":"<CF_PAGES_COMMIT_SHA>","url":"<CF_PAGES_URL>","message":"실패 시 <phase> failed (exit N)"}
    ```
-3. 빌드의 종료 코드로 그대로 종료 → Pages 가 성공/실패를 정확히 표시.
+3. 종료 코드로 그대로 종료 → Pages 가 성공/실패를 정확히 표시.
 
 - 웹훅 전송 실패는 무시한다(배포 결과에 영향 없음). `DEPLOY_WEBHOOK_URL` 미설정이면 알림만 건너뛴다.
 - 빈 필드는 Worker 가 자동 생략하므로 항상 포함해 보낸다. generic 어댑터가 `status`(`failure`→`failed`)·`project`·`branch`·`commitSha`·`url`·`message` 를 최상위 키에서 읽는다.
