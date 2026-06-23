@@ -27,6 +27,10 @@ const (
 	siteDescription = "기술의 역사를 살펴보는 팟캐스트입니다"
 	coverImage      = SiteURL + "/images/cover.jpg"
 	stylesheetPath  = "/styles.css"
+	// showAuthor is the podcast host. Every episode is by the same host, so the
+	// author is hard-coded here (byline + feed creator) rather than stored in
+	// per-episode frontmatter.
+	showAuthor = "Outsider"
 )
 
 // coverPreload preloads the hero cover image (the LCP element on the home and

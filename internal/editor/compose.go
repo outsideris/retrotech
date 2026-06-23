@@ -34,7 +34,8 @@ func composeFrontmatter(f EpisodeForm) string {
 	if f.Description2 != "" {
 		b.WriteString(blockScalar("description2", f.Description2))
 	}
-	b.WriteString("author: " + scalar(f.Author) + "\n")
+	// No author: the host is always the same, so it's hard-coded in the
+	// builder (byline + feed creator), not stored per-episode.
 	b.WriteString("enclosure:\n")
 	b.WriteString("  url: " + scalar(f.EnclosureURL) + "\n")
 	b.WriteString("  size: " + strconv.FormatInt(f.EnclosureSize, 10) + "\n")

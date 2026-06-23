@@ -86,7 +86,7 @@ func TestAPIEpisodeLifecycle(t *testing.T) {
 
 	form := EpisodeForm{
 		ID: "9z", Title: "Test Episode\n", Date: "2026/06/21",
-		Description: "설명\n", Author: "Outsider",
+		Description:   "설명\n",
 		EnclosureURL:  "https://retrotech-episodes.outsider.dev/9z.mp3",
 		EnclosureSize: 1000, Duration: "10:00",
 		Structured: true, Intro: "intro",
@@ -166,7 +166,7 @@ func TestAPIPreviewRendersEpisode(t *testing.T) {
 	srv, _ := newTestServer(t)
 	form := EpisodeForm{
 		ID: "2h", Title: "Preview Title", Date: "2026/06/21",
-		Description: "desc", Author: "Outsider", Duration: "5:00",
+		Description: "desc", Duration: "5:00",
 		Structured: true, Intro: "hello world",
 		References: []Reference{{Text: "Go", URL: "https://go.dev"}},
 	}
@@ -231,7 +231,7 @@ func TestDraftAPILifecycle(t *testing.T) {
 	if err := json.Unmarshal(body, &created); err != nil {
 		t.Fatal(err)
 	}
-	if created.Slug == "" || created.Form.Author != "Outsider" {
+	if created.Slug == "" || !created.Form.Structured {
 		t.Fatalf("create response: %s", body)
 	}
 	slug := created.Slug

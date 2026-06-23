@@ -16,7 +16,6 @@ func sampleForm() EpisodeForm {
 		Title:         "Test Episode\n",
 		Date:          "2026/06/21",
 		Description:   "테스트 설명\n",
-		Author:        "Outsider",
 		EnclosureURL:  "https://retrotech-episodes.outsider.dev/9z.mp3",
 		EnclosureSize: 12345678,
 		Duration:      "12:34",

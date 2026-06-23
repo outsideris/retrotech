@@ -82,7 +82,8 @@ retrotech/
       ...
   description2: |             # (선택) RSS description 에만 줄바꿈으로 덧붙는 보조 설명
       ...
-  author: Outsider
+  # author 는 프론트매터에 없다 — 호스트(Outsider)는 항상 동일해 빌더에 하드코딩
+  # (피드 dc:creator/itunes:author + 에피소드 바이라인). builder.showAuthor 상수.
   enclosure:                  # 팟캐스트 오디오 첨부
     url: https://retrotech-episodes.outsider.dev/2g.mp3
     size: 66997696            # 바이트 단위 파일 크기

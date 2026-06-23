@@ -209,7 +209,6 @@ function fillForm(f) {
   set("f-id", f.id);
   set("f-title", f.title);
   set("f-date", f.date);
-  set("f-author", f.author);
   set("f-description", f.description);
   set("f-description2", f.description2);
   set("f-enclosure-url", f.enclosureUrl);
@@ -243,7 +242,6 @@ function readForm() {
     date: get("f-date").trim(),
     description: clean(get("f-description")),
     description2: clean(get("f-description2")),
-    author: get("f-author").trim(),
     enclosureUrl: get("f-enclosure-url").trim(),
     enclosureSize: Number(get("f-enclosure-size")) || 0,
     duration: get("f-duration").trim(),

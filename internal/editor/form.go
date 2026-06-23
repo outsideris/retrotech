@@ -51,7 +51,6 @@ type EpisodeForm struct {
 	Date          string        `json:"date"`
 	Description   string        `json:"description"`
 	Description2  string        `json:"description2"`
-	Author        string        `json:"author"`
 	EnclosureURL  string        `json:"enclosureUrl"`
 	EnclosureSize int64         `json:"enclosureSize"`
 	Duration      string        `json:"duration"`
@@ -83,7 +82,6 @@ func EpisodeToForm(ep parser.Episode) EpisodeForm {
 		Date:          ep.Date,
 		Description:   ep.Description,
 		Description2:  ep.Description2,
-		Author:        ep.Author,
 		EnclosureURL:  ep.Enclosure.URL,
 		EnclosureSize: ep.Enclosure.Size,
 		Duration:      ep.Duration,

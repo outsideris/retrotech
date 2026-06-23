@@ -249,7 +249,6 @@ func formToEpisode(f EpisodeForm) parser.Episode {
 			Date:         f.Date,
 			Description:  f.Description,
 			Description2: f.Description2,
-			Author:       f.Author,
 			Enclosure:    parser.Enclosure{URL: f.EnclosureURL, Size: f.EnclosureSize},
 			Duration:     f.Duration,
 			Badges:       f.Badges,

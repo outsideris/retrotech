@@ -22,7 +22,7 @@ func TestDraftCreateGetSaveListDelete(t *testing.T) {
 	if slug != "draft-20260624-010530" {
 		t.Errorf("slug = %q", slug)
 	}
-	if form.Date != "2026/06/24" || form.Author != "Outsider" || !form.Structured {
+	if form.Date != "2026/06/24" || !form.Structured {
 		t.Errorf("initial form: %#v", form)
 	}
 	if _, err := os.Stat(filepath.Join(dir, slug+".json")); err != nil {
@@ -184,13 +184,13 @@ func TestDraftPublishRejectsInvalidAndDuplicateID(t *testing.T) {
 // TestComposeFileHandlesEmptyFields covers publishing a barely-filled draft:
 // the composed episode must still be valid, re-parseable markdown.
 func TestComposeFileHandlesEmptyFields(t *testing.T) {
-	form := EpisodeForm{ID: "x1", Date: "2026/06/24", Author: "Outsider", Structured: true}
+	form := EpisodeForm{ID: "x1", Date: "2026/06/24", Structured: true}
 	file := ComposeFile(form)
 	re := reparse(t, file, "x1")
 	if re.Title != "" || re.Description != "" {
 		t.Errorf("empty fields not preserved: title=%q desc=%q", re.Title, re.Description)
 	}
-	if re.Date != "2026/06/24" || re.Author != "Outsider" {
-		t.Errorf("scalar fields: %#v", re.Frontmatter)
+	if re.Date != "2026/06/24" {
+		t.Errorf("date not preserved: %#v", re.Frontmatter)
 	}
 }

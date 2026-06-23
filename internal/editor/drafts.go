@@ -68,7 +68,6 @@ func (ds *DraftStore) Create() (string, EpisodeForm, error) {
 	}
 	form := EpisodeForm{
 		Date:       ds.now().Format("2006/01/02"),
-		Author:     "Outsider",
 		Structured: true,
 	}
 	if err := ds.write(slug, form); err != nil {

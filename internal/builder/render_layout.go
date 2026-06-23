@@ -65,12 +65,13 @@ func headHTML(title, ogTitle string, site Site, headExtra string) string {
 }
 
 // episodeMeta is the byline row beneath an episode's <h1>: author, date, a Back
-// link and the dark-mode toggle.
+// link and the dark-mode toggle. The author is always the show host, so it is
+// hard-coded rather than read from per-episode frontmatter.
 func episodeMeta(ep parser.Episode) string {
 	return `<div class="rt-mb-8 rt-flex rt-gap-3 rt-items-center">` +
 		`<div class="rt-grow dark:rt-text-gray-400 rt-text-gray-600">` +
 		`<div class="rt-not-prose rt-flex rt-flex-wrap rt-items-center rt-gap-1">` +
-		html.EscapeString(ep.Author) + `,<time dateTime="` + isoDate(ep.Date) + `">` + displayDate(ep.Date) + `</time>` +
+		showAuthor + `,<time dateTime="` + isoDate(ep.Date) + `">` + displayDate(ep.Date) + `</time>` +
 		`</div></div>` +
 		`<div class="rt-flex rt-items-center rt-gap-3 print:rt-hidden">` +
 		`<a href="/episodes">Back</a>` + darkToggle +
