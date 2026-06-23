@@ -58,6 +58,31 @@ Electron(desktop/main.js)  ──spawn──▶  Go 사이드카(cmd/app)  ─�
   에디터 서버 오리진에서 해결).
 - 스토어 에러 → HTTP 코드(400/404/409/500). `decodeForm` 은 `DisallowUnknownFields`.
 
+## 초안(draft) → 발행 워크플로우 (`internal/editor/drafts.go`)
+
+"새 에피소드"는 바로 발행하지 않고 **초안**을 만든다. 초안은 편집 중 자동 저장되고, 발행 전까지
+사이트·피드에 보이지 않으며, **발행** 시 비로소 에피소드가 된다.
+
+- **저장 위치·형식:** `content/drafts/*.json` (에피소드 마크다운 아님). 초안은 **`EpisodeForm` 전체**
+  (목표 episode id·빈 필드·structured/raw·레퍼런스)를 보존해야 하는데, 에피소드 frontmatter 엔 id
+  필드가 없으므로(파일명=id) JSON 이 자연스럽다. 사이트 빌드/피드는 `content/episodes` 만 읽어 초안은
+  비공개. `content/drafts/` 는 `.gitignore`(로컬 작업 상태).
+- **`DraftStore`** (주입식 `now` 로 결정적 테스트): `Create`(빈 폼·오늘 날짜·`draft-YYYYMMDD-HHMMSS`
+  slug, 동초 충돌 시 `-2`), `List`(최근 수정 내림차순), `Get`/`Save`(자동저장)/`Delete`,
+  `Publish`(폼→`Store.Create` 로 id 검증·중복 거부→초안 삭제).
+
+| 메서드·경로 | 동작 |
+| --- | --- |
+| `GET /api/drafts` | 초안 목록(slug/title/id/updated) |
+| `POST /api/drafts` | 빈 초안 생성 → `{slug, form}` |
+| `GET/PUT/DELETE /api/drafts/{slug}` | 조회 / 저장(자동) / 삭제 |
+| `POST /api/drafts/{slug}/publish` | 발행: `content/episodes/<id>.md` 기록 + 초안 삭제 → `{id}` |
+
+- **UI:** 사이드바 **초안 섹션**(검색창과 에피소드 목록 사이, 비면 숨김). 초안 편집은 700ms 디바운스
+  자동저장("편집 중…→저장 중…→저장됨"), **발행** 버튼은 최신 폼 flush 후 publish→에피소드로 전환.
+  모드별 UI: 초안=id 편집·발행·자동저장 / 에피소드=id read-only·명시 저장. 발행은 파일만 기록하며
+  배포(빌드/푸시)는 기존처럼 별도(git 미연동).
+
 ## 합성기 (`internal/editor/compose.go`) — 핵심 계약
 
 **RSS 피드 골든 테스트는 파싱된 프론트매터 값에만 의존하지 YAML 스타일에는 의존하지 않는다**

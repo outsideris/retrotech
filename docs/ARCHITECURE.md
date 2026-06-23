@@ -45,7 +45,8 @@ retrotech/
 │  └─ editor/              # 에피소드 관리 앱 백엔드(아래 "에피소드 관리 데스크톱 앱")
 │     ├─ form.go           #   EpisodeForm↔에피소드 변환(본문 무손실 구조화)
 │     ├─ compose.go        #   EpisodeForm → 마크다운(블록 스칼라·고정 키 순서)
-│     ├─ store.go          #   파일 CRUD·슬러그 검증·atomic write
+│     ├─ store.go          #   에피소드 파일 CRUD·슬러그 검증·atomic write
+│     ├─ drafts.go         #   초안(JSON) 저장·발행(content/drafts → content/episodes)
 │     ├─ editor.go         #   HTTP mux·JSON API·미리보기, //go:embed assets
 │     └─ assets/           #   임베드 폼 SPA(index.html·app.js·app.css)
 ├─ desktop/                # Electron 래퍼(앱 셸). server-bin/node_modules/dist 는 gitignore
@@ -53,7 +54,8 @@ retrotech/
 │  ├─ package.json         #   electron + electron-builder(build:server/start/dist)
 │  └─ icons/               #   앱 아이콘(public/images/cover 에서 생성)
 ├─ content/
-│  └─ episodes/            # *.md (프론트매터 + 본문). 0, 1a…1n, 2a…2g, 250127-breaks
+│  ├─ episodes/            # *.md (프론트매터 + 본문). 0, 1a…1n, 2a…2g, 250127-breaks
+│  └─ drafts/              # 에디터 초안 *.json (gitignore·로컬 작업 상태, 발행 전까지 비공개)
 ├─ public/                 # 정적 자산. 빌드가 dist/ 루트로 복사
 │  ├─ images/ badges/ favicon.* site.webmanifest robots.txt ads.txt
 │  ├─ styles.css           # 테마+보정 CSS 컴파일본(빌드가 /assets/styles.<hash>.css 로 핑거프린트)
@@ -143,10 +145,14 @@ go run ./cmd/build
 - **`cmd/app`** — 고정 loopback 49218(점유 시 OS 할당)에 listen → `EDITOR_PORT <n>` 출력(Electron 이
   읽어 URL 결정) → `internal/editor` 서빙. `-repo` 로 프로젝트 루트 지정(`content/episodes` 검증).
 - **`internal/editor`** — `editor.go`(HTTP mux: `/_write/` UI, `/_write/api/episodes[/{id}]` CRUD,
-  `/_write/api/preview`, `/` → `public/` 정적 서빙), `store.go`(파일 CRUD·슬러그 검증·atomic write),
+  `/_write/api/drafts[/{slug}[/publish]]`, `/_write/api/preview`, `/` → `public/` 정적 서빙),
+  `store.go`(에피소드 파일 CRUD·슬러그 검증·atomic write), `drafts.go`(초안 JSON 저장·발행),
   `form.go`(본문↔구조 무손실 파싱), `compose.go`(마크다운 합성). **합성 계약:** 피드는 프론트매터 값만
   읽으므로(`feed.go` 본문 미사용), 합성 결과가 재파싱 시 동일 값을 내면 `BuildFeed` 바이트 동일 →
   골든 통과. 기존 파일 저장 시 프론트매터 스타일만 1회 정규화(값·피드 불변, 테스트로 증명).
+- **초안→발행:** "새 에피소드"는 `content/drafts/<slug>.json`(폼 전체) 초안을 만들고 자동 저장한다.
+  사이트 빌드/피드는 `content/episodes` 만 읽어 초안은 비공개; **발행** 시 폼을 `content/episodes/<id>.md`
+  로 합성하고 초안을 지운다. `content/drafts/` 는 gitignore.
 - **`desktop/`** — Electron 래퍼. `main.js` 가 repo 폴더 결정(env→config.json→네이티브 picker) → 서버
   spawn → `http://127.0.0.1:<port>/_write/` 로드. electron-builder 가 Go 바이너리를 `extraResources`
   로 `.app` 에 동봉(server-bin→editor-server). `npm run dist` → `RetroTech Editor.app`(arm64,
