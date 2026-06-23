@@ -218,3 +218,75 @@ func TestServesUIAndPublicAssets(t *testing.T) {
 		t.Errorf("root: status %d, location %q", resp.StatusCode, resp.Header.Get("Location"))
 	}
 }
+
+func TestDraftAPILifecycle(t *testing.T) {
+	srv, repo := newTestServer(t)
+
+	resp, body := do(t, srv, "POST", "/_write/api/drafts", nil)
+	mustStatus(t, resp, http.StatusCreated)
+	var created struct {
+		Slug string      `json:"slug"`
+		Form EpisodeForm `json:"form"`
+	}
+	if err := json.Unmarshal(body, &created); err != nil {
+		t.Fatal(err)
+	}
+	if created.Slug == "" || created.Form.Author != "Outsider" {
+		t.Fatalf("create response: %s", body)
+	}
+	slug := created.Slug
+	if _, err := os.Stat(filepath.Join(repo, "content", "drafts", slug+".json")); err != nil {
+		t.Fatalf("draft json not written: %v", err)
+	}
+
+	resp, body = do(t, srv, "GET", "/_write/api/drafts", nil)
+	mustStatus(t, resp, http.StatusOK)
+	var list []DraftSummary
+	json.Unmarshal(body, &list)
+	if len(list) != 1 || list[0].Slug != slug {
+		t.Errorf("draft list: %#v", list)
+	}
+
+	f := created.Form
+	f.ID, f.Title = "2h", "Draft Title"
+	f.EnclosureURL, f.Duration = "https://retrotech-episodes.outsider.dev/2h.mp3", "5:00"
+	resp, _ = do(t, srv, "PUT", "/_write/api/drafts/"+slug, f)
+	mustStatus(t, resp, http.StatusOK)
+
+	resp, body = do(t, srv, "GET", "/_write/api/drafts/"+slug, nil)
+	mustStatus(t, resp, http.StatusOK)
+	var gf EpisodeForm
+	json.Unmarshal(body, &gf)
+	if gf.ID != "2h" || gf.Title != "Draft Title" {
+		t.Errorf("draft get: %#v", gf)
+	}
+
+	resp, body = do(t, srv, "POST", "/_write/api/drafts/"+slug+"/publish", nil)
+	mustStatus(t, resp, http.StatusOK)
+	var pub map[string]string
+	json.Unmarshal(body, &pub)
+	if pub["id"] != "2h" {
+		t.Errorf("publish response: %s", body)
+	}
+
+	// Episode now exists; the draft is gone.
+	resp, _ = do(t, srv, "GET", "/_write/api/episodes/2h", nil)
+	mustStatus(t, resp, http.StatusOK)
+	resp, _ = do(t, srv, "GET", "/_write/api/drafts/"+slug, nil)
+	mustStatus(t, resp, http.StatusNotFound)
+}
+
+func TestDraftPublishWithoutIDIsRejected(t *testing.T) {
+	srv, _ := newTestServer(t)
+	_, body := do(t, srv, "POST", "/_write/api/drafts", nil)
+	var created struct {
+		Slug string `json:"slug"`
+	}
+	json.Unmarshal(body, &created)
+
+	// New draft has no episode id yet → publish is a 400, draft survives.
+	resp, _ := do(t, srv, "POST", "/_write/api/drafts/"+created.Slug+"/publish", nil)
+	mustStatus(t, resp, http.StatusBadRequest)
+	resp, _ = do(t, srv, "GET", "/_write/api/drafts/"+created.Slug, nil)
+	mustStatus(t, resp, http.StatusOK)
+}

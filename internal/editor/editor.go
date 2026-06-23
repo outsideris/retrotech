@@ -32,6 +32,7 @@ type Config struct {
 // Editor serves the episode management UI, its JSON API, and HTML previews.
 type Editor struct {
 	store     *Store
+	drafts    *DraftStore
 	publicDir string
 	assets    fs.FS
 	year      int
@@ -51,6 +52,7 @@ func New(cfg Config) (*Editor, error) {
 	}
 	return &Editor{
 		store:     NewStore(episodesDir),
+		drafts:    NewDraftStore(filepath.Join(cfg.RepoDir, "content", "drafts")),
 		publicDir: filepath.Join(cfg.RepoDir, "public"),
 		assets:    sub,
 		year:      time.Now().Year(),
@@ -75,6 +77,12 @@ func (e *Editor) Handler() http.Handler {
 	mux.HandleFunc("PUT /_write/api/episodes/{id}", e.handleUpdate)
 	mux.HandleFunc("DELETE /_write/api/episodes/{id}", e.handleDelete)
 	mux.HandleFunc("POST /_write/api/preview", e.handlePreview)
+	mux.HandleFunc("GET /_write/api/drafts", e.handleDraftList)
+	mux.HandleFunc("POST /_write/api/drafts", e.handleDraftCreate)
+	mux.HandleFunc("GET /_write/api/drafts/{slug}", e.handleDraftGet)
+	mux.HandleFunc("PUT /_write/api/drafts/{slug}", e.handleDraftSave)
+	mux.HandleFunc("DELETE /_write/api/drafts/{slug}", e.handleDraftDelete)
+	mux.HandleFunc("POST /_write/api/drafts/{slug}/publish", e.handleDraftPublish)
 	// no-store so an updated app never serves stale UI cached by a previous
 	// version on the same loopback origin (the fixed port keeps the origin
 	// constant across launches).
@@ -141,6 +149,66 @@ func (e *Editor) handleDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (e *Editor) handleDraftList(w http.ResponseWriter, r *http.Request) {
+	list, err := e.drafts.List()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, list)
+}
+
+func (e *Editor) handleDraftCreate(w http.ResponseWriter, r *http.Request) {
+	slug, form, err := e.drafts.Create()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusCreated, map[string]any{"slug": slug, "form": form})
+}
+
+func (e *Editor) handleDraftGet(w http.ResponseWriter, r *http.Request) {
+	form, err := e.drafts.Get(r.PathValue("slug"))
+	if err != nil {
+		writeStoreError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, form)
+}
+
+func (e *Editor) handleDraftSave(w http.ResponseWriter, r *http.Request) {
+	form, err := decodeForm(r)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := e.drafts.Save(r.PathValue("slug"), form); err != nil {
+		writeStoreError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, form)
+}
+
+func (e *Editor) handleDraftDelete(w http.ResponseWriter, r *http.Request) {
+	if err := e.drafts.Delete(r.PathValue("slug")); err != nil {
+		writeStoreError(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// handleDraftPublish promotes a draft to a published episode. The episode id is
+// taken from the draft's form, so an invalid or already-used id is a 400/409
+// the UI shows; on success the new episode id is returned.
+func (e *Editor) handleDraftPublish(w http.ResponseWriter, r *http.Request) {
+	id, err := e.drafts.Publish(r.PathValue("slug"), e.store)
+	if err != nil {
+		writeStoreError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"id": id})
 }
 
 // handlePreview renders the live episode page for the posted form without

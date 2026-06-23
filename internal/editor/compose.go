@@ -99,6 +99,11 @@ func composeReferences(refs []Reference) string {
 // A literal block also sidesteps YAML quoting hazards in the text (a title may
 // contain ": ", a description may span paragraphs).
 func blockScalar(key, value string) string {
+	// An empty value (a freshly published draft may have blank fields) has no
+	// sensible block-scalar form; emit a quoted empty string.
+	if value == "" {
+		return key + ": \"\"\n"
+	}
 	trailing := len(value) - len(strings.TrimRight(value, "\n"))
 	content := value[:len(value)-trailing]
 

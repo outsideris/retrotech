@@ -11,6 +11,10 @@
 /retrotech
 *.out
 
+# Editor app drafts — local in-progress episodes (content/drafts/*.json),
+# auto-saved working state. Published episodes live in content/episodes/.
+/content/drafts/
+
 # Migration scratch (reference build snapshot + screenshots; not committed)
 /_ref_dist/
 /_shots/
