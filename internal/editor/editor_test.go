@@ -195,6 +195,11 @@ func TestServesUIAndPublicAssets(t *testing.T) {
 
 	resp, _ = do(t, srv, "GET", "/_write/app.js", nil)
 	mustStatus(t, resp, http.StatusOK)
+	// Embedded UI must be uncacheable so app updates aren't masked by a stale
+	// cache on the fixed loopback origin.
+	if cc := resp.Header.Get("Cache-Control"); cc != "no-store" {
+		t.Errorf("app.js Cache-Control = %q, want no-store", cc)
+	}
 
 	// public/ asset, used by preview pages.
 	resp, _ = do(t, srv, "GET", "/styles.css", nil)

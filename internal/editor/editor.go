@@ -75,9 +75,20 @@ func (e *Editor) Handler() http.Handler {
 	mux.HandleFunc("PUT /_write/api/episodes/{id}", e.handleUpdate)
 	mux.HandleFunc("DELETE /_write/api/episodes/{id}", e.handleDelete)
 	mux.HandleFunc("POST /_write/api/preview", e.handlePreview)
-	mux.Handle("GET /_write/", http.StripPrefix("/_write", http.FileServerFS(e.assets)))
+	// no-store so an updated app never serves stale UI cached by a previous
+	// version on the same loopback origin (the fixed port keeps the origin
+	// constant across launches).
+	mux.Handle("GET /_write/", noStore(http.StripPrefix("/_write", http.FileServerFS(e.assets))))
 	mux.HandleFunc("/", e.handleRoot)
 	return mux
+}
+
+// noStore marks a handler's responses uncacheable.
+func noStore(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-store")
+		h.ServeHTTP(w, r)
+	})
 }
 
 func (e *Editor) handleList(w http.ResponseWriter, r *http.Request) {
