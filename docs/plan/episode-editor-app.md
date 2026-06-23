@@ -110,6 +110,24 @@ struct 순서로 이동). 측정: 23편 재출력 시 총 65줄 변경, **전부
   숨은 `<audio>` 메타데이터로 `MM:SS`. 파일은 업로드하지 않음(mp3 호스팅 별개) — 두 값만 읽음.
 - 미리보기 `<iframe srcdoc>`. 신규 시 id→enclosure URL 자동 생성, 수정 시 id read-only(guid 보호).
 
+## AI Assist 사이드바 (`internal/editor/assist/`)
+
+로컬 AI CLI 를 호출하는 우측 사이드바. 참고 앱(blog.outsider.ne.kr)의 assist 구조를 가볍게 가져온
+**토대** — 제공자 선택 → 프롬프트 → 실행 → 응답. 구체 AI 기능은 이후 이 위에 얹는다.
+
+- **`Provider`**(Name/Available/Run) 3종, 각 CLI 의 비대화 모드로 셸 아웃:
+  - **claude**: `claude -p --output-format=json`(stdin), JSON envelope 의 `result` 추출.
+  - **codex**: `codex exec --json --skip-git-repo-check --sandbox read-only`(stdin), JSONL 의 `agent_message` 연결.
+  - **gemini**: `gemini -p <prompt>`, 평문 출력.
+  - `Available()` = `exec.LookPath`. CLI 가 비정상 종료해도 stdout 의 메시지를 우선(예: claude 401).
+- **PATH:** `cmd/app` 이 `injectLoginPath()` 로 로그인 셸 PATH 를 채택 — GUI 앱(Finder/launchd)의 빈
+  PATH 에서도 `claude`/`codex`/`gemini` 가 터미널처럼 해석된다.
+- **API:** `GET /api/assist/providers`(이름·설치여부), `POST /api/assist/run`({provider,prompt}→{output},
+  3분 타임아웃, 미설치→503).
+- **UI:** 브랜드행 `✦ Assist` 토글 → 우측 패널(제공자 버튼·프롬프트·실행·상태·출력). 레이아웃은 flex 라
+  미리보기와 Assist 가 공존. 미설치 제공자는 비활성, 첫 설치 제공자 자동 선택, ⌘/Ctrl+Enter 실행.
+- **인증·비용:** CLI 가 스스로 인증(키체인/로그인). 이 앱은 API 키를 보관하지 않는다.
+
 ## 빌드 / 실행
 
 ```bash

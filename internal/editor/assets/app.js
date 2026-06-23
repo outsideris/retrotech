@@ -29,6 +29,13 @@ const els = {
   refTemplate: $("ref-template"),
   preview: $("preview-panel"),
   frame: $("preview-frame"),
+  assist: $("assist-panel"),
+  assistToggle: $("btn-assist"),
+  assistProviders: $("assist-providers"),
+  assistPrompt: $("assist-prompt"),
+  assistRun: $("btn-assist-run"),
+  assistStatus: $("assist-status"),
+  assistOutput: $("assist-output"),
 };
 
 // mode: 'episode' (editing a published episode) | 'draft' (editing a draft) |
@@ -521,7 +528,97 @@ els.id.addEventListener("input", () => {
   }
 });
 
+// ---------- Assist (AI CLI sidebar) ----------
+
+const PROVIDER_LABELS = { claude: "Claude", codex: "Codex", gemini: "Gemini" };
+
+async function loadAssistProviders() {
+  els.assistProviders.replaceChildren();
+  let list;
+  try {
+    list = (await apiJSON("GET", "/assist/providers")) || [];
+  } catch (err) {
+    setAssistStatus(err.message, "err");
+    return;
+  }
+  for (const p of list) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "assist-provider";
+    btn.dataset.provider = p.name;
+    btn.textContent = PROVIDER_LABELS[p.name] || p.name;
+    btn.disabled = !p.available;
+    if (!p.available) btn.title = `${PROVIDER_LABELS[p.name] || p.name} CLI 가 설치되어 있지 않습니다`;
+    btn.addEventListener("click", () => selectAssistProvider(p.name));
+    els.assistProviders.appendChild(btn);
+  }
+  const firstAvailable = list.find((p) => p.available);
+  if (firstAvailable) {
+    selectAssistProvider(firstAvailable.name);
+    setAssistStatus("");
+  } else {
+    setAssistStatus("설치된 AI CLI 가 없습니다.", "err");
+  }
+}
+
+function selectAssistProvider(name) {
+  state.assistProvider = name;
+  for (const b of els.assistProviders.children) {
+    b.classList.toggle("selected", b.dataset.provider === name);
+  }
+}
+
+function setAssistStatus(message, kind) {
+  els.assistStatus.textContent = message || "";
+  els.assistStatus.className = "assist-status" + (kind ? " " + kind : "");
+}
+
+async function runAssist() {
+  const prompt = els.assistPrompt.value.trim();
+  if (!state.assistProvider) {
+    setAssistStatus("제공자를 선택하세요.", "err");
+    return;
+  }
+  if (!prompt) {
+    setAssistStatus("프롬프트를 입력하세요.", "err");
+    els.assistPrompt.focus();
+    return;
+  }
+  setAssistStatus("실행 중…");
+  els.assistOutput.textContent = "";
+  els.assistRun.disabled = true;
+  try {
+    const res = await apiJSON("POST", "/assist/run", { provider: state.assistProvider, prompt });
+    els.assistOutput.textContent = res.output || "(빈 응답)";
+    setAssistStatus("완료", "ok");
+  } catch (err) {
+    setAssistStatus(err.message, "err");
+  } finally {
+    els.assistRun.disabled = false;
+  }
+}
+
+function toggleAssist() {
+  const willOpen = els.assist.hidden;
+  els.assist.hidden = !willOpen;
+  els.assistToggle.classList.toggle("open", willOpen);
+  if (willOpen && els.assistProviders.children.length === 0) loadAssistProviders();
+}
+
 // ---------- Wire up ----------
+
+els.assistToggle.addEventListener("click", toggleAssist);
+els.assistRun.addEventListener("click", runAssist);
+$("btn-close-assist").addEventListener("click", () => {
+  els.assist.hidden = true;
+  els.assistToggle.classList.remove("open");
+});
+els.assistPrompt.addEventListener("keydown", (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+    e.preventDefault();
+    runAssist();
+  }
+});
 
 $("btn-new").addEventListener("click", newDraft);
 $("btn-add-ref").addEventListener("click", () => {

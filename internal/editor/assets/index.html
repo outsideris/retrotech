@@ -13,6 +13,7 @@
         <div class="brand">
           <span class="brand-mark" aria-hidden="true"></span>
           <span class="brand-name">RetroTech</span>
+          <button id="btn-assist" class="assist-toggle" type="button" title="AI Assist">✦ Assist</button>
         </div>
         <div class="sidebar-head">
           <button id="btn-new" class="primary new-btn" type="button">+ 새 에피소드</button>
@@ -145,6 +146,27 @@
           <button id="btn-close-preview" type="button">닫기</button>
         </div>
         <iframe id="preview-frame" title="에피소드 미리보기"></iframe>
+      </section>
+
+      <!-- AI Assist (right sidebar) -->
+      <section id="assist-panel" class="assist" hidden aria-label="AI Assist">
+        <div class="assist-bar">
+          <span>✦ Assist</span>
+          <button id="btn-close-assist" type="button">닫기</button>
+        </div>
+        <div class="assist-body">
+          <div id="assist-providers" class="assist-providers" role="group" aria-label="AI 제공자"></div>
+          <textarea
+            id="assist-prompt"
+            class="assist-prompt"
+            placeholder="프롬프트를 입력하세요. (예: 이 에피소드 설명을 더 매끄럽게 다듬어줘)"
+          ></textarea>
+          <div class="assist-actions">
+            <button id="btn-assist-run" class="primary" type="button">실행</button>
+            <span id="assist-status" class="assist-status" aria-live="polite"></span>
+          </div>
+          <div id="assist-output" class="assist-output" aria-live="polite"></div>
+        </div>
       </section>
     </div>
 

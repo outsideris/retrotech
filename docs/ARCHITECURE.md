@@ -48,6 +48,7 @@ retrotech/
 │     ├─ store.go          #   에피소드 파일 CRUD·슬러그 검증·atomic write
 │     ├─ drafts.go         #   초안(JSON) 저장·발행(content/drafts → content/episodes)
 │     ├─ editor.go         #   HTTP mux·JSON API·미리보기, //go:embed assets
+│     ├─ assist/           #   AI CLI(Claude/Codex/Gemini) 셸 아웃 — Assist 사이드바 백엔드
 │     └─ assets/           #   임베드 폼 SPA(index.html·app.js·app.css)
 ├─ desktop/                # Electron 래퍼(앱 셸). server-bin/node_modules/dist 는 gitignore
 │  ├─ main.js              #   창·폴더 선택·서버 spawn·생명주기
@@ -153,7 +154,11 @@ go run ./cmd/build
   골든 통과. 기존 파일 저장 시 프론트매터 스타일만 1회 정규화(값·피드 불변, 테스트로 증명).
 - **초안→발행:** "새 에피소드"는 `content/drafts/<slug>.json`(폼 전체) 초안을 만들고 자동 저장한다.
   사이트 빌드/피드는 `content/episodes` 만 읽어 초안은 비공개; **발행** 시 폼을 `content/episodes/<id>.md`
-  로 합성하고 초안을 지운다. `content/drafts/` 는 gitignore.
+  로 합성하고 초안을 지운다(발행 날짜 스탬프). `content/drafts/` 는 gitignore. 작성자는 프론트매터에
+  없고 빌더에 하드코딩(`builder.showAuthor`).
+- **AI Assist:** `internal/editor/assist` 가 로컬 CLI(Claude/Codex/Gemini)를 비대화 모드로 셸 아웃
+  (`/api/assist/providers`·`/api/assist/run`). `cmd/app` 은 `injectLoginPath()` 로 GUI 의 빈 PATH 를
+  로그인 셸 PATH 로 교체해 CLI 를 찾는다. 우측 Assist 사이드바의 토대 — 구체 기능은 이후 확장.
 - **`desktop/`** — Electron 래퍼. `main.js` 가 repo 폴더 결정(env→config.json→네이티브 picker) → 서버
   spawn → `http://127.0.0.1:<port>/_write/` 로드. electron-builder 가 Go 바이너리를 `extraResources`
   로 `.app` 에 동봉(server-bin→editor-server). `npm run dist` → `RetroTech Editor.app`(arm64,

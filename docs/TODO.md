@@ -93,6 +93,9 @@
 - [x] **F. 초안→발행 워크플로우(2026-06-24).** "새 에피소드"→초안(`content/drafts/*.json`, gitignore)
   자동저장, 사이드바 초안 섹션, **발행** 시 `content/episodes/<id>.md` 기록·초안 삭제. 백엔드 테스트 +
   실제 브라우저 전 흐름 검증. 상세: [plan/episode-editor-app.md](./plan/episode-editor-app.md#초안draft--발행-워크플로우-internaleditordraftsgo).
+- [x] **G. UX 다듬기 + AI Assist 토대(2026-06-24).** 삭제 버튼→사이드바 hover, 날짜=발행 시점 자동,
+  작성자 제거(빌더 하드코딩), **우측 Assist 사이드바**(Claude/Codex/Gemini CLI 셸 아웃 + `injectLoginPath`).
+  실제 브라우저 검증. 상세: [plan/episode-editor-app.md](./plan/episode-editor-app.md#ai-assist-사이드바-internaleditorassist).
 
 **완료(2026-06-21, 디자인·초안 2026-06-24).** Go 측 전 구간 테스트·빌드·스모크 검증. 정규화는 1회 한정
 프론트매터 스타일만(값·피드 불변, 테스트로 증명). 에디터 UI 는 실제 브라우저로 검증.

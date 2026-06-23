@@ -40,6 +40,11 @@ func main() {
 		fatalf("missing required -repo flag")
 	}
 
+	// Electron launches us with a bare GUI PATH; adopt the login shell's PATH
+	// so the assist CLIs (claude/codex/gemini) resolve like they do in a
+	// terminal.
+	injectLoginPath()
+
 	ed, err := editor.New(editor.Config{RepoDir: repoDir})
 	if err != nil {
 		fatalf("%v", err)

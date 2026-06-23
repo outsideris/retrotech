@@ -1,6 +1,7 @@
 package editor
 
 import (
+	"context"
 	"embed"
 	"encoding/json"
 	"errors"
@@ -9,9 +10,11 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/outsideris/retrotech/internal/builder"
+	"github.com/outsideris/retrotech/internal/editor/assist"
 	"github.com/outsideris/retrotech/internal/parser"
 )
 
@@ -83,6 +86,8 @@ func (e *Editor) Handler() http.Handler {
 	mux.HandleFunc("PUT /_write/api/drafts/{slug}", e.handleDraftSave)
 	mux.HandleFunc("DELETE /_write/api/drafts/{slug}", e.handleDraftDelete)
 	mux.HandleFunc("POST /_write/api/drafts/{slug}/publish", e.handleDraftPublish)
+	mux.HandleFunc("GET /_write/api/assist/providers", e.handleAssistProviders)
+	mux.HandleFunc("POST /_write/api/assist/run", e.handleAssistRun)
 	// no-store so an updated app never serves stale UI cached by a previous
 	// version on the same loopback origin (the fixed port keeps the origin
 	// constant across launches).
@@ -209,6 +214,55 @@ func (e *Editor) handleDraftPublish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]string{"id": id})
+}
+
+func (e *Editor) handleAssistProviders(w http.ResponseWriter, r *http.Request) {
+	type providerInfo struct {
+		Name      string `json:"name"`
+		Available bool   `json:"available"`
+	}
+	out := make([]providerInfo, 0)
+	for _, p := range assist.Providers() {
+		out = append(out, providerInfo{Name: p.Name(), Available: p.Available()})
+	}
+	writeJSON(w, http.StatusOK, out)
+}
+
+// handleAssistRun runs a prompt through the selected AI CLI and returns its
+// text response. The CLI calls a model, so it can take a while; it runs under a
+// generous timeout.
+func (e *Editor) handleAssistRun(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Provider string `json:"provider"`
+		Prompt   string `json:"prompt"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	provider, ok := assist.Find(req.Provider)
+	if !ok {
+		writeError(w, http.StatusBadRequest, "unknown provider: "+req.Provider)
+		return
+	}
+	prompt := strings.TrimSpace(req.Prompt)
+	if prompt == "" {
+		writeError(w, http.StatusBadRequest, "empty prompt")
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Minute)
+	defer cancel()
+	output, err := provider.Run(ctx, prompt)
+	if err != nil {
+		status := http.StatusBadGateway
+		if errors.Is(err, assist.ErrUnavailable) {
+			status = http.StatusServiceUnavailable
+		}
+		writeError(w, status, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"output": output})
 }
 
 // handlePreview renders the live episode page for the posted form without

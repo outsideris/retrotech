@@ -290,3 +290,34 @@ func TestDraftPublishWithoutIDIsRejected(t *testing.T) {
 	resp, _ = do(t, srv, "GET", "/_write/api/drafts/"+created.Slug, nil)
 	mustStatus(t, resp, http.StatusOK)
 }
+
+func TestAssistProvidersEndpoint(t *testing.T) {
+	srv, _ := newTestServer(t)
+	resp, body := do(t, srv, "GET", "/_write/api/assist/providers", nil)
+	mustStatus(t, resp, http.StatusOK)
+	var list []struct {
+		Name      string `json:"name"`
+		Available bool   `json:"available"`
+	}
+	if err := json.Unmarshal(body, &list); err != nil {
+		t.Fatal(err)
+	}
+	names := map[string]bool{}
+	for _, p := range list {
+		names[p.Name] = true
+	}
+	for _, n := range []string{"claude", "codex", "gemini"} {
+		if !names[n] {
+			t.Errorf("providers missing %q: %s", n, body)
+		}
+	}
+}
+
+func TestAssistRunValidation(t *testing.T) {
+	srv, _ := newTestServer(t)
+	// Unknown provider and empty prompt are rejected before any CLI runs.
+	resp, _ := do(t, srv, "POST", "/_write/api/assist/run", map[string]string{"provider": "nope", "prompt": "hi"})
+	mustStatus(t, resp, http.StatusBadRequest)
+	resp, _ = do(t, srv, "POST", "/_write/api/assist/run", map[string]string{"provider": "claude", "prompt": "   "})
+	mustStatus(t, resp, http.StatusBadRequest)
+}
