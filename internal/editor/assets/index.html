@@ -15,13 +15,21 @@
           <span class="brand-name">RetroTech</span>
         </div>
         <div class="sidebar-head">
-          <h1>에피소드</h1>
-          <button id="btn-new" class="primary" type="button">+ 새 에피소드</button>
+          <button id="btn-new" class="primary new-btn" type="button">+ 새 에피소드</button>
         </div>
         <div class="filter-wrap">
           <input id="filter" class="filter" type="search" placeholder="제목 / ID 검색" autocomplete="off" />
         </div>
-        <ul id="episode-list" class="episode-list" aria-label="에피소드 목록"></ul>
+        <div class="lists">
+          <section id="drafts-section" class="list-section" hidden>
+            <div class="list-label">초안</div>
+            <ul id="draft-list" class="ep-list" aria-label="초안 목록"></ul>
+          </section>
+          <section class="list-section">
+            <div class="list-label">에피소드</div>
+            <ul id="episode-list" class="ep-list" aria-label="에피소드 목록"></ul>
+          </section>
+        </div>
       </aside>
 
       <!-- Editor form -->
@@ -34,9 +42,11 @@
           <div class="form-bar">
             <div class="form-title" id="form-title">에피소드</div>
             <div class="form-actions">
+              <span id="autosave" class="autosave" aria-live="polite"></span>
               <button id="btn-preview" type="button">미리보기</button>
               <button id="btn-delete" type="button" class="danger">삭제</button>
               <button id="btn-save" type="submit" class="primary">저장</button>
+              <button id="btn-publish" type="button" class="primary" hidden>발행</button>
             </div>
           </div>
           <div id="status" class="status" role="status" aria-live="polite"></div>

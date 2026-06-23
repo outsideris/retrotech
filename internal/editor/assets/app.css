@@ -90,19 +90,11 @@ body {
 }
 
 .sidebar-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 6px 16px 10px;
+  padding: 4px 16px 10px;
 }
 
-.sidebar-head h1 {
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--on-navy-dim);
-  margin: 0;
+.new-btn {
+  width: 100%;
 }
 
 .filter-wrap {
@@ -123,35 +115,61 @@ body {
   color: #6f807b;
 }
 
-.episode-list {
-  list-style: none;
-  margin: 0;
-  padding: 2px 10px 16px;
-  overflow-y: auto;
+.lists {
   flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 2px 10px 16px;
 }
 
-.episode-list li {
+.list-section + .list-section {
+  margin-top: 6px;
+}
+
+.list-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--on-navy-dim);
+  padding: 8px 6px 4px;
+}
+
+.ep-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ep-list li {
   padding: 8px 10px;
   border-radius: var(--radius);
   cursor: pointer;
   border: 1px solid transparent;
 }
 
-.episode-list li:hover {
+.ep-list li:hover {
   background: var(--navy-hi);
 }
 
-.episode-list li.active {
+.ep-list li.active {
   background: var(--orange);
 }
 
-.episode-list li.active .ep-title {
+.ep-list li.active .ep-title {
   color: #fff;
 }
 
-.episode-list li.active .ep-meta {
+.ep-list li.active .ep-meta {
   color: #ffe2d3;
+}
+
+/* Drafts carry a subtle orange edge to set them apart from published items. */
+#draft-list li {
+  border-left: 2px solid rgba(228, 86, 29, 0.55);
+}
+
+#draft-list li.active {
+  border-left-color: var(--orange);
 }
 
 .ep-title {
@@ -213,8 +231,24 @@ body {
 
 .form-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
   flex-shrink: 0;
+}
+
+.autosave {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  margin-right: 2px;
+}
+
+.autosave.ok {
+  color: var(--ok);
+}
+
+.autosave.err {
+  color: var(--danger);
 }
 
 .status {
