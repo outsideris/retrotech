@@ -78,15 +78,33 @@ async function loadDrafts() {
   renderDrafts();
 }
 
-function listItem(title, meta) {
+// listItem builds a sidebar row: the title/meta, plus a small delete button
+// that appears on hover at the right (the form no longer carries a delete
+// button). onDelete runs without selecting the row.
+function listItem(title, meta, onDelete) {
   const li = document.createElement("li");
+  const main = document.createElement("div");
+  main.className = "ep-main";
   const t = document.createElement("span");
   t.className = "ep-title";
   t.textContent = title;
   const m = document.createElement("span");
   m.className = "ep-meta";
   m.textContent = meta;
-  li.append(t, m);
+  main.append(t, m);
+
+  const del = document.createElement("button");
+  del.type = "button";
+  del.className = "ep-del";
+  del.title = "삭제";
+  del.setAttribute("aria-label", "삭제");
+  del.textContent = "×";
+  del.addEventListener("click", (e) => {
+    e.stopPropagation();
+    onDelete();
+  });
+
+  li.append(main, del);
   return li;
 }
 
@@ -95,7 +113,11 @@ function renderEpisodes() {
   els.list.replaceChildren();
   for (const ep of state.episodes) {
     if (q && !`${ep.id} ${ep.title}`.toLowerCase().includes(q)) continue;
-    const li = listItem(ep.title || ep.id, `${ep.id} · ${ep.date}${ep.duration ? " · " + ep.duration : ""}`);
+    const li = listItem(
+      ep.title || ep.id,
+      `${ep.id} · ${ep.date}${ep.duration ? " · " + ep.duration : ""}`,
+      () => deleteEpisode(ep.id),
+    );
     li.dataset.id = ep.id;
     if (state.mode === "episode" && ep.id === state.current) li.classList.add("active");
     li.addEventListener("click", () => selectEpisode(ep.id));
@@ -107,7 +129,9 @@ function renderDrafts() {
   els.draftList.replaceChildren();
   els.draftsSection.hidden = state.drafts.length === 0;
   for (const d of state.drafts) {
-    const li = listItem(d.title || "(제목 없음)", "초안 · " + (d.id ? d.id : "ID 미정"));
+    const li = listItem(d.title || "(제목 없음)", "초안 · " + (d.id ? d.id : "ID 미정"), () =>
+      deleteDraft(d.slug),
+    );
     li.dataset.slug = d.slug;
     if (state.mode === "draft" && d.slug === state.current) li.classList.add("active");
     li.addEventListener("click", () => selectDraft(d.slug));
@@ -354,22 +378,23 @@ async function publishDraft() {
   }
 }
 
-async function remove() {
-  if (state.current == null) {
-    showEmpty();
-    return;
-  }
-  const isDraft = state.mode === "draft";
-  const prompt = isDraft ? "이 초안을 삭제할까요?" : `'${state.current}' 에피소드를 삭제할까요?`;
-  if (!confirm(prompt)) return;
-  const path = isDraft
-    ? `/drafts/${encodeURIComponent(state.current)}`
-    : `/episodes/${encodeURIComponent(state.current)}`;
+async function deleteEpisode(id) {
+  if (!confirm(`'${id}' 에피소드를 삭제할까요?`)) return;
   try {
-    await request("DELETE", path);
-    if (isDraft) await loadDrafts();
-    else await loadEpisodes();
-    showEmpty();
+    await request("DELETE", `/episodes/${encodeURIComponent(id)}`);
+    if (state.mode === "episode" && state.current === id) showEmpty();
+    await loadEpisodes();
+  } catch (err) {
+    setStatus(err.message, "err");
+  }
+}
+
+async function deleteDraft(slug) {
+  if (!confirm("이 초안을 삭제할까요?")) return;
+  try {
+    await request("DELETE", `/drafts/${encodeURIComponent(slug)}`);
+    if (state.mode === "draft" && state.current === slug) showEmpty();
+    await loadDrafts();
   } catch (err) {
     setStatus(err.message, "err");
   }
@@ -505,7 +530,6 @@ $("btn-add-ref").addEventListener("click", () => {
   addRefRow();
   markDirty();
 });
-$("btn-delete").addEventListener("click", remove);
 $("btn-preview").addEventListener("click", preview);
 $("btn-publish").addEventListener("click", publishDraft);
 $("btn-close-preview").addEventListener("click", () => (els.preview.hidden = true));

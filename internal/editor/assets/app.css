@@ -141,10 +141,52 @@ body {
 }
 
 .ep-list li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   padding: 8px 10px;
   border-radius: var(--radius);
   cursor: pointer;
   border: 1px solid transparent;
+}
+
+.ep-main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Per-row delete: hidden until the row is hovered/focused, small, on the right. */
+.ep-del {
+  flex-shrink: 0;
+  opacity: 0;
+  visibility: hidden;
+  border: none;
+  background: transparent;
+  color: var(--on-navy-dim);
+  font-size: 17px;
+  line-height: 1;
+  padding: 2px 8px;
+  border-radius: 5px;
+}
+
+.ep-list li:hover .ep-del,
+.ep-del:focus-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.ep-del:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.ep-list li.active .ep-del {
+  color: #ffe2d3;
+}
+
+.ep-list li.active .ep-del:hover {
+  background: rgba(0, 0, 0, 0.2);
+  color: #fff;
 }
 
 .ep-list li:hover {
