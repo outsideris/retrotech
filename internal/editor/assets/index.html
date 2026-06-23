@@ -10,11 +10,17 @@
     <div class="app">
       <!-- Episode list -->
       <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span class="brand-name">RetroTech</span>
+        </div>
         <div class="sidebar-head">
           <h1>에피소드</h1>
           <button id="btn-new" class="primary" type="button">+ 새 에피소드</button>
         </div>
-        <input id="filter" class="filter" type="search" placeholder="제목/ID 검색" autocomplete="off" />
+        <div class="filter-wrap">
+          <input id="filter" class="filter" type="search" placeholder="제목 / ID 검색" autocomplete="off" />
+        </div>
         <ul id="episode-list" class="episode-list" aria-label="에피소드 목록"></ul>
       </aside>
 
@@ -144,10 +150,10 @@
       <li class="ref-row">
         <button type="button" class="ref-handle" title="끌어서 순서 변경" aria-hidden="true">⋮⋮</button>
         <label class="ref-nest" title="하위 항목으로 들여쓰기">
-          <input type="checkbox" class="ref-indent" /> 하위
+          <input type="checkbox" class="ref-indent" name="ref-indent" /> 하위
         </label>
-        <input type="text" class="ref-text" placeholder="표시 텍스트" />
-        <input type="text" class="ref-url" placeholder="URL (비우면 일반 텍스트)" />
+        <input type="text" class="ref-text" name="ref-text" placeholder="표시 텍스트" />
+        <input type="text" class="ref-url" name="ref-url" placeholder="URL (비우면 일반 텍스트)" />
         <button type="button" class="ref-remove danger" title="삭제">×</button>
       </li>
     </template>
