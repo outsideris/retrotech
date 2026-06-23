@@ -185,6 +185,9 @@ func (ds *DraftStore) Publish(slug string, episodes *Store) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// The episode's date is the publish date — the editor doesn't expose a
+	// date field, so it isn't whenever the draft happened to be started.
+	form.Date = ds.now().Format("2006/01/02")
 	if err := episodes.Create(form); err != nil {
 		return "", err // ErrInvalidID / ErrExists surface to the UI
 	}

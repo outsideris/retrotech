@@ -61,16 +61,14 @@
               <span>제목</span>
               <input id="f-title" name="title" type="text" />
             </label>
-            <div class="row">
-              <label class="field">
-                <span>날짜 (YYYY/MM/DD)</span>
-                <input id="f-date" name="date" type="text" placeholder="2026/06/21" />
-              </label>
-              <label class="field">
-                <span>작성자</span>
-                <input id="f-author" name="author" type="text" />
-              </label>
-            </div>
+            <!-- Date is not edited here: it is stamped at publish time (the
+                 publish date). Existing episodes keep their date via this
+                 hidden field. -->
+            <input id="f-date" type="hidden" />
+            <label class="field">
+              <span>작성자</span>
+              <input id="f-author" name="author" type="text" />
+            </label>
             <label class="field">
               <span>설명 (description)</span>
               <textarea id="f-description" name="description" rows="3"></textarea>

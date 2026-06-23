@@ -117,6 +117,7 @@ func TestDraftPublishWritesEpisodeAndRemovesDraft(t *testing.T) {
 	slug, form, _ := ds.Create()
 	form.ID = "2h"
 	form.Title = "New Episode\n"
+	form.Date = "1999/01/01" // should be overwritten with the publish date
 	form.EnclosureURL = "https://retrotech-episodes.outsider.dev/2h.mp3"
 	form.Duration = "10:00"
 	form.Intro = "intro"
@@ -143,6 +144,9 @@ func TestDraftPublishWritesEpisodeAndRemovesDraft(t *testing.T) {
 	}
 	if ep.Title != "New Episode\n" || ep.EnclosureURL != "https://retrotech-episodes.outsider.dev/2h.mp3" {
 		t.Errorf("published episode: %#v", ep)
+	}
+	if ep.Date != "2026/06/24" {
+		t.Errorf("publish should stamp the publish date, got %q", ep.Date)
 	}
 }
 
