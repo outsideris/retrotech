@@ -16,7 +16,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -49,9 +51,37 @@ func Find(name string) (Provider, bool) {
 	return nil, false
 }
 
-func onPath(bin string) bool {
-	_, err := exec.LookPath(bin)
-	return err == nil
+// resolveBinary finds a provider's CLI: the first of names found on PATH, else
+// the first existing fallback path. A GUI app's PATH may miss the dir a CLI
+// lives in (or the CLI may be named differently — e.g. the Gemini provider runs
+// the `agy` wrapper), so each provider supplies both name aliases and the known
+// install locations. ok is false when nothing resolves.
+func resolveBinary(names, fallbacks []string) (string, bool) {
+	for _, n := range names {
+		if p, err := exec.LookPath(n); err == nil {
+			return p, true
+		}
+	}
+	for _, f := range fallbacks {
+		if info, err := os.Stat(f); err == nil && !info.IsDir() {
+			return f, true
+		}
+	}
+	return "", false
+}
+
+// homePaths joins each rel under the user's home dir (for fallback locations
+// like ~/.local/bin/<cli>). Returns nil if the home dir is unknown.
+func homePaths(rel ...string) []string {
+	h, err := os.UserHomeDir()
+	if err != nil {
+		return nil
+	}
+	out := make([]string, len(rel))
+	for i, r := range rel {
+		out[i] = filepath.Join(h, r)
+	}
+	return out
 }
 
 // runErr turns a failed CLI run into a useful error, preferring the CLI's
@@ -70,14 +100,18 @@ func runErr(name string, err error, stderr []byte) error {
 
 type claude struct{}
 
-func (claude) Name() string    { return "claude" }
-func (claude) Available() bool { return onPath("claude") }
+func (claude) Name() string { return "claude" }
+func (claude) bin() (string, bool) {
+	return resolveBinary([]string{"claude"}, homePaths(".local/bin/claude"))
+}
+func (c claude) Available() bool { _, ok := c.bin(); return ok }
 
 func (c claude) Run(ctx context.Context, prompt string) (string, error) {
-	if !c.Available() {
+	bin, ok := c.bin()
+	if !ok {
 		return "", fmt.Errorf("claude: %w", ErrUnavailable)
 	}
-	cmd := exec.CommandContext(ctx, "claude", "-p", "--output-format=json")
+	cmd := exec.CommandContext(ctx, bin, "-p", "--output-format=json")
 	cmd.Stdin = strings.NewReader(prompt)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
@@ -116,16 +150,20 @@ func parseClaude(stdout []byte) (string, error) {
 
 type codex struct{}
 
-func (codex) Name() string    { return "codex" }
-func (codex) Available() bool { return onPath("codex") }
+func (codex) Name() string { return "codex" }
+func (codex) bin() (string, bool) {
+	return resolveBinary([]string{"codex"}, homePaths(".local/bin/codex", "bin/codex"))
+}
+func (c codex) Available() bool { _, ok := c.bin(); return ok }
 
 func (c codex) Run(ctx context.Context, prompt string) (string, error) {
-	if !c.Available() {
+	bin, ok := c.bin()
+	if !ok {
 		return "", fmt.Errorf("codex: %w", ErrUnavailable)
 	}
 	// --sandbox read-only: the agent can't write to disk;
 	// --skip-git-repo-check: runs anywhere; --json: machine-readable stream.
-	cmd := exec.CommandContext(ctx, "codex", "exec", "--json", "--skip-git-repo-check", "--sandbox", "read-only")
+	cmd := exec.CommandContext(ctx, bin, "exec", "--json", "--skip-git-repo-check", "--sandbox", "read-only")
 	cmd.Stdin = strings.NewReader(prompt)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
@@ -189,15 +227,21 @@ func parseCodex(stdout []byte) (string, error) {
 
 type gemini struct{}
 
-func (gemini) Name() string    { return "gemini" }
-func (gemini) Available() bool { return onPath("gemini") }
+func (gemini) Name() string { return "gemini" }
+func (gemini) bin() (string, bool) {
+	// The blog's Gemini provider runs `agy` (the antigravity CLI); accept the
+	// `gemini` name too, with the standard ~/.local/bin installs as fallback.
+	return resolveBinary([]string{"gemini", "agy"}, homePaths(".local/bin/agy", ".local/bin/gemini"))
+}
+func (g gemini) Available() bool { _, ok := g.bin(); return ok }
 
 func (g gemini) Run(ctx context.Context, prompt string) (string, error) {
-	if !g.Available() {
+	bin, ok := g.bin()
+	if !ok {
 		return "", fmt.Errorf("gemini: %w", ErrUnavailable)
 	}
-	// The Gemini CLI prints a plain-text answer in non-interactive (-p) mode.
-	cmd := exec.CommandContext(ctx, "gemini", "-p", prompt)
+	// The Gemini CLI (gemini/agy) prints a plain-text answer in -p mode.
+	cmd := exec.CommandContext(ctx, bin, "-p", prompt)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	out, err := cmd.Output()

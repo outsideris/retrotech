@@ -118,8 +118,10 @@ struct 순서로 이동). 측정: 23편 재출력 시 총 65줄 변경, **전부
 - **`Provider`**(Name/Available/Run) 3종, 각 CLI 의 비대화 모드로 셸 아웃:
   - **claude**: `claude -p --output-format=json`(stdin), JSON envelope 의 `result` 추출.
   - **codex**: `codex exec --json --skip-git-repo-check --sandbox read-only`(stdin), JSONL 의 `agent_message` 연결.
-  - **gemini**: `gemini -p <prompt>`, 평문 출력.
-  - `Available()` = `exec.LookPath`. CLI 가 비정상 종료해도 stdout 의 메시지를 우선(예: claude 401).
+  - **gemini**: `agy`(antigravity CLI, blog 와 동일) 또는 `gemini`, `-p <prompt>` 평문 출력.
+  - **바이너리 해석**(`resolveBinary`): 이름 후보(예: gemini→`gemini`/`agy`)를 PATH 에서 찾고, 없으면
+    알려진 설치 경로(`~/.local/bin/<cli>`)를 stat 으로 fallback. CLI 가 비정상 종료해도 stdout 의
+    메시지를 우선(예: claude 401).
 - **PATH:** `cmd/app` 이 `injectLoginPath()` 로 로그인 셸 PATH 를 채택 — GUI 앱(Finder/launchd)의 빈
   PATH 에서도 `claude`/`codex`/`gemini` 가 터미널처럼 해석된다.
 - **API:** `GET /api/assist/providers`(이름·설치여부), `POST /api/assist/run`({provider,prompt}→{output},

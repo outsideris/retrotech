@@ -1,6 +1,8 @@
 package assist
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -60,8 +62,19 @@ func TestParseCodex(t *testing.T) {
 	}
 }
 
-func TestOnPathFalseForMissingBinary(t *testing.T) {
-	if onPath("retrotech-definitely-not-a-real-binary-xyz") {
-		t.Error("a missing binary should not be on PATH")
+func TestResolveBinary(t *testing.T) {
+	// Nothing on PATH and a non-existent fallback → not resolved.
+	if _, ok := resolveBinary([]string{"retrotech-no-such-binary-xyz"}, []string{"/no/such/path"}); ok {
+		t.Error("missing binary with missing fallback should not resolve")
+	}
+
+	// Falls back to an existing path when the names aren't on PATH (covers the
+	// `agy`/non-PATH install case).
+	fake := filepath.Join(t.TempDir(), "fakecli")
+	if err := os.WriteFile(fake, []byte("#!/bin/sh\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if got, ok := resolveBinary([]string{"retrotech-no-such-binary-xyz"}, []string{"/no/such/path", fake}); !ok || got != fake {
+		t.Errorf("fallback resolve: got %q, ok=%v", got, ok)
 	}
 }
