@@ -156,16 +156,28 @@
         </div>
         <div class="assist-body">
           <div id="assist-providers" class="assist-providers" role="group" aria-label="AI 제공자"></div>
-          <textarea
-            id="assist-prompt"
-            class="assist-prompt"
-            placeholder="프롬프트를 입력하세요. (예: 이 에피소드 설명을 더 매끄럽게 다듬어줘)"
-          ></textarea>
-          <div class="assist-actions">
-            <button id="btn-assist-run" class="primary" type="button">실행</button>
-            <span id="assist-status" class="assist-status" aria-live="polite"></span>
+          <div id="assist-tuning" class="assist-tuning">
+            <label class="assist-knob">모델 <select id="assist-model"></select></label>
+            <label class="assist-knob">effort <select id="assist-effort"></select></label>
           </div>
-          <div id="assist-output" class="assist-output" aria-live="polite"></div>
+          <label class="assist-debug">
+            <input type="checkbox" id="assist-debug-toggle" />
+            디버그 모드 — 대화창 열기
+          </label>
+          <div id="assist-chat" class="assist-chat" hidden>
+            <textarea
+              id="assist-prompt"
+              class="assist-prompt"
+              placeholder="프롬프트를 입력하세요. (⌘/Ctrl+Enter 로 실행)"
+            ></textarea>
+            <div class="assist-actions">
+              <button id="btn-assist-run" class="primary" type="button">실행</button>
+              <span id="assist-status" class="assist-status" aria-live="polite"></span>
+            </div>
+            <div id="assist-output" class="assist-output" aria-live="polite"></div>
+          </div>
+          <div class="assist-traces-head">최근 사용</div>
+          <ul id="assist-traces" class="assist-traces" aria-label="최근 LLM 사용 내역"></ul>
         </div>
       </section>
     </div>

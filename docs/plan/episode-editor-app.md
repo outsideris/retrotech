@@ -124,10 +124,16 @@ struct 순서로 이동). 측정: 23편 재출력 시 총 65줄 변경, **전부
     메시지를 우선(예: claude 401).
 - **PATH:** `cmd/app` 이 `injectLoginPath()` 로 로그인 셸 PATH 를 채택 — GUI 앱(Finder/launchd)의 빈
   PATH 에서도 `claude`/`codex`/`gemini` 가 터미널처럼 해석된다.
-- **API:** `GET /api/assist/providers`(이름·설치여부), `POST /api/assist/run`({provider,prompt}→{output},
-  3분 타임아웃, 미설치→503).
-- **UI:** 브랜드행 `✦ Assist` 토글 → 우측 패널(제공자 버튼·프롬프트·실행·상태·출력). 레이아웃은 flex 라
-  미리보기와 Assist 가 공존. 미설치 제공자는 비활성, 첫 설치 제공자 자동 선택, ⌘/Ctrl+Enter 실행.
+- **튜닝·텔레메트리:** `Options{Model,Effort}` 를 Run 에 넘긴다 — claude `--model`/`--effort`,
+  codex `--model`/`-c model_reasoning_effort=`, gemini(agy) 는 미지원. 응답엔 `Meta`(model/effort/
+  durationMs/tokens/costUsd)를 담는다(claude envelope·codex usage·wall-clock). effort 는 provider 별
+  닫힌 집합으로 서버 검증.
+- **API:** `GET /api/assist/providers`(이름·설치여부), `POST /api/assist/run`
+  ({provider,prompt,model,effort}→{output,meta}, 3분 타임아웃, 미설치→503).
+- **UI:** 브랜드행 `✦ Assist` 토글 → 우측 패널. 제공자 버튼 + **모델/effort 드롭다운**(provider 별
+  옵션, gemini 는 숨김, localStorage 저장) + **디버그 모드 체크박스**(체크해야 대화창=프롬프트/실행/
+  출력 열림) + **최근 사용 trace 3개**(`provider · model · effort · 시간 · 비용USD`, localStorage 보존).
+  레이아웃 flex 라 미리보기와 공존, 미설치 제공자 비활성, ⌘/Ctrl+Enter 실행.
 - **인증·비용:** CLI 가 스스로 인증(키체인/로그인). 이 앱은 API 키를 보관하지 않는다.
 
 ## 빌드 / 실행

@@ -32,10 +32,16 @@ const els = {
   assist: $("assist-panel"),
   assistToggle: $("btn-assist"),
   assistProviders: $("assist-providers"),
+  assistTuning: $("assist-tuning"),
+  assistModel: $("assist-model"),
+  assistEffort: $("assist-effort"),
+  assistDebug: $("assist-debug-toggle"),
+  assistChat: $("assist-chat"),
   assistPrompt: $("assist-prompt"),
   assistRun: $("btn-assist-run"),
   assistStatus: $("assist-status"),
   assistOutput: $("assist-output"),
+  assistTraces: $("assist-traces"),
 };
 
 // mode: 'episode' (editing a published episode) | 'draft' (editing a draft) |
@@ -532,6 +538,29 @@ els.id.addEventListener("input", () => {
 
 const PROVIDER_LABELS = { claude: "Claude", codex: "Codex", gemini: "Gemini" };
 
+// Per-provider model/effort vocab (matches the CLIs; the server validates too).
+// "" means "use the CLI default". Gemini's CLI exposes no knobs.
+const ASSIST_TUNING = {
+  claude: { models: ["", "haiku", "sonnet", "opus"], efforts: ["", "low", "medium", "high", "xhigh", "max"] },
+  codex: { models: ["", "gpt-5.5", "gpt-5", "gpt-5-codex"], efforts: ["", "none", "minimal", "low", "medium", "high", "xhigh"] },
+  gemini: { models: [], efforts: [] },
+};
+
+const ASSIST_TRACE_KEY = "editor:assist-traces";
+
+function lsGet(key) {
+  try {
+    return localStorage.getItem(key) || "";
+  } catch {
+    return "";
+  }
+}
+function lsSet(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {}
+}
+
 async function loadAssistProviders() {
   els.assistProviders.replaceChildren();
   let list;
@@ -552,20 +581,44 @@ async function loadAssistProviders() {
     btn.addEventListener("click", () => selectAssistProvider(p.name));
     els.assistProviders.appendChild(btn);
   }
-  const firstAvailable = list.find((p) => p.available);
-  if (firstAvailable) {
-    selectAssistProvider(firstAvailable.name);
+  const saved = lsGet("editor:assist-provider");
+  const first = list.find((p) => p.name === saved && p.available) || list.find((p) => p.available);
+  if (first) {
+    selectAssistProvider(first.name);
     setAssistStatus("");
   } else {
     setAssistStatus("설치된 AI CLI 가 없습니다.", "err");
   }
+  renderTraces();
 }
 
 function selectAssistProvider(name) {
   state.assistProvider = name;
+  lsSet("editor:assist-provider", name);
   for (const b of els.assistProviders.children) {
     b.classList.toggle("selected", b.dataset.provider === name);
   }
+  renderTuning(name);
+}
+
+// renderTuning fills the model/effort dropdowns for a provider, restoring the
+// saved choice, and hides the row for a provider with no knobs (gemini).
+function renderTuning(provider) {
+  const tuning = ASSIST_TUNING[provider] || { models: [], efforts: [] };
+  els.assistTuning.hidden = tuning.models.length === 0 && tuning.efforts.length === 0;
+  fillSelect(els.assistModel, tuning.models, lsGet(`editor:assist-model:${provider}`));
+  fillSelect(els.assistEffort, tuning.efforts, lsGet(`editor:assist-effort:${provider}`));
+}
+
+function fillSelect(select, values, saved) {
+  select.replaceChildren();
+  for (const v of values) {
+    const opt = document.createElement("option");
+    opt.value = v;
+    opt.textContent = v === "" ? "(기본)" : v;
+    select.appendChild(opt);
+  }
+  select.value = values.includes(saved) ? saved : values[0] || "";
 }
 
 function setAssistStatus(message, kind) {
@@ -588,13 +641,53 @@ async function runAssist() {
   els.assistOutput.textContent = "";
   els.assistRun.disabled = true;
   try {
-    const res = await apiJSON("POST", "/assist/run", { provider: state.assistProvider, prompt });
+    const res = await apiJSON("POST", "/assist/run", {
+      provider: state.assistProvider,
+      prompt,
+      model: els.assistModel.value,
+      effort: els.assistEffort.value,
+    });
     els.assistOutput.textContent = res.output || "(빈 응답)";
     setAssistStatus("완료", "ok");
+    if (res.meta) addTrace(res.meta);
   } catch (err) {
     setAssistStatus(err.message, "err");
   } finally {
     els.assistRun.disabled = false;
+  }
+}
+
+function readTraces() {
+  try {
+    return JSON.parse(lsGet(ASSIST_TRACE_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+// addTrace records one LLM call (provider / model / effort / time / cost),
+// keeping only the most recent 3, persisted across reloads.
+function addTrace(meta) {
+  const traces = [meta, ...readTraces()].slice(0, 3);
+  lsSet(ASSIST_TRACE_KEY, JSON.stringify(traces));
+  renderTraces();
+}
+
+function renderTraces() {
+  els.assistTraces.replaceChildren();
+  for (const m of readTraces().slice(0, 3)) {
+    const li = document.createElement("li");
+    const prov = document.createElement("span");
+    prov.className = "trace-provider";
+    prov.textContent = PROVIDER_LABELS[m.provider] || m.provider || "?";
+    li.append(prov);
+    const rest = [];
+    if (m.model) rest.push(m.model);
+    if (m.effort) rest.push(m.effort);
+    if (m.durationMs) rest.push(`${(m.durationMs / 1000).toFixed(1)}s`);
+    if (m.costUsd) rest.push(`$${m.costUsd.toFixed(3)}`);
+    if (rest.length) li.append(" · " + rest.join(" · "));
+    els.assistTraces.appendChild(li);
   }
 }
 
@@ -612,6 +705,15 @@ els.assistRun.addEventListener("click", runAssist);
 $("btn-close-assist").addEventListener("click", () => {
   els.assist.hidden = true;
   els.assistToggle.classList.remove("open");
+});
+els.assistDebug.addEventListener("change", () => {
+  els.assistChat.hidden = !els.assistDebug.checked;
+});
+els.assistModel.addEventListener("change", () => {
+  lsSet(`editor:assist-model:${state.assistProvider}`, els.assistModel.value);
+});
+els.assistEffort.addEventListener("change", () => {
+  lsSet(`editor:assist-effort:${state.assistProvider}`, els.assistEffort.value);
 });
 els.assistPrompt.addEventListener("keydown", (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {

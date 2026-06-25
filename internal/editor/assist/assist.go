@@ -1,12 +1,12 @@
 // Package assist runs one-shot prompts through the local AI CLIs
 // (Claude / Codex / Gemini), shelling out the same way the
 // blog.outsider.ne.kr editor does. It is the foundation for editor AI
-// features: for now it only reports which CLIs are installed and runs a
-// prompt through one of them; specific features are layered on later.
+// features: it reports which CLIs are installed, runs a prompt through one of
+// them with optional model/effort tuning, and returns per-call telemetry
+// (duration, tokens, cost) for the sidebar's usage trace.
 //
-// Each provider is a thin wrapper over its CLI's non-interactive mode.
-// The CLIs authenticate themselves (keychain / login), so this package
-// owns no API keys.
+// Each provider is a thin wrapper over its CLI's non-interactive mode. The CLIs
+// authenticate themselves (keychain / login), so this package owns no API keys.
 package assist
 
 import (
@@ -20,21 +20,47 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
-// ErrUnavailable means the provider's CLI is not on PATH. The HTTP layer
-// maps it to 503 so the UI can say "install the CLI".
+// ErrUnavailable means the provider's CLI is not installed. The HTTP layer maps
+// it to 503 so the UI can say "install the CLI".
 var ErrUnavailable = errors.New("provider CLI not installed")
+
+// Options carry per-call tuning. Empty fields mean "use the CLI default".
+type Options struct {
+	Model  string // provider-specific (claude: haiku/sonnet/opus; codex: gpt-5.x)
+	Effort string // reasoning effort; provider-specific vocabulary
+}
+
+// Meta is the per-call telemetry the Assist trace shows. Fields the CLI doesn't
+// report stay zero and the trace skips them.
+type Meta struct {
+	Provider     string  `json:"provider,omitempty"`
+	Model        string  `json:"model,omitempty"`
+	Effort       string  `json:"effort,omitempty"`
+	DurationMs   int     `json:"durationMs,omitempty"`
+	InputTokens  int     `json:"inputTokens,omitempty"`
+	OutputTokens int     `json:"outputTokens,omitempty"`
+	CostUSD      float64 `json:"costUsd,omitempty"`
+}
 
 // Provider runs a prompt through one local AI CLI.
 type Provider interface {
 	// Name is the stable key the UI selects on ("claude"/"codex"/"gemini").
 	Name() string
-	// Available reports whether the CLI is on PATH.
+	// Available reports whether the CLI is installed.
 	Available() bool
-	// Run sends the prompt to the CLI and returns its text response.
-	Run(ctx context.Context, prompt string) (string, error)
+	// Run sends the prompt to the CLI and returns its text response + telemetry.
+	Run(ctx context.Context, prompt string, opts Options) (string, Meta, error)
 }
+
+// Closed effort sets each CLI accepts (empty = "let the CLI decide"). Validated
+// up front because an unknown value makes the CLI error unhelpfully later.
+var (
+	claudeEfforts = map[string]bool{"": true, "low": true, "medium": true, "high": true, "xhigh": true, "max": true}
+	codexEfforts  = map[string]bool{"": true, "none": true, "minimal": true, "low": true, "medium": true, "high": true, "xhigh": true}
+)
 
 // Providers returns the supported providers in display order.
 func Providers() []Provider {
@@ -106,44 +132,74 @@ func (claude) bin() (string, bool) {
 }
 func (c claude) Available() bool { _, ok := c.bin(); return ok }
 
-func (c claude) Run(ctx context.Context, prompt string) (string, error) {
+func (c claude) Run(ctx context.Context, prompt string, opts Options) (string, Meta, error) {
 	bin, ok := c.bin()
 	if !ok {
-		return "", fmt.Errorf("claude: %w", ErrUnavailable)
+		return "", Meta{}, fmt.Errorf("claude: %w", ErrUnavailable)
 	}
-	cmd := exec.CommandContext(ctx, bin, "-p", "--output-format=json")
+	if !claudeEfforts[opts.Effort] {
+		return "", Meta{}, fmt.Errorf("claude: invalid effort %q", opts.Effort)
+	}
+	args := []string{"-p", "--output-format=json"}
+	if opts.Model != "" {
+		args = append(args, "--model", opts.Model)
+	}
+	if opts.Effort != "" {
+		args = append(args, "--effort", opts.Effort)
+	}
+	start := time.Now()
+	cmd := exec.CommandContext(ctx, bin, args...)
 	cmd.Stdin = strings.NewReader(prompt)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	out, err := cmd.Output()
+	elapsed := int(time.Since(start).Milliseconds())
 	// claude exits non-zero on API errors (e.g. 401) but still prints its JSON
 	// envelope, which carries the real message — prefer it over "exit status 1".
 	if len(bytes.TrimSpace(out)) > 0 {
-		return parseClaude(out)
+		text, meta, perr := parseClaude(out)
+		meta.Model, meta.Effort = opts.Model, opts.Effort
+		if meta.DurationMs == 0 {
+			meta.DurationMs = elapsed
+		}
+		return text, meta, perr
 	}
 	if err != nil {
-		return "", runErr("claude", err, stderr.Bytes())
+		return "", Meta{}, runErr("claude", err, stderr.Bytes())
 	}
-	return "", errors.New("claude: empty response")
+	return "", Meta{}, errors.New("claude: empty response")
 }
 
-// parseClaude pulls the response text out of `claude -p --output-format=json`'s
-// envelope, falling back to the raw stdout if it isn't the expected JSON.
-func parseClaude(stdout []byte) (string, error) {
+// parseClaude pulls the response text + telemetry out of `claude -p
+// --output-format=json`'s envelope, falling back to raw stdout if it isn't the
+// expected JSON.
+func parseClaude(stdout []byte) (string, Meta, error) {
 	var env struct {
-		Result  string `json:"result"`
-		IsError bool   `json:"is_error"`
+		Result       string  `json:"result"`
+		IsError      bool    `json:"is_error"`
+		DurationMs   int     `json:"duration_ms"`
+		TotalCostUSD float64 `json:"total_cost_usd"`
+		Usage        struct {
+			InputTokens  int `json:"input_tokens"`
+			OutputTokens int `json:"output_tokens"`
+		} `json:"usage"`
 	}
 	if json.Unmarshal(bytes.TrimSpace(stdout), &env) == nil && (env.Result != "" || env.IsError) {
 		if env.IsError {
-			return "", fmt.Errorf("claude: %s", strings.TrimSpace(env.Result))
+			return "", Meta{}, fmt.Errorf("claude: %s", strings.TrimSpace(env.Result))
 		}
-		return strings.TrimSpace(env.Result), nil
+		meta := Meta{
+			DurationMs:   env.DurationMs,
+			InputTokens:  env.Usage.InputTokens,
+			OutputTokens: env.Usage.OutputTokens,
+			CostUSD:      env.TotalCostUSD,
+		}
+		return strings.TrimSpace(env.Result), meta, nil
 	}
 	if s := strings.TrimSpace(string(stdout)); s != "" {
-		return s, nil
+		return s, Meta{}, nil
 	}
-	return "", errors.New("claude: empty response")
+	return "", Meta{}, errors.New("claude: empty response")
 }
 
 // ---------- Codex ----------
@@ -156,35 +212,53 @@ func (codex) bin() (string, bool) {
 }
 func (c codex) Available() bool { _, ok := c.bin(); return ok }
 
-func (c codex) Run(ctx context.Context, prompt string) (string, error) {
+func (c codex) Run(ctx context.Context, prompt string, opts Options) (string, Meta, error) {
 	bin, ok := c.bin()
 	if !ok {
-		return "", fmt.Errorf("codex: %w", ErrUnavailable)
+		return "", Meta{}, fmt.Errorf("codex: %w", ErrUnavailable)
+	}
+	if !codexEfforts[opts.Effort] {
+		return "", Meta{}, fmt.Errorf("codex: invalid effort %q", opts.Effort)
 	}
 	// --sandbox read-only: the agent can't write to disk;
 	// --skip-git-repo-check: runs anywhere; --json: machine-readable stream.
-	cmd := exec.CommandContext(ctx, bin, "exec", "--json", "--skip-git-repo-check", "--sandbox", "read-only")
+	args := []string{"exec", "--json", "--skip-git-repo-check", "--sandbox", "read-only"}
+	if opts.Model != "" {
+		args = append(args, "--model", opts.Model)
+	}
+	if opts.Effort != "" {
+		// Codex exposes effort only as a config override, not a flag.
+		args = append(args, "-c", fmt.Sprintf(`model_reasoning_effort="%s"`, opts.Effort))
+	}
+	start := time.Now()
+	cmd := exec.CommandContext(ctx, bin, args...)
 	cmd.Stdin = strings.NewReader(prompt)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	out, err := cmd.Output()
+	elapsed := int(time.Since(start).Milliseconds())
 	// Codex reports errors as JSONL "error" events on stdout, so parse the
 	// stream when there is one; only a truly empty stream is a process failure.
 	if len(bytes.TrimSpace(out)) > 0 {
-		return parseCodex(out)
+		text, meta, perr := parseCodex(out)
+		meta.Model, meta.Effort, meta.DurationMs = opts.Model, opts.Effort, elapsed
+		return text, meta, perr
 	}
 	if err != nil {
-		return "", runErr("codex", err, stderr.Bytes())
+		return "", Meta{}, runErr("codex", err, stderr.Bytes())
 	}
-	return "", errors.New("codex: empty response")
+	return "", Meta{}, errors.New("codex: empty response")
 }
 
 // parseCodex consumes codex's JSONL stream and returns the concatenated
-// agent-message text. An "error" event becomes the error.
-func parseCodex(stdout []byte) (string, error) {
+// agent-message text + token usage. An "error" event becomes the error. Codex
+// doesn't echo a duration or cost in the stream, so the caller fills the
+// wall-clock duration.
+func parseCodex(stdout []byte) (string, Meta, error) {
 	sc := bufio.NewScanner(bytes.NewReader(stdout))
 	sc.Buffer(make([]byte, 0, 64*1024), 8*1024*1024) // long agent messages
 	var msg strings.Builder
+	var meta Meta
 	for sc.Scan() {
 		line := bytes.TrimSpace(sc.Bytes())
 		if len(line) == 0 {
@@ -197,6 +271,10 @@ func parseCodex(stdout []byte) (string, error) {
 				Type string `json:"type"`
 				Text string `json:"text"`
 			} `json:"item"`
+			Usage *struct {
+				InputTokens  int `json:"input_tokens"`
+				OutputTokens int `json:"output_tokens"`
+			} `json:"usage"`
 		}
 		if json.Unmarshal(line, &ev) != nil {
 			continue // tolerate the occasional non-JSON warning line
@@ -207,20 +285,24 @@ func parseCodex(stdout []byte) (string, error) {
 			if detail == "" {
 				detail = "codex reported an error"
 			}
-			return "", fmt.Errorf("codex: %s", detail)
+			return "", Meta{}, fmt.Errorf("codex: %s", detail)
 		case "item.completed":
 			if ev.Item != nil && ev.Item.Type == "agent_message" {
 				msg.WriteString(ev.Item.Text)
 			}
+		case "turn.completed":
+			if ev.Usage != nil {
+				meta.InputTokens, meta.OutputTokens = ev.Usage.InputTokens, ev.Usage.OutputTokens
+			}
 		}
 	}
 	if err := sc.Err(); err != nil {
-		return "", fmt.Errorf("codex: scan stdout: %w", err)
+		return "", Meta{}, fmt.Errorf("codex: scan stdout: %w", err)
 	}
 	if out := strings.TrimSpace(msg.String()); out != "" {
-		return out, nil
+		return out, meta, nil
 	}
-	return "", errors.New("codex: empty response")
+	return "", Meta{}, errors.New("codex: empty response")
 }
 
 // ---------- Gemini ----------
@@ -235,21 +317,23 @@ func (gemini) bin() (string, bool) {
 }
 func (g gemini) Available() bool { _, ok := g.bin(); return ok }
 
-func (g gemini) Run(ctx context.Context, prompt string) (string, error) {
+func (g gemini) Run(ctx context.Context, prompt string, opts Options) (string, Meta, error) {
 	bin, ok := g.bin()
 	if !ok {
-		return "", fmt.Errorf("gemini: %w", ErrUnavailable)
+		return "", Meta{}, fmt.Errorf("gemini: %w", ErrUnavailable)
 	}
-	// The Gemini CLI (gemini/agy) prints a plain-text answer in -p mode.
+	// The agy/gemini CLI exposes no model/effort flags, so opts are ignored.
+	start := time.Now()
 	cmd := exec.CommandContext(ctx, bin, "-p", prompt)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	out, err := cmd.Output()
+	elapsed := int(time.Since(start).Milliseconds())
 	if s := strings.TrimSpace(string(out)); s != "" {
-		return s, nil
+		return s, Meta{DurationMs: elapsed}, nil
 	}
 	if err != nil {
-		return "", runErr("gemini", err, stderr.Bytes())
+		return "", Meta{}, runErr("gemini", err, stderr.Bytes())
 	}
-	return "", errors.New("gemini: empty response")
+	return "", Meta{}, errors.New("gemini: empty response")
 }

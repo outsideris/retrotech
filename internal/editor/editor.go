@@ -235,6 +235,8 @@ func (e *Editor) handleAssistRun(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Provider string `json:"provider"`
 		Prompt   string `json:"prompt"`
+		Model    string `json:"model"`
+		Effort   string `json:"effort"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
@@ -253,7 +255,7 @@ func (e *Editor) handleAssistRun(w http.ResponseWriter, r *http.Request) {
 
 	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Minute)
 	defer cancel()
-	output, err := provider.Run(ctx, prompt)
+	output, meta, err := provider.Run(ctx, prompt, assist.Options{Model: req.Model, Effort: req.Effort})
 	if err != nil {
 		status := http.StatusBadGateway
 		if errors.Is(err, assist.ErrUnavailable) {
@@ -262,7 +264,8 @@ func (e *Editor) handleAssistRun(w http.ResponseWriter, r *http.Request) {
 		writeError(w, status, err.Error())
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]string{"output": output})
+	meta.Provider = provider.Name()
+	writeJSON(w, http.StatusOK, map[string]any{"output": output, "meta": meta})
 }
 
 // handlePreview renders the live episode page for the posted form without
