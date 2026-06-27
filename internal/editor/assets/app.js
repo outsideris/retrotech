@@ -42,6 +42,9 @@ const els = {
   assistStatus: $("assist-status"),
   assistOutput: $("assist-output"),
   assistTraces: $("assist-traces"),
+  assistScript: $("assist-script"),
+  assistDropzone: $("assist-dropzone"),
+  assistImportStatus: $("assist-import-status"),
 };
 
 // mode: 'episode' (editing a published episode) | 'draft' (editing a draft) |
@@ -691,6 +694,60 @@ function renderTraces() {
   }
 }
 
+function setImportStatus(message, kind) {
+  els.assistImportStatus.textContent = message || "";
+  els.assistImportStatus.className = "assist-status" + (kind ? " " + kind : "");
+}
+
+// importScript sends a dropped markdown script to the selected AI CLI, which
+// extracts the title / id / description; the result opens a fresh draft.
+async function importScript(file) {
+  if (!file) return;
+  if (!state.assistProvider) {
+    setImportStatus("먼저 제공자를 선택하세요.", "err");
+    return;
+  }
+  let text;
+  try {
+    text = await file.text();
+  } catch {
+    setImportStatus("파일을 읽지 못했습니다.", "err");
+    return;
+  }
+  if (!text.trim()) {
+    setImportStatus("빈 파일입니다.", "err");
+    return;
+  }
+  setImportStatus(`분석 중… (${file.name})`);
+  try {
+    const res = await apiJSON("POST", "/assist/analyze", {
+      provider: state.assistProvider,
+      model: els.assistModel.value,
+      effort: els.assistEffort.value,
+      script: text,
+    });
+    await applyScriptMeta(res);
+    if (res.meta) addTrace(res.meta);
+    setImportStatus("완료 — 왼쪽에 새 초안을 채웠습니다.", "ok");
+  } catch (err) {
+    setImportStatus(err.message, "err");
+  }
+}
+
+// applyScriptMeta opens a fresh draft and fills the extracted title / id /
+// description, then auto-saves it.
+async function applyScriptMeta(res) {
+  await newDraft();
+  if (res.title) set("f-title", res.title);
+  if (res.id) {
+    set("f-id", res.id);
+    els.id.dispatchEvent(new Event("input", { bubbles: true })); // derive enclosure URL
+  }
+  if (res.description) set("f-description", res.description);
+  els.formTitle.textContent = (res.title || "").trim() || "새 초안";
+  flushDraftSave();
+}
+
 function toggleAssist() {
   const willOpen = els.assist.hidden;
   els.assist.hidden = !willOpen;
@@ -720,6 +777,21 @@ els.assistPrompt.addEventListener("keydown", (e) => {
     e.preventDefault();
     runAssist();
   }
+});
+els.assistScript.addEventListener("change", () => {
+  const file = els.assistScript.files[0];
+  els.assistScript.value = ""; // allow re-importing the same file
+  importScript(file);
+});
+els.assistDropzone.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  els.assistDropzone.classList.add("drag");
+});
+els.assistDropzone.addEventListener("dragleave", () => els.assistDropzone.classList.remove("drag"));
+els.assistDropzone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  els.assistDropzone.classList.remove("drag");
+  if (e.dataTransfer.files[0]) importScript(e.dataTransfer.files[0]);
 });
 
 $("btn-new").addEventListener("click", newDraft);

@@ -134,6 +134,9 @@ struct 순서로 이동). 측정: 23편 재출력 시 총 65줄 변경, **전부
   옵션, gemini 는 숨김, localStorage 저장) + **디버그 모드 체크박스**(체크해야 대화창=프롬프트/실행/
   출력 열림) + **최근 사용 trace 3개**(`provider · model · effort · 시간 · 비용USD`, localStorage 보존).
   레이아웃 flex 라 미리보기와 공존, 미설치 제공자 비활성, ⌘/Ctrl+Enter 실행.
+- **대본 import:** 사이드바 하단 드롭존(.md 드래그앤드롭/클릭). `POST /api/assist/analyze` 가 선택 CLI 로
+  대본을 분석해 `{title,id,description}` 추출(`assist.AnalyzeScript` — JSON 추출 프롬프트 + 펜스/prose
+  견디는 파싱). 결과로 **새 초안**을 만들어 제목·ID·설명을 채우고 id→enclosure URL 자동.
 - **인증·비용:** CLI 가 스스로 인증(키체인/로그인). 이 앱은 API 키를 보관하지 않는다.
 
 ## 빌드 / 실행

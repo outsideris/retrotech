@@ -688,3 +688,33 @@ button.danger:hover {
   color: var(--navy);
   font-weight: 700;
 }
+
+.assist-import {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.assist-dropzone {
+  display: block;
+  text-align: center;
+  padding: 16px 12px;
+  border: 1.5px dashed var(--line);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+  cursor: pointer;
+  background: var(--cream);
+}
+
+.assist-dropzone:hover {
+  border-color: var(--orange);
+  color: var(--ink);
+}
+
+.assist-dropzone.drag {
+  border-color: var(--orange);
+  background: var(--orange-soft);
+  color: var(--navy);
+}

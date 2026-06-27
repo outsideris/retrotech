@@ -178,6 +178,15 @@
           </div>
           <div class="assist-traces-head">최근 사용</div>
           <ul id="assist-traces" class="assist-traces" aria-label="최근 LLM 사용 내역"></ul>
+
+          <div class="assist-import">
+            <div class="assist-traces-head">대본 → 메타데이터</div>
+            <label id="assist-dropzone" class="assist-dropzone">
+              <input id="assist-script" type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden />
+              <span>대본 파일(.md)을 끌어다 놓거나 클릭해 선택<br />→ 제목·ID·설명을 자동으로 채웁니다</span>
+            </label>
+            <span id="assist-import-status" class="assist-status" aria-live="polite"></span>
+          </div>
         </div>
       </section>
     </div>

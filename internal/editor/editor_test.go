@@ -321,3 +321,12 @@ func TestAssistRunValidation(t *testing.T) {
 	resp, _ = do(t, srv, "POST", "/_write/api/assist/run", map[string]string{"provider": "claude", "prompt": "   "})
 	mustStatus(t, resp, http.StatusBadRequest)
 }
+
+func TestAssistAnalyzeValidation(t *testing.T) {
+	srv, _ := newTestServer(t)
+	// Empty script and unknown provider are rejected before any CLI runs.
+	resp, _ := do(t, srv, "POST", "/_write/api/assist/analyze", map[string]string{"provider": "claude", "script": "   "})
+	mustStatus(t, resp, http.StatusBadRequest)
+	resp, _ = do(t, srv, "POST", "/_write/api/assist/analyze", map[string]string{"provider": "nope", "script": "# Title"})
+	mustStatus(t, resp, http.StatusBadRequest)
+}

@@ -88,6 +88,7 @@ func (e *Editor) Handler() http.Handler {
 	mux.HandleFunc("POST /_write/api/drafts/{slug}/publish", e.handleDraftPublish)
 	mux.HandleFunc("GET /_write/api/assist/providers", e.handleAssistProviders)
 	mux.HandleFunc("POST /_write/api/assist/run", e.handleAssistRun)
+	mux.HandleFunc("POST /_write/api/assist/analyze", e.handleAssistAnalyze)
 	// no-store so an updated app never serves stale UI cached by a previous
 	// version on the same loopback origin (the fixed port keeps the origin
 	// constant across launches).
@@ -266,6 +267,50 @@ func (e *Editor) handleAssistRun(w http.ResponseWriter, r *http.Request) {
 	}
 	meta.Provider = provider.Name()
 	writeJSON(w, http.StatusOK, map[string]any{"output": output, "meta": meta})
+}
+
+// handleAssistAnalyze reads a podcast script through the selected AI CLI and
+// returns the extracted title / id / description to prefill the episode form.
+func (e *Editor) handleAssistAnalyze(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Provider string `json:"provider"`
+		Model    string `json:"model"`
+		Effort   string `json:"effort"`
+		Script   string `json:"script"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	provider, ok := assist.Find(req.Provider)
+	if !ok {
+		writeError(w, http.StatusBadRequest, "unknown provider: "+req.Provider)
+		return
+	}
+	script := strings.TrimSpace(req.Script)
+	if script == "" {
+		writeError(w, http.StatusBadRequest, "empty script")
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Minute)
+	defer cancel()
+	sm, meta, err := assist.AnalyzeScript(ctx, provider, assist.Options{Model: req.Model, Effort: req.Effort}, script)
+	if err != nil {
+		status := http.StatusBadGateway
+		if errors.Is(err, assist.ErrUnavailable) {
+			status = http.StatusServiceUnavailable
+		}
+		writeError(w, status, err.Error())
+		return
+	}
+	meta.Provider = provider.Name()
+	writeJSON(w, http.StatusOK, map[string]any{
+		"title":       sm.Title,
+		"id":          sm.ID,
+		"description": sm.Description,
+		"meta":        meta,
+	})
 }
 
 // handlePreview renders the live episode page for the posted form without
