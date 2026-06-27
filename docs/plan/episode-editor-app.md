@@ -41,6 +41,11 @@ Electron(desktop/main.js)  ──spawn──▶  Go 사이드카(cmd/app)  ─�
   전체 본문을 `RawBody` 에 verbatim 보존(데이터 손실 0).
 - `Reference{Text, URL, Indent}` — `[text](url)`(URL 있음) 또는 일반 텍스트(URL 빈값), `Indent` 로
   중첩(4칸/레벨) 표현. `parseLinkItem` 은 `emit(parse)==원본` 이 성립(괄호 포함 URL·`](` 안전).
+- **설명2·배경음악 = 「배경음악 라이센스」 한 필드(프런트 전용).** description2 와 본문 `## 배경음악` 은
+  형식이 늘 같아(「레퍼런스는 홈페이지 참고: <slug URL>」 + 음악 신용표기), UI 는 음악 한 필드만 받고
+  슬러그로 레퍼런스 줄을 자동 생성해 둘을 구성한다. **백엔드 무변경** — hidden `f-description2`/`f-extra`
+  가 로드 원본을 들고 있다가 음악/ID 를 실제 편집할 때만 재구성하므로, 미편집 회차는 바이트 동일
+  (라운드트립/피드 골든 불변).
 
 ## HTTP API (`internal/editor/editor.go`, `/_write/api/...`)
 

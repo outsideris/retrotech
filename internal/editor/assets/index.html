@@ -70,10 +70,9 @@
               <span>설명 (description)</span>
               <textarea id="f-description" name="description" rows="3"></textarea>
             </label>
-            <label class="field">
-              <span>설명2 (description2 — 피드 전용 추가 텍스트, 선택)</span>
-              <textarea id="f-description2" name="description2" rows="3"></textarea>
-            </label>
+            <!-- description2 (피드 전용) 는 직접 편집하지 않는다 — 본문의
+                 "배경음악 라이센스" + 슬러그(레퍼런스 안내)로 자동 구성된다. -->
+            <input id="f-description2" type="hidden" />
           </fieldset>
 
           <fieldset>
@@ -122,9 +121,17 @@
             <ol id="refs" class="refs" aria-label="레퍼런스 목록"></ol>
 
             <label class="field">
-              <span>추가 섹션 (예: ## 배경음악 — 그대로 보존, 선택)</span>
-              <textarea id="f-extra" name="extra" rows="4"></textarea>
+              <span>배경음악 라이센스 (없으면 비움)</span>
+              <textarea
+                id="f-music"
+                rows="4"
+                placeholder="예) Music from #Uppbeat (free for Creators!):&#10;https://uppbeat.io/t/.../...&#10;License code: XXXXXXXX"
+              ></textarea>
+              <small class="hint">
+                채우면 설명2(「레퍼런스는 홈페이지 참고」 + 슬러그 URL + 이 내용)와 본문 「## 배경음악」이 자동 구성됩니다.
+              </small>
             </label>
+            <input id="f-extra" type="hidden" />
           </fieldset>
 
           <fieldset id="raw-body" hidden>

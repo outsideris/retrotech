@@ -176,6 +176,49 @@ function clean(s) {
   return (s || "").replace(/\r\n/g, "\n");
 }
 
+// ---- description2 / 배경음악 composition ----
+// The frontmatter description2 and the body "## 배경음악" section are both
+// derived from one "배경음악 라이센스" field plus the episode slug, so the author
+// edits the music credit once. To keep existing episodes byte-identical, the
+// hidden f-description2 / f-extra keep their loaded values and are only
+// recomposed when the music field or id actually changes.
+
+const REF_HOME_PREFIX = "레퍼런스는 홈페이지 참고:";
+
+function slugURL(id) {
+  return id ? `https://retrotech.outsider.dev/episodes/${id}` : "";
+}
+
+// musicFromForm pulls the background-music credit out of an episode for display:
+// the body "## 배경음악" section if present, else the part of description2 after
+// the references line.
+function musicFromForm(f) {
+  const sec = (f.extra || "").match(/^##\s*배경음악\s*\n([\s\S]*)$/);
+  if (sec) return sec[1].trim();
+  const d2 = f.description2 || "";
+  if (d2.startsWith(REF_HOME_PREFIX)) {
+    const i = d2.indexOf("\n\n");
+    if (i >= 0) return d2.slice(i + 2).trim();
+  }
+  return "";
+}
+
+// recomposeBody rebuilds the hidden f-description2 and f-extra from the current
+// id + music field. Only called on a user edit, so an untouched episode keeps
+// its original bytes.
+function recomposeBody() {
+  const id = get("f-id").trim();
+  const music = clean(get("f-music")).trim();
+  set("f-extra", music ? `## 배경음악\n${music}` : "");
+  let d2 = "";
+  if (id || music) {
+    const url = slugURL(id);
+    d2 = REF_HOME_PREFIX + (url ? `\n${url}` : "");
+    if (music) d2 += "\n\n" + music.replace(/\n{2,}/g, "\n"); // description2 is the compact form
+  }
+  set("f-description2", d2);
+}
+
 function showForm() {
   els.empty.hidden = true;
   els.form.hidden = false;
@@ -247,6 +290,7 @@ function fillForm(f) {
   } else {
     set("f-rawbody", f.rawBody);
   }
+  set("f-music", musicFromForm(f));
   els.audioHelp.textContent = "";
   els.audio.value = "";
 }
@@ -535,7 +579,11 @@ els.id.addEventListener("input", () => {
   if (urlEl.value === "" || isTemplate) {
     urlEl.value = els.id.value ? tmpl(els.id.value.trim()) : "";
   }
+  recomposeBody(); // the references URL in description2 follows the slug
 });
+
+// Editing the music field recomposes description2 + the body's ## 배경음악.
+$("f-music").addEventListener("input", recomposeBody);
 
 // ---------- Assist (AI CLI sidebar) ----------
 
