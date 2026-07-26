@@ -16,13 +16,14 @@ go test ./internal/builder/ -run TestBuildFeedMatchesGolden -v
 | 테스트 파일 | 대상 | 검증 범위 |
 | --- | --- | --- |
 | `internal/parser/parser_test.go` | `parser` | 프론트매터/본문 분리, 폴드(`>`)·따옴표 title 의 trailing newline 보존(피드 패리티 핵심), 블록 스칼라 description, 로드·날짜 내림차순 정렬·`index.*` 제외 |
-| `internal/builder/feed_test.go` | `feed.go` | **피드 골든**: `BuildFeed` 출력이 이전 `gen-rss.js` 산출물(`testdata/feed.golden.xml`)과 바이트 동일(휘발성 `lastBuildDate` 정규화)임을 23편 전체로 검증 |
+| `internal/builder/feed_test.go` | `feed.go` | **피드 골든**: `BuildFeed` 출력이 이전 `gen-rss.js` 산출물(`testdata/feed.golden.xml`)과 바이트 동일(휘발성 `lastBuildDate` 정규화)임을 전체 에피소드로 검증 |
 | `internal/builder/badges_test.go` | `badges.go` | 항상 노출되는 Apple/YouTube/Spotify, `google` 유무에 따른 Google↔RSS 토글, 회차 딥링크 사용·`&`→`&amp;` href 이스케이프, 배지별 예약 높이(`height` SVG 비율, `height="0"` 부재 → CLS 방지) |
 | `internal/builder/render_test.go` | `render.go` | 홈·episodes 페이지 내비 링크(상호 연결), 에피소드 title·`<!--badges-->` 치환·footer, `## 레퍼런스:` 리스트의 `.refs` 자동 래핑, 한 개의 `role="main"` 랜드마크·skip 링크, **title 규칙**(`<title>`=맨이름·og:title=접미사, 전 페이지 타입) |
 | `internal/builder/sitemap_test.go` | `sitemap.go` | sitemap.xml 구조(urlset/xmlns)·홈/episodes/에피소드 URL 포함·404 제외·랜딩 `lastmod`=최신 에피소드 날짜·유효 XML |
 | `internal/builder/a11y_perf_test.go` | `render.go`·`badges.go`·`render_layout.go` (전 페이지 타입) | **접근성/성능 불변식**(브라우저 없이 `go test`로): 제목 계층 건너뜀 없음·단일 h1, 모든 `img` `alt`, 단일 `role="main"`+skip 링크, 다크 토글 키보드 조작(role/tabindex/Enter·Space), `html lang`·`title`, iframe `loading="lazy"`·`title`, `height="0"` 부재(CLS), 커버 preload는 home·404 한정·`fetchpriority`, 커버 `width/height` |
 
 - 피드 골든(`testdata/feed.golden.xml`)은 마이그레이션 전 `gen-rss.js` 출력에서 운영 기준(pubDate 09:00 UTC)으로 고정해 커밋했다. **의도된** 피드 변경 시 이 파일을 갱신한다. 구독자 계약(guid/enclosure/pubDate)을 지키는 회귀 가드다.
+- **새 에피소드 추가 등 의도된 피드 변경 시 골든 갱신 절차:** `go run ./cmd/build` 후 `cp dist/feed.xml internal/builder/testdata/feed.golden.xml`. 커밋 전에 `git diff` 로 새 `<item>` 추가(및 `lastBuildDate`) 외에 기존 항목의 guid/enclosure/pubDate 가 바뀌지 않았는지 확인하고, 에피소드 md 와 골든을 **같은 커밋**에 포함한다(따로 커밋하면 CI 의 `TestBuildFeedMatchesGolden` 이 실패한다).
 - 피드 테스트는 `content/episodes/` 의 프론트매터만 로드해 빌드한다(본문 불필요). `episodeSourceDir` 상수로 경로 지정.
 - 외부 의존성(goldmark·yaml) 자체는 테스트하지 않고, 우리 코드의 입출력·계약만 검증한다(CLAUDE.md 규칙).
 

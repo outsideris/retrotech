@@ -20,10 +20,10 @@
 ## 필수 확인 항목
 
 - [ ] **컴파일/정적검사:** `go build ./...` · `go vet ./...` 통과.
-- [ ] **테스트:** `go test ./...` 통과. 특히 **피드 골든**(`internal/builder/testdata/feed.golden.xml`)이 구독자 계약(guid/enclosure/pubDate)을 지키는지.
+- [ ] **테스트:** `go test ./...` 통과. 특히 **피드 골든**(`internal/builder/testdata/feed.golden.xml`)이 구독자 계약(guid/enclosure/pubDate)을 지키는지. **새 에피소드를 추가했다면** 골든도 같은 커밋에서 갱신해야 한다(절차: [TESTS.md](./TESTS.md)).
 - [ ] **빌드:** `go run ./cmd/build` 성공.
 - [ ] **RSS 생성:** `dist/feed.xml` 이 생성되고 iTunes 필드가 포함되는지.
-- [ ] **정적 산출물:** `dist/` 에 HTML 26개(홈/episodes/에피소드 23/404) + `feed.xml` + `sitemap.xml` + 자산(`assets/styles.<hash>.css` 포함)이 생성되는지.
+- [ ] **정적 산출물:** `dist/` 에 HTML(홈/episodes/404 + 에피소드 전체 편수) + `feed.xml` + `sitemap.xml` + 자산(`assets/styles.<hash>.css` 포함)이 생성되는지.
 - [ ] **수동 구동 확인:** `go run ./cmd/serve` 로 홈·에피소드·다크모드 토글이 정상 렌더되는지.
 - [ ] **접근성/성능(불변식):** `go test ./...` 의 `a11y_perf_test.go` 통과(제목 계층·랜드마크·alt·토글 키보드·lazy iframe·배지 높이·preload 등 마크업).
 - [ ] **접근성/성능(Lighthouse):** `npx @lhci/cli@0.14.x autorun` — 접근성/SEO/Best-Practices=100(하드 게이트). CI `lighthouse` 잡과 동일.

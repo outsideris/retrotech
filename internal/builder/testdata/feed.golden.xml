@@ -4,7 +4,7 @@
         <description><![CDATA[기술별로 과거 어떤 배경에서 기술이 등장하고 발전해 왔는지 또 왜 어떤 기술은 사라졌는지 기술의 역사를 자세히 설명하는 팟캐스트입니다.]]></description>
         <link>https://retrotech.outsider.dev</link>
         <generator>RetroTech</generator>
-        <lastBuildDate>Tue, 16 Jun 2026 15:55:39 GMT</lastBuildDate>
+        <lastBuildDate>Sun, 26 Jul 2026 16:44:04 GMT</lastBuildDate>
         <atom:link href="https://retrotech.outsider.dev/feed.xml" rel="self" type="application/rss+xml"/>
         <language><![CDATA[ko]]></language>
         <itunes:owner>
@@ -16,6 +16,31 @@
         <itunes:explicit>no</itunes:explicit>
         <itunes:category text="Technology">
         </itunes:category>
+        <item>
+            <title><![CDATA[2h. VCS: Subversion
+]]></title>
+            <description><![CDATA[CVS의 후계자로 등장한 버전 관리 시스템 Subversion의 탄생과 흥망을 다룹니다.
+Apache HTTP Server를 만든 Brian Behlendorf와 Tim O'Reilly의 만남, 오픈소스 협업 프로세스를 상품화하려 했던 CollabNet과 Tigris/sourceXchange 이야기에서 시작해, Karl Fogel과 Jim Blandy가 CVS를 '전복'하겠다는 뜻으로 시작한 Subversion 프로젝트의 설계와 개발 과정을 따라갑니다.
+원자적 커밋, 전역 리비전, 디렉터리 버전 관리, WebDAV/DeltaV 기반 구조 등 기술적 특징과 2004년 1.0 릴리스 이후의 확산, TortoiseSVN의 역할, Apache 재단 이관까지 살펴봅니다.
+마지막으로 Git 등 분산 VCS의 부상으로 점유율을 잃어간 과정과 CollabNet의 이후 행보를 정리합니다.
+
+레퍼런스는 홈페이지 참고:
+https://retrotech.outsider.dev/episodes/2h
+
+Music from #Uppbeat
+https://uppbeat.io/t/zoo/breathtaker
+License code: RHNYVJYQUUJGYP2O
+]]></description>
+            <link>https://retrotech.outsider.dev/episodes/2h</link>
+            <guid isPermaLink="true">https://retrotech.outsider.dev/episodes/2h</guid>
+            <dc:creator><![CDATA[Outsider]]></dc:creator>
+            <pubDate>Mon, 27 Jul 2026 09:00:00 GMT</pubDate>
+            <enclosure url="https://retrotech-episodes.outsider.dev/2h.mp3" length="99540256" type="audio/mpeg"/>
+            <duration>82:57</duration>
+            <itunes:duration>82:57</itunes:duration>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:author>Outsider</itunes:author>
+        </item>
         <item>
             <title><![CDATA[2g. VCS: SourceForge
 ]]></title>
