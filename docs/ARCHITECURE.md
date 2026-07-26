@@ -30,19 +30,33 @@
 retrotech/
 ├─ cmd/
 │  ├─ build/main.go        # 빌드 진입점: content+public → dist (페이지·피드·자산)
-│  └─ serve/main.go        # 로컬 미리보기 서버(clean URL 해석)
+│  ├─ serve/main.go        # 로컬 미리보기 서버(clean URL 해석)
+│  └─ app/main.go          # 에디터 데스크톱 앱의 HTTP 사이드카(loopback, EDITOR_PORT 출력)
 ├─ internal/
 │  ├─ parser/              # 프론트매터 분리·YAML 파싱·에피소드 로드/정렬
 │  │  └─ parser.go         #   Frontmatter/Episode 모델, SortEpisodes
-│  └─ builder/
-│     ├─ feed.go           # iTunes RSS 피드 생성(encoding 문자열)
-│     ├─ feed_test.go      #   골든 테스트(testdata/feed.golden.xml)
-│     ├─ badges.go         # 구독 배지(Apple/YouTube/Spotify/Google|RSS) HTML
-│     ├─ render.go         # 페이지 빌더 + goldmark + 프로즈 후처리
-│     ├─ render_layout.go  # 페이지 셸·head·메타·footer·날짜
-│     └─ render_assets.go  # 다크모드 스크립트·아이콘 SVG·인라인 스타일
+│  ├─ builder/
+│  │  ├─ feed.go           # iTunes RSS 피드 생성(encoding 문자열)
+│  │  ├─ feed_test.go      #   골든 테스트(testdata/feed.golden.xml)
+│  │  ├─ badges.go         # 구독 배지(Apple/YouTube/Spotify/Google|RSS) HTML
+│  │  ├─ render.go         # 페이지 빌더 + goldmark + 프로즈 후처리
+│  │  ├─ render_layout.go  # 페이지 셸·head·메타·footer·날짜
+│  │  └─ render_assets.go  # 다크모드 스크립트·아이콘 SVG·인라인 스타일
+│  └─ editor/              # 에피소드 관리 앱 백엔드(아래 "에피소드 관리 데스크톱 앱")
+│     ├─ form.go           #   EpisodeForm↔에피소드 변환(본문 무손실 구조화)
+│     ├─ compose.go        #   EpisodeForm → 마크다운(블록 스칼라·고정 키 순서)
+│     ├─ store.go          #   에피소드 파일 CRUD·슬러그 검증·atomic write
+│     ├─ drafts.go         #   초안(JSON) 저장·발행(content/drafts → content/episodes)
+│     ├─ editor.go         #   HTTP mux·JSON API·미리보기, //go:embed assets
+│     ├─ assist/           #   AI CLI(Claude/Codex/Gemini) 셸 아웃 — Assist 사이드바 백엔드
+│     └─ assets/           #   임베드 폼 SPA(index.html·app.js·app.css)
+├─ desktop/                # Electron 래퍼(앱 셸). server-bin/node_modules/dist 는 gitignore
+│  ├─ main.js              #   창·폴더 선택·서버 spawn·생명주기
+│  ├─ package.json         #   electron + electron-builder(build:server/start/dist)
+│  └─ icons/               #   앱 아이콘(public/images/cover 에서 생성)
 ├─ content/
-│  └─ episodes/            # *.md (프론트매터 + 본문). 0, 1a…1n, 2a…2g, 250127-breaks
+│  ├─ episodes/            # *.md (프론트매터 + 본문). 0, 1a…1n, 2a…2g, 250127-breaks
+│  └─ drafts/              # 에디터 초안 *.json (gitignore·로컬 작업 상태, 발행 전까지 비공개)
 ├─ public/                 # 정적 자산. 빌드가 dist/ 루트로 복사
 │  ├─ images/ badges/ favicon.* site.webmanifest robots.txt ads.txt
 │  ├─ styles.css           # 테마+보정 CSS 컴파일본(빌드가 /assets/styles.<hash>.css 로 핑거프린트)
@@ -69,7 +83,8 @@ retrotech/
       ...
   description2: |             # (선택) RSS description 에만 줄바꿈으로 덧붙는 보조 설명
       ...
-  author: Outsider
+  # author 는 프론트매터에 없다 — 호스트(Outsider)는 항상 동일해 빌더에 하드코딩
+  # (피드 dc:creator/itunes:author + 에피소드 바이라인). builder.showAuthor 상수.
   enclosure:                  # 팟캐스트 오디오 첨부
     url: https://retrotech-episodes.outsider.dev/2g.mp3
     size: 66997696            # 바이트 단위 파일 크기
@@ -82,7 +97,7 @@ retrotech/
   ---
   ```
 
-  - 본문에서는 제목 h1 을 쓰지 않는다(템플릿이 프론트매터 title 로 emit). 구독 배지는 `<!--badges-->` 마커 위치에 주입되고, 레퍼런스는 `#### 레퍼런스:` 헤딩 + 일반 마크다운 리스트로 작성한다(본문에 raw HTML 불필요 — 빌더가 그 리스트를 `<div class="refs">` 로 감싸 작은 글씨로 렌더).
+  - 본문에서는 제목 h1 을 쓰지 않는다(템플릿이 프론트매터 title 로 emit). 구독 배지는 `<!--badges-->` 마커 위치에 주입되고, 레퍼런스는 `## 레퍼런스:` 헤딩 + 일반 마크다운 리스트로 작성한다(본문에 raw HTML 불필요 — 빌더가 그 리스트를 `<div class="refs">` 로 감싸 작은 글씨로 렌더).
 - **목록 페이지.** 홈(`/`)과 `/episodes` 는 `parser.LoadEpisodes` 가 반환한 날짜 내림차순 목록을 `post-item` 으로 렌더한다.
 
 ## 빌드 파이프라인
@@ -106,7 +121,7 @@ go run ./cmd/build
 
 마크다운 본문은 goldmark(GFM + raw-HTML 통과)로 렌더한 뒤, 이전 Nextra 테마와 동작을 맞추기 위해 후처리한다:
 
-- **레퍼런스 래핑**: `#### 레퍼런스:` 헤딩 뒤의 리스트를 `<div class="refs">` 로 감싼다 — 본문은 순수 마크다운으로 두고 `.refs`(작은 글씨) 스타일은 빌더가 입힌다.
+- **레퍼런스 래핑**: `## 레퍼런스:` 헤딩 뒤의 리스트를 `<div class="refs">` 로 감싼다 — 본문은 순수 마크다운으로 두고 `.refs`(작은 글씨) 스타일은 빌더가 입힌다.
 - **외부 링크**(`http(s)://`): `target="_blank" rel="noreferrer"` + 스크린리더용 "(opens in a new tab)" span.
 - **마크다운 heading**(h2–h6): `subheading-h{n}` 클래스 + 퍼머링크 anchor(id 는 github-slugger 규칙).
 - **`<!--badges-->` 마커**: `badges:` 프론트매터로 구성한 배지 블록으로 치환.
@@ -120,6 +135,34 @@ go run ./cmd/build
 - 구독자 계약(불변): 각 항목 `guid`(=`/episodes/{id}`)·`enclosure`·`pubDate`. `pubDate` 는 날짜 09:00 UTC(빌드 머신 TZ 무관, 결정적).
 - 항목은 발행일 내림차순(동일 날짜 id 내림차순). `internal/builder/testdata/feed.golden.xml` 골든 테스트로 회귀 방지.
 - **하드코딩:** `SITE_URL = 'https://retrotech.outsider.dev'`(`feed.go`/`cmd/build`).
+
+## 에피소드 관리 데스크톱 앱 (RetroTech Editor)
+
+에피소드를 마크다운 직접 편집 없이 폼으로 관리하는 데스크톱 앱. 사이트 빌드와 **독립**이며(별도 cmd),
+`internal/parser`(데이터 모델)·`builder.BuildEpisodePage`(미리보기)를 재사용한다. 상세: **[plan/episode-editor-app.md](./plan/episode-editor-app.md)**.
+
+- **구조(참고 앱 `blog.outsider.ne.kr` 와 동일):** Electron 은 얇은 셸(창·폴더 선택·생명주기만), 모든
+  로직은 Go 사이드카 HTTP 서버, UI 는 `//go:embed` 로 바이너리에 포함된 폼 SPA. "IPC" 는 실제로는
+  `fetch` 로 호출하는 로컬 HTTP API.
+- **`cmd/app`** — 고정 loopback 49218(점유 시 OS 할당)에 listen → `EDITOR_PORT <n>` 출력(Electron 이
+  읽어 URL 결정) → `internal/editor` 서빙. `-repo` 로 프로젝트 루트 지정(`content/episodes` 검증).
+- **`internal/editor`** — `editor.go`(HTTP mux: `/_write/` UI, `/_write/api/episodes[/{id}]` CRUD,
+  `/_write/api/drafts[/{slug}[/publish]]`, `/_write/api/preview`, `/` → `public/` 정적 서빙),
+  `store.go`(에피소드 파일 CRUD·슬러그 검증·atomic write), `drafts.go`(초안 JSON 저장·발행),
+  `form.go`(본문↔구조 무손실 파싱), `compose.go`(마크다운 합성). **합성 계약:** 피드는 프론트매터 값만
+  읽으므로(`feed.go` 본문 미사용), 합성 결과가 재파싱 시 동일 값을 내면 `BuildFeed` 바이트 동일 →
+  골든 통과. 기존 파일 저장 시 프론트매터 스타일만 1회 정규화(값·피드 불변, 테스트로 증명).
+- **초안→발행:** "새 에피소드"는 `content/drafts/<slug>.json`(폼 전체) 초안을 만들고 자동 저장한다.
+  사이트 빌드/피드는 `content/episodes` 만 읽어 초안은 비공개; **발행** 시 폼을 `content/episodes/<id>.md`
+  로 합성하고 초안을 지운다(발행 날짜 스탬프). `content/drafts/` 는 gitignore. 작성자는 프론트매터에
+  없고 빌더에 하드코딩(`builder.showAuthor`).
+- **AI Assist:** `internal/editor/assist` 가 로컬 CLI(Claude/Codex/Gemini)를 비대화 모드로 셸 아웃
+  (`/api/assist/providers`·`/api/assist/run`). `cmd/app` 은 `injectLoginPath()` 로 GUI 의 빈 PATH 를
+  로그인 셸 PATH 로 교체해 CLI 를 찾는다. 우측 Assist 사이드바의 토대 — 구체 기능은 이후 확장.
+- **`desktop/`** — Electron 래퍼. `main.js` 가 repo 폴더 결정(env→config.json→네이티브 picker) → 서버
+  spawn → `http://127.0.0.1:<port>/_write/` 로드. electron-builder 가 Go 바이너리를 `extraResources`
+  로 `.app` 에 동봉(server-bin→editor-server). `npm run dist` → `RetroTech Editor.app`(arm64,
+  코드사이닝 없음). 빌드 산출물(node_modules·dist·server-bin)은 gitignore.
 
 ## 외부 의존성 / 통합
 

@@ -31,7 +31,7 @@
 - [x] ~~Nextra 권고대로 `_app.tsx → _app.mdx` 검토.~~ → 무의미(Go 마이그레이션으로 `_app.tsx` 제거).
 - [x] `npx update-browserslist-db@latest` (caniuse-lite 1.0.30001517→…1799). 빌드의 "caniuse-lite is outdated" 경고 제거.
 - ℹ️ **레거시 JS(12KiB)는 설정으로 못 줄임.** Next 의 framework/main/polyfills 내장 청크라 `browserslist`/`tsconfig target` 변경에도 청크 해시 동일. 모던 browserslist 는 호환성만 좁혀 되돌림. → Next 업그레이드 시 재검토.
-- [ ] `SITE_URL`(`internal/builder/feed.go`·`cmd/build`) 하드코딩을 공유 상수로 추출(도메인 중복).
+- [x] **`SITE_URL` 공유 상수 추출(2026-06-21).** `internal/builder.SiteURL` 단일 소스로 통합하고 `cmd/build` 가 이를 참조(render.go·cmd/build 의 도메인 상수 중복 제거). 값 불변 → 피드 골든 동일.
 - [x] 배포 성공/실패 텔레그램 알림 — `scripts/cf-build.sh` 빌드 래퍼가 결과를 Worker(`cf-webhook…`)로 POST. **대시보드에서** Build command=`bash scripts/cf-build.sh` + 암호화 환경변수 `DEPLOY_WEBHOOK_URL`(워커의 **`/webhook/generic`** 엔드포인트) 설정 필요. → [DEPLOYMENT.md](./DEPLOYMENT.md#배포-알림--텔레그램)
 - [ ] ~~(장기) Next 13/Nextra 2-beta → 최신 메이저 업그레이드 호환성 검토.~~ → **Phase 6(Go 마이그레이션)으로 대체.** 프레임워크 자체를 걷어내므로 업그레이드 트레드밀이 사라진다.
 
@@ -60,16 +60,47 @@
 
 **완료(2026-06-16).** 외부 의존성 2개로 축소, 브라우저 프레임워크 JS 0, 시각·동작·피드 동일. 상세: [plan/go-static-migration.md](./plan/go-static-migration.md).
 
-## Phase 7 — 마이그레이션 후속 정리 (보류, 사용자 재확인 예정)
+## Phase 7 — 마이그레이션 후속 정리 (종료 — 2026-06-21 검토 완료)
 
-> 마이그레이션 완료 후 정리 후보. 동작·시각엔 영향 없음. 작업 후 함께 검토하기로 함(2026-06-16).
+> 마이그레이션 완료 후 정리 후보. 동작·시각엔 영향 없음. **2026-06-21 사용자와 검토 완료** — 아래
+> 항목 모두 종료. 더 이상 후속 리마인드 대상 아님.
 
 - [x] **Nextra 잔재 네이밍 정리(2026-06-16).** `<div id="__next">`→`<div id="app">`, CSS·템플릿의 `nx-*` 접두사→`rt-*`(styles.css 522곳 + 템플릿 53곳 전역 치환). 라이트/다크 스크린샷 픽셀 동일 확인.
 - [x] **dead Nextra CSS 제거(2026-06-16).** `styles.css` 의 안 쓰는 Nextra 규칙 27개(`.nextra-button/callout/card/steps/copy-icon/scrollbar`, `[data-nextra-word-wrap]`) 제거(3176B↓). CSS 규칙 단위 파서로 `:not()` 제외목록은 보존. dist CSS 의 'nextra' 0개. 홈·에피소드 스크린샷 동일 확인.
-- [ ] **홈 본문을 마크다운으로.** 커버·소개·이슈 문구가 `internal/builder/render.go`(`BuildHomePage`)에 하드코딩돼 있다. 마크다운으로 편집하고 싶으면 `content/index.md` 도입 검토.
+- [x] ~~**홈 본문을 마크다운으로.**~~ **현행 유지 — 안 함(2026-06-21 사용자 결정).** 커버·소개·이슈 문구는 `internal/builder/render.go`(`BuildHomePage`) 하드코딩 그대로 둔다. 동작·시각 영향 없어 불필요로 판단.
 - [x] **`scripts/convert` 삭제(2026-06-16).** mdx→md 1회성 마이그레이션 도구. 입력(`pages/`)이 제거돼 더는 동작하지 않아 제거. 변환 방식은 worklog·plan 에 기록됨.
-- [ ] **피드 `<generator>` 문자열.** 현재 `RSS for Node`(옛 rss 라이브러리 잔재, 부정확). `RetroTech` 등으로 바꾸거나 둘지 결정. (채널 `<description>` 은 2026-06-16 에 실제 설명으로 교체 완료.)
+- [x] **피드 `<generator>` 문자열 — 이미 완료(마이그레이션 시).** `internal/builder/feed.go` 가 이미 `<generator>RetroTech</generator>` 를 출력한다(옛 `RSS for Node` 아님). 체크박스만 미반영이던 것을 2026-06-21 확인·정리. (채널 `<description>` 도 2026-06-16 에 실제 설명으로 교체 완료.)
 - ℹ️ **비가시 차이(조치 불필요, 렌더 동일):** 에피소드 h1 후행 개행 없음, `<time dateTime>` 속성이 UTC(표시는 동일), 본문 아포스트로피 `'`↔`&#x27;`(둘 다 `'` 로 렌더), next/image 내부 속성(`data-nimg` 등) 생략.
+
+## Phase 8 — 에피소드 관리 데스크톱 앱 (RetroTech Editor)
+
+> 에피소드를 마크다운 직접 편집 없이 폼으로 관리하는 Electron 앱. 참고 앱(`blog.outsider.ne.kr`)의
+> 구조 — Electron 얇은 셸 + Go 사이드카 HTTP 서버 + 임베드 폼 UI — 를 그대로 가져왔다.
+> 상세 계획·설계: **[plan/episode-editor-app.md](./plan/episode-editor-app.md)**.
+
+- [x] **A. 데이터 계층** — `internal/editor` 스토어 + 합성기. `EpisodeForm`↔마크다운 무손실 변환,
+  리터럴 블록 스칼라(chomping)로 trailing newline 보존, atomic write, 슬러그 검증. 23편 전수
+  라운드트립 + `BuildFeed` 바이트 동일성 테스트로 구독자 계약 보호.
+- [x] **B. 웹 계층** — `internal/editor/editor.go` HTTP 서버(`//go:embed` UI + JSON API +
+  `builder.BuildEpisodePage` 재사용 미리보기) + `cmd/app` 사이드카(`EDITOR_PORT` 출력). 핸들러 테스트.
+- [x] **C. 폼 UI** — 목록·구조화 폼·레퍼런스 행 편집(드래그 정렬)·로컬 mp3 → size/duration 자동
+  채움·미리보기 iframe. 프레임워크 없음.
+- [x] **D. Electron 래퍼 + 패키징** — `desktop/`(main.js·package.json·아이콘), electron-builder 로
+  `RetroTech Editor.app` 빌드 검증(Go 서버 동봉).
+- [x] **E. 브랜드 디자인 + 아이콘(2026-06-24).** 커버 팔레트(네이비/크림/오렌지) 적용, 사이드바 검색
+  오버플로·hidden 패널 표시 버그 수정, 자산 `no-store`, macOS 규격 앱 아이콘(여백+둥근 모서리). 실제
+  브라우저 검증.
+- [x] **F. 초안→발행 워크플로우(2026-06-24).** "새 에피소드"→초안(`content/drafts/*.json`, gitignore)
+  자동저장, 사이드바 초안 섹션, **발행** 시 `content/episodes/<id>.md` 기록·초안 삭제. 백엔드 테스트 +
+  실제 브라우저 전 흐름 검증. 상세: [plan/episode-editor-app.md](./plan/episode-editor-app.md#초안draft--발행-워크플로우-internaleditordraftsgo).
+- [x] **G. UX 다듬기 + AI Assist 토대(2026-06-24).** 삭제 버튼→사이드바 hover, 날짜=발행 시점 자동,
+  작성자 제거(빌더 하드코딩), **우측 Assist 사이드바**(Claude/Codex/Gemini CLI 셸 아웃 + `injectLoginPath`).
+  실제 브라우저 검증. 상세: [plan/episode-editor-app.md](./plan/episode-editor-app.md#ai-assist-사이드바-internaleditorassist).
+
+**완료(2026-06-21, 디자인·초안 2026-06-24).** Go 측 전 구간 테스트·빌드·스모크 검증. 정규화는 1회 한정
+프론트매터 스타일만(값·피드 불변, 테스트로 증명). 에디터 UI 는 실제 브라우저로 검증.
+
+- [ ] (후속) 미리보기에 raw 섹션(`## 배경음악`) 구조화, 회차 복제, 초안 git 동기화 옵션.
 
 ## 운영(미검증, 확인 필요)
 

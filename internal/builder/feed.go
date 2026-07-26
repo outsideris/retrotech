@@ -35,7 +35,6 @@ const (
 	// title — apps showed just the show name. This is the site's own self
 	// description (the home page intro), so the feed actually describes the show.
 	feedDesc     = "기술별로 과거 어떤 배경에서 기술이 등장하고 발전해 왔는지 또 왜 어떤 기술은 사라졌는지 기술의 역사를 자세히 설명하는 팟캐스트입니다."
-	feedAuthor   = "Outsider"
 	feedOwnerEml = "outsideris@gmail.com"
 )
 
@@ -66,10 +65,10 @@ func BuildFeed(episodes []parser.Episode, cfg FeedConfig, buildTime time.Time) [
 	b.WriteString(`        <atom:link href="` + site + `/feed.xml" rel="self" type="application/rss+xml"/>` + "\n")
 	b.WriteString("        <language>" + cdata("ko") + "</language>\n")
 	b.WriteString("        <itunes:owner>\n")
-	b.WriteString("            <itunes:name>" + feedAuthor + "</itunes:name>\n")
+	b.WriteString("            <itunes:name>" + showAuthor + "</itunes:name>\n")
 	b.WriteString("            <itunes:email>" + feedOwnerEml + "</itunes:email>\n")
 	b.WriteString("        </itunes:owner>\n")
-	b.WriteString("        <itunes:author>" + feedAuthor + "</itunes:author>\n")
+	b.WriteString("        <itunes:author>" + showAuthor + "</itunes:author>\n")
 	b.WriteString(`        <itunes:image href="` + site + `/images/cover.jpg"/>` + "\n")
 	b.WriteString("        <itunes:explicit>no</itunes:explicit>\n")
 	b.WriteString(`        <itunes:category text="Technology">` + "\n")
@@ -82,13 +81,13 @@ func BuildFeed(episodes []parser.Episode, cfg FeedConfig, buildTime time.Time) [
 		b.WriteString("            <description>" + cdata(feedDescription(ep.Frontmatter)) + "</description>\n")
 		b.WriteString("            <link>" + url + "</link>\n")
 		b.WriteString(`            <guid isPermaLink="true">` + url + "</guid>\n")
-		b.WriteString("            <dc:creator>" + cdata(ep.Author) + "</dc:creator>\n")
+		b.WriteString("            <dc:creator>" + cdata(showAuthor) + "</dc:creator>\n")
 		b.WriteString("            <pubDate>" + pubDate(ep.Date) + "</pubDate>\n")
 		b.WriteString(`            <enclosure url="` + ep.Enclosure.URL + `" length="` + strconv.FormatInt(ep.Enclosure.Size, 10) + `" type="` + enclosureType(ep.Enclosure.URL) + `"/>` + "\n")
 		b.WriteString("            <duration>" + ep.Duration + "</duration>\n")
 		b.WriteString("            <itunes:duration>" + ep.Duration + "</itunes:duration>\n")
 		b.WriteString("            <itunes:explicit>no</itunes:explicit>\n")
-		b.WriteString("            <itunes:author>" + feedAuthor + "</itunes:author>\n")
+		b.WriteString("            <itunes:author>" + showAuthor + "</itunes:author>\n")
 		b.WriteString("        </item>\n")
 	}
 

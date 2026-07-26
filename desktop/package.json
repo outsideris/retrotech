@@ -1,0 +1,28 @@
+{
+  "name": "retrotech-editor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RetroTech 에피소드 관리 데스크톱 앱",
+  "main": "main.js",
+  "scripts": {
+    "build:server": "go build -o server-bin ../cmd/app",
+    "start": "npm run build:server && electron .",
+    "dist": "npm run build:server && electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^42.3.0",
+    "electron-builder": "^26.8.1"
+  },
+  "build": {
+    "appId": "dev.outsider.retrotech.editor",
+    "productName": "RetroTech Editor",
+    "directories": { "output": "dist" },
+    "files": ["main.js", "package.json", "icons/icon.png"],
+    "mac": {
+      "icon": "icons/icon.icns",
+      "category": "public.app-category.productivity",
+      "target": ["dir"]
+    },
+    "extraResources": [{ "from": "server-bin", "to": "editor-server" }]
+  }
+}

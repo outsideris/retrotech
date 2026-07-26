@@ -12,8 +12,10 @@
 | `go vet ./...` | 표준 정적 검사 |
 | `go build ./...` | 컴파일 확인 |
 | `npx @lhci/cli@0.14.x autorun` | **Lighthouse CI**: `cmd/serve` 자동 기동 → `/`·`/episodes`·에피소드 감사. 설정 `.lighthouserc.json` |
+| `go run ./cmd/app -repo .` | 에피소드 에디터 사이드카 단독 기동 → `http://127.0.0.1:49218/_write/`(데스크톱 앱 백엔드) |
+| `cd desktop && npm run dist` | 에디터 데스크톱 앱 패키징 → `dist/mac-arm64/RetroTech Editor.app`(Go 서버 동봉, 코드사이닝 없음) |
 
-> 별도 lint/format 도구는 두지 않는다(`go vet` + `gofmt` 관례). 빌드용 npm 스크립트는 없다. Lighthouse CI 는 개발/CI 전용(`npx`)이라 산출물 의존성에 영향 없다.
+> 별도 lint/format 도구는 두지 않는다(`go vet` + `gofmt` 관례). 사이트 빌드용 npm 스크립트는 없다(에디터 앱의 `desktop/` 만 npm 사용). Lighthouse CI 는 개발/CI 전용(`npx`)이라 산출물 의존성에 영향 없다.
 >
 > **CI:** GitHub Actions(`.github/workflows/ci.yml`) 가 push(main)/PR 마다 두 잡을 실행한다. ① `test`: `go vet`·`go test`·`go run ./cmd/build`(피드 골든·접근성/성능 불변식·빌드). ② `lighthouse`: 빌드 후 Lighthouse 감사 — **접근성/SEO/Best-Practices=100 은 하드 게이트**(위반 시 실패), 성능·CLS 는 경고(localhost 절대 타이밍은 비대표적이라). 접근성/성능 검증은 [PERFORMANCE.md](./PERFORMANCE.md) 참고.
 
@@ -37,6 +39,7 @@
 
 - **운영 호스트 설정(압축·캐시 헤더·HTTPS):** 로컬 정적 서버로는 검증 불가. 호스트에서 별도 확인.
 - **GA4 주입:** `ANALYTICS_ID` 미설정 시 분석 코드 미포함 — 로컬/CI 빌드는 의도적으로 GA-free.
+- **에디터 앱:** 데이터/HTTP 계층은 `go test ./...`(`internal/editor`)로 검증된다. **GUI 픽셀 렌더**는 디스플레이/Electron 헤드리스 제약으로 자동 검증 대상이 아니다 — 변경 시 `cd desktop && npm start`(또는 `.app`)로 수동 확인. 에디터는 사이트 빌드(`cmd/build`)에 포함되지 않아 위 사이트 게이트에 영향 없다.
 
 ## 커밋 전 체크
 

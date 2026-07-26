@@ -36,13 +36,40 @@ go test ./...         # 단위 + 피드 골든 테스트
 
 ## 새 에피소드 추가
 
+마크다운을 직접 쓰는 대신 **에디터 데스크톱 앱**(아래)으로 폼에서 관리하길 권한다. 직접 작성한다면:
+
 1. `content/episodes/<id>.md` 생성(예: `2h.md`). 프론트매터 스키마는 [docs/ARCHITECURE.md](docs/ARCHITECURE.md#라우팅--콘텐츠-모델).
-2. 본문 끝부분에 `<!--badges-->` 마커(구독 배지 위치)를 두고, 레퍼런스는 `#### 레퍼런스:` 헤딩 +
+2. 본문 끝부분에 `<!--badges-->` 마커(구독 배지 위치)를 두고, 레퍼런스는 `## 레퍼런스:` 헤딩 +
    일반 마크다운 리스트로 작성한다(빌더가 자동으로 `.refs` 스타일 적용).
 3. 회차별 구독 딥링크는 프론트매터 `badges:` 에 넣는다. **발행 직후엔 비워둬도 된다** — 비운
    플랫폼은 쇼/채널 링크로 연결되고(홈 루트 아이콘과 동일), 이후 Apple/YouTube/Spotify 에
    에피소드가 등록되면 그 딥링크를 `badges:` 에 필드별로 채워 넣으면 해당 배지만 딥링크로 바뀐다.
 4. `go run ./cmd/build` → `feed.xml` 갱신 및 정적 페이지 생성.
+
+## 에피소드 관리 데스크톱 앱 (RetroTech Editor)
+
+에피소드를 마크다운 직접 편집 없이 폼으로 관리하는 Electron 앱. Electron 은 창·폴더 선택·생명주기만
+맡고, 모든 로직은 Go 사이드카(`cmd/app`)가 처리한다(UI 는 `internal/editor` 에 임베드).
+
+```bash
+go run ./cmd/app -repo .          # 사이드카만 기동 → http://127.0.0.1:49218/_write/ (브라우저에서 확인 가능)
+
+cd desktop
+npm install
+npm start                         # 개발 실행(서버 빌드 + Electron 창)
+npm run dist                      # 패키징 → dist/mac-arm64/RetroTech Editor.app (코드사이닝 없음 — 우클릭 열기)
+```
+
+- 폼으로 메타데이터·구독 뱃지·레퍼런스를 편집하고, 로컬 mp3 를 고르면 `enclosure.size`·`duration` 이
+  자동으로 채워진다(파일 업로드 아님). 미리보기로 실제 에피소드 페이지를 확인한다.
+- **초안→발행:** "새 에피소드"는 바로 공개되지 않고 **초안**(`content/drafts/`, gitignore·자동 저장)으로
+  시작해 사이드바 초안 섹션에서 관리하다가, **발행**을 누르면 `content/episodes/<id>.md` 로 기록된다.
+  (발행은 파일만 기록하고, 배포는 기존처럼 `go run ./cmd/build` + 푸시.)
+- 합성기가 프론트매터 값을 정확히 보존해 RSS 피드를 바이트 동일하게 유지한다. 상세·설계는
+  [docs/plan/episode-editor-app.md](docs/plan/episode-editor-app.md).
+- **AI Assist:** 우측 `✦ Assist` 사이드바에서 로컬 CLI(Claude/Codex/Gemini)를 골라 프롬프트를 실행한다
+  (설치된 CLI 만 활성화). CLI 가 스스로 인증하므로 앱은 키를 보관하지 않는다. 데스크톱 앱은 시작 시
+  로그인 셸 PATH 를 채택해 CLI 들을 찾는다.
 
 ## 문서
 
