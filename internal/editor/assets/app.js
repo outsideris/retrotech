@@ -29,8 +29,6 @@ const els = {
   refTemplate: $("ref-template"),
   preview: $("preview-panel"),
   frame: $("preview-frame"),
-  assist: $("assist-panel"),
-  assistToggle: $("btn-assist"),
   assistProviders: $("assist-providers"),
   assistTuning: $("assist-tuning"),
   assistModel: $("assist-model"),
@@ -796,21 +794,9 @@ async function applyScriptMeta(res) {
   flushDraftSave();
 }
 
-function toggleAssist() {
-  const willOpen = els.assist.hidden;
-  els.assist.hidden = !willOpen;
-  els.assistToggle.classList.toggle("open", willOpen);
-  if (willOpen && els.assistProviders.children.length === 0) loadAssistProviders();
-}
-
 // ---------- Wire up ----------
 
-els.assistToggle.addEventListener("click", toggleAssist);
 els.assistRun.addEventListener("click", runAssist);
-$("btn-close-assist").addEventListener("click", () => {
-  els.assist.hidden = true;
-  els.assistToggle.classList.remove("open");
-});
 els.assistDebug.addEventListener("change", () => {
   els.assistChat.hidden = !els.assistDebug.checked;
 });
@@ -856,3 +842,4 @@ els.form.addEventListener("change", markDirty);
 els.filter.addEventListener("input", renderEpisodes);
 
 loadAll().catch((err) => setStatus(err.message, "err"));
+loadAssistProviders();

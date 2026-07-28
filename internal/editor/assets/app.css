@@ -47,7 +47,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Flex row of panels: list | editor | preview? | assist?. Hidden panels drop
+/* Flex row of panels: list | editor | preview? | assist. Hidden panels drop
    out of the flow, so the editor always fills the gap. */
 .app {
   display: flex;
@@ -499,27 +499,7 @@ button.danger:hover {
   background: #fff;
 }
 
-/* ---------- Assist (right sidebar) ---------- */
-.assist-toggle {
-  margin-left: auto;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 9px;
-  border: 1px solid var(--navy-line);
-  background: #11272e;
-  color: var(--on-navy);
-}
-
-.assist-toggle:hover {
-  background: var(--navy-hi);
-}
-
-.assist-toggle.open {
-  background: var(--orange);
-  border-color: var(--orange);
-  color: #fff;
-}
-
+/* ---------- Assist (right sidebar, always open) ---------- */
 .assist {
   width: clamp(320px, 30%, 420px);
   flex-shrink: 0;
