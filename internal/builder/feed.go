@@ -54,9 +54,17 @@ func BuildFeed(episodes []parser.Episode, cfg FeedConfig, buildTime time.Time) [
 	copy(ordered, episodes)
 	parser.SortEpisodes(ordered)
 
+	// The podcast namespace (for <podcast:chapters>) is declared only once an
+	// episode actually has chapters, so until then the feed stays byte-identical
+	// to the golden the subscribers have been receiving.
+	rssOpen := `<rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"`
+	if anyChapters(ordered) {
+		rssOpen += ` xmlns:podcast="https://podcastindex.org/namespace/1.0"`
+	}
+
 	var b strings.Builder
 	b.WriteString(`<?xml version="1.0" encoding="UTF-8"?>`)
-	b.WriteString(`<rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">` + "\n")
+	b.WriteString(rssOpen + ">\n")
 	b.WriteString("    <channel>\n")
 	b.WriteString("        <title>" + cdata(feedTitle) + "</title>\n")
 	b.WriteString("        <description>" + cdata(feedDesc) + "</description>\n")
@@ -89,6 +97,9 @@ func BuildFeed(episodes []parser.Episode, cfg FeedConfig, buildTime time.Time) [
 		b.WriteString("            <itunes:duration>" + ep.Duration + "</itunes:duration>\n")
 		b.WriteString("            <itunes:explicit>no</itunes:explicit>\n")
 		b.WriteString("            <itunes:author>" + feedAuthor + "</itunes:author>\n")
+		if len(ep.Chapters) > 0 {
+			b.WriteString(`            <podcast:chapters url="` + site + "/" + ChaptersRelPath(ep.ID) + `" type="application/json+chapters"/>` + "\n")
+		}
 		b.WriteString("        </item>\n")
 	}
 
@@ -98,12 +109,39 @@ func BuildFeed(episodes []parser.Episode, cfg FeedConfig, buildTime time.Time) [
 }
 
 // feedDescription mirrors gen-rss.js: description, with description2 appended
-// after a newline when present.
+// after a newline when present. Chapters, when declared, are appended as plain
+// "MM:SS title" lines — the format Apple Podcasts, Spotify and YouTube
+// auto-link as seekable timestamps, which covers apps without Podcasting 2.0
+// chapter support.
 func feedDescription(fm parser.Frontmatter) string {
+	desc := fm.Description
 	if fm.Description2 != "" {
-		return fm.Description + "\n" + fm.Description2
+		desc = desc + "\n" + fm.Description2
 	}
-	return fm.Description
+	if len(fm.Chapters) > 0 {
+		desc = strings.TrimRight(desc, "\n") + "\n\n" + chapterLines(fm.Chapters)
+	}
+	return desc
+}
+
+// chapterLines renders chapters one per line as "MM:SS title", keeping the
+// source start string verbatim.
+func chapterLines(chapters []parser.Chapter) string {
+	lines := make([]string, len(chapters))
+	for i, ch := range chapters {
+		lines[i] = strings.TrimSpace(ch.Start) + " " + strings.TrimSpace(ch.Title)
+	}
+	return strings.Join(lines, "\n")
+}
+
+// anyChapters reports whether at least one episode declares chapters.
+func anyChapters(episodes []parser.Episode) bool {
+	for _, ep := range episodes {
+		if len(ep.Chapters) > 0 {
+			return true
+		}
+	}
+	return false
 }
 
 // pubDate reproduces the published feed's <pubDate>, which is the source

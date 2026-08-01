@@ -71,6 +71,14 @@
 - [ ] **피드 `<generator>` 문자열.** 현재 `RSS for Node`(옛 rss 라이브러리 잔재, 부정확). `RetroTech` 등으로 바꾸거나 둘지 결정. (채널 `<description>` 은 2026-06-16 에 실제 설명으로 교체 완료.)
 - ℹ️ **비가시 차이(조치 불필요, 렌더 동일):** 에피소드 h1 후행 개행 없음, `<time dateTime>` 속성이 UTC(표시는 동일), 본문 아포스트로피 `'`↔`&#x27;`(둘 다 `'` 로 렌더), next/image 내부 속성(`data-nimg` 등) 생략.
 
+## Phase 8 — 팟캐스트 챕터(타임스탬프)
+
+> 청취자가 소제목 단위로 구간 이동할 수 있게 한다. 온사이트 재생기 없이(DESIGN 결정 유지) 피드 경로로 제공.
+> 상세: [plan/podcast-chapters.md](./plan/podcast-chapters.md)
+
+- [x] **챕터 인프라(2026-08-01).** 프론트매터 `chapters:`(start/title) + 로드 시 검증, `episodes/<id>.chapters.json`(Podcasting 2.0) 생성, 피드 `<podcast:chapters>` + description `MM:SS 제목` 폴백. 챕터 미선언 시 피드 바이트 불변(골든 유지).
+- [ ] **에피소드에 챕터 데이터 입력.** 회차별 실제 구간 타임스탬프는 저자가 프론트매터에 채운다(첫 챕터 `00:00` 권장 — YouTube 인식 조건).
+
 ## 운영(미검증, 확인 필요)
 
 - [ ] 운영 호스트의 gzip/brotli 압축·정적 자산 캐시 헤더 설정 확인(로컬에선 검증 불가 — [PERFORMANCE.md](./PERFORMANCE.md#측정-방법--한계-먼저-읽을-것)).

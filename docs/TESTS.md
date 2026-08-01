@@ -15,8 +15,9 @@ go test ./internal/builder/ -run TestBuildFeedMatchesGolden -v
 
 | 테스트 파일 | 대상 | 검증 범위 |
 | --- | --- | --- |
-| `internal/parser/parser_test.go` | `parser` | 프론트매터/본문 분리, 폴드(`>`)·따옴표 title 의 trailing newline 보존(피드 패리티 핵심), 블록 스칼라 description, 로드·날짜 내림차순 정렬·`index.*` 제외 |
-| `internal/builder/feed_test.go` | `feed.go` | **피드 골든**: `BuildFeed` 출력이 이전 `gen-rss.js` 산출물(`testdata/feed.golden.xml`)과 바이트 동일(휘발성 `lastBuildDate` 정규화)임을 23편 전체로 검증 |
+| `internal/parser/parser_test.go` | `parser` | 프론트매터/본문 분리, 폴드(`>`)·따옴표 title 의 trailing newline 보존(피드 패리티 핵심), 블록 스칼라 description, 로드·날짜 내림차순 정렬·`index.*` 제외, **`chapters:` 파싱·`StartSeconds`("MM:SS"/"HH:MM:SS"/60분 초과/유효성)·불량 챕터 로드 거부**(빈 title·잘못된 start → `LoadEpisode` 에러) |
+| `internal/builder/feed_test.go` | `feed.go` | **피드 골든**: `BuildFeed` 출력이 이전 `gen-rss.js` 산출물(`testdata/feed.golden.xml`)과 바이트 동일(휘발성 `lastBuildDate` 정규화)임을 23편 전체로 검증. **챕터**: 챕터 선언 시 `xmlns:podcast` + `<podcast:chapters>` + description 타임스탬프 줄 병기, 미선언 시 피드 무변화(네임스페이스·태그 부재) |
+| `internal/builder/chapters_test.go` | `chapters.go` | Podcasting 2.0 chapters JSON 생성(버전 "1.2.0", `startTime` 초 변환, title trim), 챕터 없는 에피소드는 nil, 잘못된 start 에러, `ChaptersRelPath` 경로 |
 | `internal/builder/badges_test.go` | `badges.go` | 항상 노출되는 Apple/YouTube/Spotify, `google` 유무에 따른 Google↔RSS 토글, 회차 딥링크 사용·`&`→`&amp;` href 이스케이프, 배지별 예약 높이(`height` SVG 비율, `height="0"` 부재 → CLS 방지) |
 | `internal/builder/render_test.go` | `render.go` | 홈·episodes 페이지 내비 링크(상호 연결), 에피소드 title·`<!--badges-->` 치환·footer, `## 레퍼런스:` 리스트의 `.refs` 자동 래핑, 한 개의 `role="main"` 랜드마크·skip 링크, **title 규칙**(`<title>`=맨이름·og:title=접미사, 전 페이지 타입) |
 | `internal/builder/sitemap_test.go` | `sitemap.go` | sitemap.xml 구조(urlset/xmlns)·홈/episodes/에피소드 URL 포함·404 제외·랜딩 `lastmod`=최신 에피소드 날짜·유효 XML |

@@ -89,6 +89,17 @@ func run() error {
 		if err := writeFile(dst, builder.BuildEpisodePage(ep, site)); err != nil {
 			return err
 		}
+		// Podcasting 2.0 chapters JSON, only for episodes that declare chapters;
+		// the feed's <podcast:chapters> points here.
+		chJSON, err := builder.BuildChaptersJSON(ep)
+		if err != nil {
+			return err
+		}
+		if chJSON != nil {
+			if err := writeFile(filepath.Join(distDir, filepath.FromSlash(builder.ChaptersRelPath(ep.ID))), string(chJSON)); err != nil {
+				return err
+			}
+		}
 	}
 
 	// Podcast RSS feed.
