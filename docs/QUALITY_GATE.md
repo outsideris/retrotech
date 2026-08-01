@@ -13,6 +13,7 @@
 | `go build ./...` | 컴파일 확인 |
 | `npx @lhci/cli@0.14.x autorun` | **Lighthouse CI**: `cmd/serve` 자동 기동 → `/`·`/episodes`·에피소드 감사. 설정 `.lighthouserc.json` |
 | `go run ./cmd/app -repo .` | 에피소드 에디터 사이드카 단독 기동 → `http://127.0.0.1:49218/_write/`(데스크톱 앱 백엔드) |
+| `cd desktop && npm test` | 데스크톱 앱 JS 테스트(`node --test`, 사이드카 재시작 정책 등). `desktop/` 변경 시 필수 |
 | `cd desktop && npm run dist` | 에디터 데스크톱 앱 패키징 → `dist/mac-arm64/RetroTech Editor.app`(Go 서버 동봉, 코드사이닝 없음) |
 
 > 별도 lint/format 도구는 두지 않는다(`go vet` + `gofmt` 관례). 사이트 빌드용 npm 스크립트는 없다(에디터 앱의 `desktop/` 만 npm 사용). Lighthouse CI 는 개발/CI 전용(`npx`)이라 산출물 의존성에 영향 없다.

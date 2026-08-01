@@ -17,6 +17,7 @@ const { spawn } = require("node:child_process");
 const readline = require("node:readline");
 const path = require("node:path");
 const fs = require("node:fs");
+const { newRestartPolicy } = require("./restart-policy");
 
 // Show "RetroTech Editor" (not "Electron") in the menu bar and dialogs. Must be
 // set before app is ready; electron-builder's productName sets the bundle name.
@@ -29,6 +30,11 @@ const CONFIG_PATH = path.join(app.getPath("userData"), "config.json");
 
 let serverProc = null;
 let mainWindow = null;
+// True once the app is quitting: the server's exit is then expected (we kill
+// it ourselves) and must not trigger a restart.
+let quitting = false;
+// Crash-loop guard for the auto-restart below.
+const restartPolicy = newRestartPolicy();
 
 // Single instance: a second launch focuses the existing window instead of
 // spawning a second server.
@@ -130,7 +136,66 @@ function startServer(repoDir) {
         reject(new Error(`server exited before listening (code ${code})`));
       }
     });
+    // A spawn-level failure (binary missing/not executable) emits "error", not
+    // "exit" — without this handler the promise would never settle (hanging
+    // the restart loop) and the unhandled "error" would crash the main process.
+    proc.on("error", (err) => {
+      if (!settled) {
+        settled = true;
+        reject(new Error(`server failed to start: ${err}`));
+      } else {
+        console.error("[main] server process error:", err);
+      }
+    });
   });
+}
+
+// superviseServer reacts to the running server dying while the app is up —
+// e.g. an external `pkill editor-server` (another project's editor app ships a
+// sidecar with the same binary name; its build once killed ours by pattern) or
+// a crash. Without this the window stays open over a dead backend and every
+// click in the UI silently fails until the user relaunches the app.
+function superviseServer(repoDir, port) {
+  const proc = serverProc;
+  proc.once("exit", (code, signal) => {
+    if (quitting || proc !== serverProc) return;
+    serverProc = null;
+    console.error(`[main] editor server exited (code=${code}, signal=${signal}); restarting`);
+    restartServer(repoDir, port);
+  });
+}
+
+// restartServer respawns the Go server until it comes up or the crash-loop
+// guard gives up. The server prefers its fixed port, so a respawn normally
+// rebinds the same origin and the loaded page (including unsaved form state)
+// just resumes working; only a changed port forces a reload.
+async function restartServer(repoDir, oldPort) {
+  while (!quitting) {
+    if (!restartPolicy.shouldRestart(Date.now())) {
+      await dialog.showMessageBox({
+        type: "error",
+        message: "에디터 서버가 반복해서 종료되어 재시작을 멈췄습니다",
+        detail: "앱을 다시 실행해 보세요. 문제가 계속되면 터미널에서 server-bin 을 직접 실행해 오류를 확인하세요.",
+      });
+      app.quit();
+      return;
+    }
+    restartPolicy.started();
+    let started;
+    try {
+      started = await startServer(repoDir);
+    } catch (e) {
+      console.error("[main] editor server restart failed:", e);
+      continue;
+    }
+    restartPolicy.ready(Date.now());
+    serverProc = started.proc;
+    superviseServer(repoDir, started.port);
+    if (started.port !== oldPort && mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.loadURL(`http://127.0.0.1:${started.port}/_write/`);
+    }
+    return;
+  }
 }
 
 async function launch() {
@@ -142,9 +207,12 @@ async function launch() {
 
   let port;
   try {
+    restartPolicy.started();
     const started = await startServer(repoDir);
+    restartPolicy.ready(Date.now());
     serverProc = started.proc;
     port = started.port;
+    superviseServer(repoDir, port);
   } catch (e) {
     await dialog.showMessageBox({
       type: "error",
@@ -193,6 +261,13 @@ async function changeRepoFolder() {
   if (!dir) return;
   const cfg = loadConfig();
   saveConfig({ ...cfg, repoDir: dir });
+  // app.exit skips before-quit/quit, so stop the supervisor and the server
+  // explicitly — otherwise the old server would outlive this process.
+  quitting = true;
+  if (serverProc) {
+    serverProc.kill();
+    serverProc = null;
+  }
   app.relaunch();
   app.exit(0);
 }
@@ -250,7 +325,12 @@ app.on("window-all-closed", () => {
   app.quit();
 });
 
+app.on("before-quit", () => {
+  quitting = true;
+});
+
 app.on("quit", () => {
+  quitting = true; // in case a quit path skips before-quit
   if (serverProc) {
     serverProc.kill();
     serverProc = null;

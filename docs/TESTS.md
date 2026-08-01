@@ -6,9 +6,10 @@
 go test ./...            # 전체
 go test ./internal/...   # 패키지별
 go test ./internal/builder/ -run TestBuildFeedMatchesGolden -v
+cd desktop && npm test   # 데스크톱 앱(Electron 메인 프로세스) JS 테스트
 ```
 
-- 러너: Go 표준 `testing`. 외부 테스트 의존성 없음.
+- 러너: Go 표준 `testing`. 외부 테스트 의존성 없음. 데스크톱 JS 는 Node 내장 `node --test`(추가 의존성 없음).
 - **CI:** GitHub Actions(`.github/workflows/ci.yml`)가 push(main)/PR 마다 `go vet`·`go test`·`go run ./cmd/build` 를 실행해 피드 회귀와 빌드 깨짐을 자동 검증한다.
 
 ## 현황
@@ -28,6 +29,7 @@ go test ./internal/builder/ -run TestBuildFeedMatchesGolden -v
 | `internal/editor/assist/assist_test.go` | `assist.go` | AI CLI 제공자: `Providers()`/`Find`(claude/codex/gemini), claude envelope 파싱(텍스트+**텔레메트리**: duration/cost/tokens·is_error·raw fallback·빈), codex JSONL 파싱(agent_message + usage 토큰·비JSON 라인 무시·error 이벤트), `resolveBinary`(PATH 이름 후보 + fallback 경로). (실제 CLI exec·effort/model 플래그는 환경 의존이라 미검증) |
 | `internal/editor/assist/analyze_test.go` | `analyze.go` | 대본 분석 응답 파싱: `parseScriptMeta`(순수 JSON·```json 펜스+prose 견딤·공백 trim·비JSON 오류·title/description 모두 빈 오류), `extractJSONObject`(첫 `{`~마지막 `}` 추출·패스스루) |
 | `cmd/app/shellpath_test.go` | `shellpath.go` | `injectLoginPath`: 로그인 셸 PATH 채택(셸 exec 스텁), 실패 시 기존 PATH 보존 |
+| `desktop/restart-policy.test.js` | `desktop/restart-policy.js` | 사이드카 자동 재시작의 크래시 루프 가드(순수 모듈·클록 주입): 안정 사망은 항상 재시작, 연속 quick failure 3회 초과 시 포기, 안정 구동(≥10s) 시 카운터 리셋, spawn 즉시 실패도 계수(무한 재시작 방지). 실행: `cd desktop && npm test` |
 
 - 피드 골든(`testdata/feed.golden.xml`)은 마이그레이션 전 `gen-rss.js` 출력에서 운영 기준(pubDate 09:00 UTC)으로 고정해 커밋했다. **의도된** 피드 변경 시 이 파일을 갱신한다. 구독자 계약(guid/enclosure/pubDate)을 지키는 회귀 가드다.
 - **새 에피소드 추가 등 의도된 피드 변경 시 골든 갱신 절차:** `go run ./cmd/build` 후 `cp dist/feed.xml internal/builder/testdata/feed.golden.xml`. 커밋 전에 `git diff` 로 새 `<item>` 추가(및 `lastBuildDate`) 외에 기존 항목의 guid/enclosure/pubDate 가 바뀌지 않았는지 확인하고, 에피소드 md 와 골든을 **같은 커밋**에 포함한다(따로 커밋하면 CI 의 `TestBuildFeedMatchesGolden` 이 실패한다).

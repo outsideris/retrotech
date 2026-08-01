@@ -162,7 +162,15 @@ go run ./cmd/build
 - **`desktop/`** — Electron 래퍼. `main.js` 가 repo 폴더 결정(env→config.json→네이티브 picker) → 서버
   spawn → `http://127.0.0.1:<port>/_write/` 로드. electron-builder 가 Go 바이너리를 `extraResources`
   로 `.app` 에 동봉(server-bin→editor-server). `npm run dist` → `RetroTech Editor.app`(arm64,
-  코드사이닝 없음). 빌드 산출물(node_modules·dist·server-bin)은 gitignore.
+  코드사이닝 없음). 빌드 산출물(node_modules·dist·server-bin)은 gitignore. **주의:** asar 에 들어갈
+  파일은 `package.json` 의 build.files **화이트리스트**로 지정한다 — `desktop/` 에 새 JS 파일을 추가하면
+  여기에도 추가해야 한다(누락 시 패키징 앱이 시작 require 에서 죽는다; 2026-08-01 worklog 참고).
+- **사이드카 감시·자동 재시작:** 실행 중 서버 프로세스가 죽으면(외부 `pkill`·크래시 등) `main.js` 가
+  자동 respawn 한다 — 안 그러면 창은 떠 있는데 모든 API 호출이 조용히 실패하는 좀비 UI 가 된다(실제
+  발생: 타 프로젝트 앱 빌드의 이름 기반 pkill 이 동명 사이드카를 함께 죽임). 고정 포트 재바인드가
+  일반 경로라 페이지는 리로드 없이 회복되고, 포트가 바뀐 경우만 창을 새 URL 로 리로드. 크래시 루프는
+  `desktop/restart-policy.js`(10초 미만 연속 사망 3회 초과 시 포기, 단위 테스트 있음)로 차단. 프런트
+  `request()` 는 재시작 찰나를 덮기 위해 GET 만 1회 재시도(쓰기는 중복 위험으로 제외).
 
 ## 외부 의존성 / 통합
 

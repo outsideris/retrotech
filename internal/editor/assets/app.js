@@ -52,11 +52,23 @@ const state = { mode: null, current: null, episodes: [], drafts: [] };
 // ---------- HTTP ----------
 
 async function request(method, path, body) {
-  const res = await fetch(API + path, {
-    method,
-    headers: body ? { "Content-Type": "application/json" } : undefined,
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  const doFetch = () =>
+    fetch(API + path, {
+      method,
+      headers: body ? { "Content-Type": "application/json" } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  let res;
+  try {
+    res = await doFetch();
+  } catch (err) {
+    // A network-level failure usually means the sidecar is mid-restart
+    // (Electron respawns it if it dies). GETs are side-effect free, so retry
+    // once after a beat; writes must not risk running twice.
+    if (method !== "GET") throw err;
+    await new Promise((r) => setTimeout(r, 500));
+    res = await doFetch();
+  }
   const text = await res.text();
   if (!res.ok) {
     let message = `요청 실패 (${res.status})`;
