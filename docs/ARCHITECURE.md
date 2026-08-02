@@ -157,9 +157,12 @@ go run ./cmd/build
 - **`internal/editor`** — `editor.go`(HTTP mux: `/_write/` UI, `/_write/api/episodes[/{id}]` CRUD,
   `/_write/api/drafts[/{slug}[/publish]]`, `/_write/api/preview`, `/` → `public/` 정적 서빙),
   `store.go`(에피소드 파일 CRUD·슬러그 검증·atomic write), `drafts.go`(초안 JSON 저장·발행),
+  `derive.go`(구조화 폼의 `description` 을 도입부에서 파생 — 마크다운 링크 제거),
   `form.go`(본문↔구조 무손실 파싱), `compose.go`(마크다운 합성). **합성 계약:** 피드는 프론트매터 값만
   읽으므로(`feed.go` 본문 미사용), 합성 결과가 재파싱 시 동일 값을 내면 `BuildFeed` 바이트 동일 →
-  골든 통과. 기존 파일 저장 시 프론트매터 스타일만 1회 정규화(값·피드 불변, 테스트로 증명).
+  골든 통과. 기존 파일 저장 시 프론트매터 스타일만 1회 정규화(값·피드 불변, 테스트로 증명). 구조화
+  회차의 `description` 은 클라이언트 값이 아니라 서버가 도입부에서 파생한다 — 단, `Update` 는 도입부
+  미변경 시 저장된 description 바이트를 보존해 옛 회차 저장이 피드를 바꾸지 않는다.
 - **초안→발행:** "새 에피소드"는 `content/drafts/<slug>.json`(폼 전체) 초안을 만들고 자동 저장한다.
   사이트 빌드/피드는 `content/episodes` 만 읽어 초안은 비공개; **발행** 시 폼을 `content/episodes/<id>.md`
   로 합성하고 초안을 지운다(발행 날짜 스탬프). `content/drafts/` 는 gitignore. 작성자는 프론트매터에

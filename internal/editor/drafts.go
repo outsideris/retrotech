@@ -151,10 +151,15 @@ func (ds *DraftStore) Get(slug string) (EpisodeForm, error) {
 }
 
 // Save overwrites an existing draft (the auto-save path). A missing draft is
-// ErrNotFound so a stale tab can't resurrect a published/deleted draft.
+// ErrNotFound so a stale tab can't resurrect a published/deleted draft. A
+// structured draft's description is derived from its intro (see derive.go) —
+// drafts are always new content, so there are no legacy bytes to preserve.
 func (ds *DraftStore) Save(slug string, form EpisodeForm) error {
 	if _, err := ds.read(slug); err != nil {
 		return err
+	}
+	if form.Structured {
+		form.Description = deriveDescription(form.Intro)
 	}
 	return ds.write(slug, form)
 }

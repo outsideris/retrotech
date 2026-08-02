@@ -140,6 +140,51 @@ func TestAPIEpisodeLifecycle(t *testing.T) {
 	mustStatus(t, resp, http.StatusNotFound)
 }
 
+// TestAPIDerivedDescription: over HTTP, a structured episode's description
+// follows the intro (links stripped) regardless of what the client sends — the
+// UI keeps description in a hidden, possibly stale field, so the server must
+// never trust it.
+func TestAPIDerivedDescription(t *testing.T) {
+	srv, _ := newTestServer(t)
+	form := EpisodeForm{
+		ID: "9z", Title: "T\n", Date: "2026/08/02",
+		Description:  "클라이언트가 보낸 값",
+		EnclosureURL: "https://retrotech-episodes.outsider.dev/9z.mp3",
+		Duration:     "10:00",
+		Structured:   true, Intro: "[Go](https://go.dev) 이야기.",
+	}
+
+	resp, body := do(t, srv, "POST", "/_write/api/episodes", form)
+	mustStatus(t, resp, http.StatusCreated)
+	var got EpisodeForm
+	if err := json.Unmarshal(body, &got); err != nil {
+		t.Fatal(err)
+	}
+	if want := "Go 이야기.\n"; got.Description != want {
+		t.Errorf("create response description = %q, want %q", got.Description, want)
+	}
+
+	// Intro edit → description follows, in the response and on re-read.
+	form.Intro = "새로운 도입부."
+	resp, body = do(t, srv, "PUT", "/_write/api/episodes/9z", form)
+	mustStatus(t, resp, http.StatusOK)
+	json.Unmarshal(body, &got)
+	if want := "새로운 도입부.\n"; got.Description != want {
+		t.Errorf("update response description = %q, want %q", got.Description, want)
+	}
+
+	// Unchanged intro + stale client description → stored description kept.
+	form.Description = "stale hidden field"
+	resp, _ = do(t, srv, "PUT", "/_write/api/episodes/9z", form)
+	mustStatus(t, resp, http.StatusOK)
+	resp, body = do(t, srv, "GET", "/_write/api/episodes/9z", nil)
+	mustStatus(t, resp, http.StatusOK)
+	json.Unmarshal(body, &got)
+	if want := "새로운 도입부.\n"; got.Description != want {
+		t.Errorf("stale client description leaked through: %q, want %q", got.Description, want)
+	}
+}
+
 func TestAPIErrorCodes(t *testing.T) {
 	srv, _ := newTestServer(t)
 

@@ -9,7 +9,8 @@ import (
 
 // ScriptMeta is the metadata an LLM extracts from a podcast script: the title
 // (the markdown heading), an episode id pulled from that title, and a summary
-// for the episode description.
+// the editor uses as the episode intro (the frontmatter description is derived
+// from the intro at save time).
 type ScriptMeta struct {
 	Title       string `json:"title"`
 	ID          string `json:"id"`

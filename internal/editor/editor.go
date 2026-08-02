@@ -133,7 +133,14 @@ func (e *Editor) handleCreate(w http.ResponseWriter, r *http.Request) {
 		writeStoreError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusCreated, form)
+	// Re-read so the response carries what was actually written (the store
+	// derives the description of a structured form from its intro).
+	saved, err := e.store.Get(form.ID)
+	if err != nil {
+		writeStoreError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusCreated, saved)
 }
 
 func (e *Editor) handleUpdate(w http.ResponseWriter, r *http.Request) {
@@ -146,7 +153,12 @@ func (e *Editor) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		writeStoreError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, form)
+	saved, err := e.store.Get(r.PathValue("id"))
+	if err != nil {
+		writeStoreError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, saved)
 }
 
 func (e *Editor) handleDelete(w http.ResponseWriter, r *http.Request) {
@@ -194,7 +206,12 @@ func (e *Editor) handleDraftSave(w http.ResponseWriter, r *http.Request) {
 		writeStoreError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, form)
+	saved, err := e.drafts.Get(r.PathValue("slug"))
+	if err != nil {
+		writeStoreError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, saved)
 }
 
 func (e *Editor) handleDraftDelete(w http.ResponseWriter, r *http.Request) {

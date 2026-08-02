@@ -66,6 +66,29 @@ func TestDraftCreateGetSaveListDelete(t *testing.T) {
 	}
 }
 
+// TestDraftSaveDerivesDescription: auto-saving a structured draft derives the
+// description from the intro, so the AI script import (which fills only the
+// intro) and manual editing both end up with a consistent description.
+func TestDraftSaveDerivesDescription(t *testing.T) {
+	ds := NewDraftStore(t.TempDir())
+	slug, form, err := ds.Create()
+	if err != nil {
+		t.Fatal(err)
+	}
+	form.Intro = "[Subversion](https://subversion.apache.org/)의 역사를 다룹니다."
+	form.Description = "클라이언트가 보낸 낡은 값"
+	if err := ds.Save(slug, form); err != nil {
+		t.Fatalf("save: %v", err)
+	}
+	got, err := ds.Get(slug)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := "Subversion의 역사를 다룹니다.\n"; got.Description != want {
+		t.Errorf("description: got %q, want %q", got.Description, want)
+	}
+}
+
 func TestDraftListEmptyWhenNoDir(t *testing.T) {
 	ds := NewDraftStore(filepath.Join(t.TempDir(), "absent"))
 	list, err := ds.List()
@@ -147,6 +170,9 @@ func TestDraftPublishWritesEpisodeAndRemovesDraft(t *testing.T) {
 	}
 	if ep.Date != "2026/06/24" {
 		t.Errorf("publish should stamp the publish date, got %q", ep.Date)
+	}
+	if ep.Description != "intro\n" {
+		t.Errorf("publish should derive the description from the intro, got %q", ep.Description)
 	}
 }
 

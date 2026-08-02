@@ -80,7 +80,9 @@ func (s *Store) Get(id string) (EpisodeForm, error) {
 }
 
 // Create writes a new episode. It fails with ErrExists if the id is taken, so a
-// create never clobbers an existing episode.
+// create never clobbers an existing episode. For a structured form the
+// description is derived from the intro (see derive.go), never taken from the
+// caller.
 func (s *Store) Create(f EpisodeForm) error {
 	p, err := s.path(f.ID)
 	if err != nil {
@@ -91,12 +93,20 @@ func (s *Store) Create(f EpisodeForm) error {
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
+	if f.Structured {
+		f.Description = deriveDescription(f.Intro)
+	}
 	return writeAtomic(p, ComposeFile(f))
 }
 
 // Update overwrites an existing episode in place. The id is taken from the path,
 // not the body, so the URL/guid can't change by accident; a missing file is
 // ErrNotFound.
+//
+// For a structured form the description follows the intro, not the caller: an
+// unchanged intro keeps the stored description byte-exact (legacy episodes wrap
+// their description differently from their intro, and rewriting it would churn
+// the RSS feed on an unrelated edit), while a changed intro re-derives it.
 func (s *Store) Update(id string, f EpisodeForm) error {
 	p, err := s.path(id)
 	if err != nil {
@@ -109,6 +119,13 @@ func (s *Store) Update(id string, f EpisodeForm) error {
 		return err
 	}
 	f.ID = id
+	if f.Structured {
+		if cur, err := s.Get(id); err == nil && cur.Structured && cur.Intro == f.Intro {
+			f.Description = cur.Description
+		} else {
+			f.Description = deriveDescription(f.Intro)
+		}
+	}
 	return writeAtomic(p, ComposeFile(f))
 }
 

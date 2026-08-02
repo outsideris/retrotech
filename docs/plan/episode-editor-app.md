@@ -46,6 +46,13 @@ Electron(desktop/main.js)  ──spawn──▶  Go 사이드카(cmd/app)  ─�
   슬러그로 레퍼런스 줄을 자동 생성해 둘을 구성한다. **백엔드 무변경** — hidden `f-description2`/`f-extra`
   가 로드 원본을 들고 있다가 음악/ID 를 실제 편집할 때만 재구성하므로, 미편집 회차는 바이트 동일
   (라운드트립/피드 골든 불변).
+- **description = 도입부에서 서버가 파생(`derive.go`).** 구조화 폼의 `description` 은 클라이언트 값을
+  신뢰하지 않는다: `Store.Create`·`DraftStore.Save` 는 항상 `deriveDescription(Intro)`(마크다운
+  링크 → 텍스트, trailing newline 1개)로 덮어쓰고, `Store.Update` 는 **도입부가 실제로 바뀐 경우에만**
+  재파생하며 미변경 시 저장된 description 바이트를 유지한다(옛 회차의 줄바꿈 차이 재작성 → 피드 골든
+  실패 방지). UI 는 구조화 모드에서 description 필드를 숨기고(원문 마크다운 모드에서만 노출), 대본
+  분석 결과의 요약은 `f-intro` 를 채운다. 저장/생성 핸들러는 저장 후 재조회한 폼을 응답해 파생 값을
+  그대로 반영한다.
 
 ## HTTP API (`internal/editor/editor.go`, `/_write/api/...`)
 

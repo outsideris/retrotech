@@ -65,7 +65,10 @@
                  publish date). Existing episodes keep their date via this
                  hidden field. Author is always the host, so it's not a field. -->
             <input id="f-date" type="hidden" />
-            <label class="field">
+            <!-- 설명(description)은 구조화 본문에서는 직접 편집하지 않는다 —
+                 저장 시 서버가 도입부(intro)에서 링크를 제거해 파생한다. 원문
+                 마크다운 모드(비구조화 에피소드)에서만 노출된다. -->
+            <label class="field" id="description-field" hidden>
               <span>설명 (description)</span>
               <textarea id="f-description" name="description" rows="3"></textarea>
             </label>
@@ -111,6 +114,7 @@
             <label class="field">
               <span>도입부 (intro)</span>
               <textarea id="f-intro" name="intro" rows="4"></textarea>
+              <small class="hint">설명(description)은 저장할 때 이 도입부에서 자동 생성됩니다 (마크다운 링크 제거).</small>
             </label>
 
             <div class="refs-head">
@@ -188,7 +192,7 @@
             <div class="assist-traces-head">대본 → 메타데이터</div>
             <label id="assist-dropzone" class="assist-dropzone">
               <input id="assist-script" type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden />
-              <span>대본 파일(.md)을 끌어다 놓거나 클릭해 선택<br />→ 제목·ID·설명을 자동으로 채웁니다</span>
+              <span>대본 파일(.md)을 끌어다 놓거나 클릭해 선택<br />→ 제목·ID·도입부를 자동으로 채웁니다</span>
             </label>
             <span id="assist-import-status" class="assist-status" aria-live="polite"></span>
           </div>

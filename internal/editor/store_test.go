@@ -118,6 +118,86 @@ func TestUpdateIgnoresBodyID(t *testing.T) {
 	}
 }
 
+// TestStoreDerivesDescriptionFromIntro: for structured forms the description is
+// never the caller's — Create derives it from the intro with links stripped.
+func TestStoreDerivesDescriptionFromIntro(t *testing.T) {
+	s := NewStore(t.TempDir())
+	form := sampleForm()
+	form.Description = "무시되어야 하는 값"
+	form.Intro = "[Go](https://go.dev)로 만든 도구 이야기."
+
+	if err := s.Create(form); err != nil {
+		t.Fatalf("create: %v", err)
+	}
+	got, err := s.Get("9z")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := "Go로 만든 도구 이야기.\n"; got.Description != want {
+		t.Errorf("description: got %q, want %q", got.Description, want)
+	}
+	if got.Intro != "[Go](https://go.dev)로 만든 도구 이야기." {
+		t.Errorf("intro should keep its links: %q", got.Intro)
+	}
+}
+
+// TestUpdatePreservesLegacyDescription: legacy episodes wrap their description
+// differently from their intro; an update that doesn't touch the intro must
+// keep the stored description byte-exact (feed stability), while an intro edit
+// re-derives it.
+func TestUpdatePreservesLegacyDescription(t *testing.T) {
+	dir := t.TempDir()
+	legacy := `---
+title: >
+    9z. Legacy
+date: 2025/01/01
+description: |
+    한 줄로 된 설명입니다.
+enclosure:
+  url: https://retrotech-episodes.outsider.dev/9z.mp3
+  size: 1
+duration: "1:00"
+---
+
+한 줄로
+된 설명입니다.
+
+<!--badges-->
+`
+	if err := os.WriteFile(filepath.Join(dir, "9z.md"), []byte(legacy), 0644); err != nil {
+		t.Fatal(err)
+	}
+	s := NewStore(dir)
+
+	form, err := s.Get("9z")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !form.Structured {
+		t.Fatalf("legacy episode should be structured: %#v", form)
+	}
+
+	// Unrelated edit: the differently-wrapped description survives byte-exact.
+	form.Duration = "2:00"
+	if err := s.Update("9z", form); err != nil {
+		t.Fatalf("update: %v", err)
+	}
+	got, _ := s.Get("9z")
+	if want := "한 줄로 된 설명입니다.\n"; got.Description != want {
+		t.Errorf("untouched intro: description = %q, want %q", got.Description, want)
+	}
+
+	// Intro edit: the description follows.
+	got.Intro = "완전히 새로운 도입부입니다."
+	if err := s.Update("9z", got); err != nil {
+		t.Fatalf("update: %v", err)
+	}
+	got, _ = s.Get("9z")
+	if want := "완전히 새로운 도입부입니다.\n"; got.Description != want {
+		t.Errorf("edited intro: description = %q, want %q", got.Description, want)
+	}
+}
+
 func TestStoreRejectsUnsafeIDs(t *testing.T) {
 	s := NewStore(t.TempDir())
 	unsafe := []string{

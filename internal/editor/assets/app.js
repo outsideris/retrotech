@@ -256,6 +256,9 @@ function setAutosave(message, kind) {
 function toggleBody(structured) {
   $("structured-body").hidden = !structured;
   $("raw-body").hidden = structured;
+  // A structured episode's description is server-derived from the intro, so the
+  // field is only editable alongside the raw markdown body.
+  $("description-field").hidden = structured;
 }
 
 // applyMode toggles the bits of the form that differ between a draft and a
@@ -792,8 +795,9 @@ async function importScript(file) {
   }
 }
 
-// applyScriptMeta opens a fresh draft and fills the extracted title / id /
-// description, then auto-saves it.
+// applyScriptMeta opens a fresh draft and fills the extracted title / id and
+// the summary as the intro (the description is derived from it on save), then
+// auto-saves it.
 async function applyScriptMeta(res) {
   await newDraft();
   if (res.title) set("f-title", res.title);
@@ -801,7 +805,7 @@ async function applyScriptMeta(res) {
     set("f-id", res.id);
     els.id.dispatchEvent(new Event("input", { bubbles: true })); // derive enclosure URL
   }
-  if (res.description) set("f-description", res.description);
+  if (res.description) set("f-intro", res.description);
   els.formTitle.textContent = (res.title || "").trim() || "새 초안";
   flushDraftSave();
 }
