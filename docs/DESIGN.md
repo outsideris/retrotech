@@ -39,6 +39,7 @@
   - **Google Podcasts 는 선택적.** `google` prop 이 있으면 Google 배지를, 없으면 대신 **RSS 배지**(`/feed.xml`)를 노출한다. (Google Podcasts 서비스 종료 이후 RSS 로 대체하는 의도로 해석됨.)
 - **RSS 피드가 정식 배포물.** `feed.xml` 은 iTunes 팟캐스트 규격으로 생성되어 Apple 등에 등록되는 실제 피드다. 푸터·`<head>`·홈에서 모두 `/feed.xml` 로 접근 가능.
 - 오디오(mp3)는 `retrotech-episodes.outsider.dev` 에 별도 호스팅하고 프론트매터 `enclosure` 로 연결한다(사이트와 스토리지 분리).
+- **챕터(구간 이동)는 청취가 일어나는 플랫폼에서 동작하게 한다.** 프론트매터 `chapters:` 를 선언하면 피드에 Podcasting 2.0 `<podcast:chapters>`(JSON) + description 의 `MM:SS 제목` 타임스탬프 줄로 반영된다 — 사이트에는 재생기를 두지 않는다는 결정(아래 표)을 유지한 채 Apple/Spotify/YouTube/Overcast 등에서 구간 이동을 지원. 첫 챕터는 `00:00` 으로 시작해야 YouTube 가 챕터로 인식한다.
 
 ## 디자인 결정 & 그 이유
 
@@ -48,6 +49,7 @@
 | 자체 제작 Go 생성기(프레임워크 미사용) | 외부 의존성·런타임 JS 최소화 + longevity(버전 추적 부담·bit-rot 회피). 배경: [plan/go-static-migration.md](./plan/go-static-migration.md). |
 | 마크다운 + 프론트매터 단일 소스 | 같은 파일에서 웹 페이지와 RSS 아이템을 동시 생성(중복 방지). |
 | 사이트 내 재생기 미제공 | 1차 목표가 "플랫폼 구독 유도"라 청취는 외부 플랫폼으로 보냄. |
+| 챕터는 피드로 제공(온사이트 재생 없이) | 구간 이동도 실제 청취 환경(팟캐스트 앱)에서 동작해야 의미가 있음. Podcasting 2.0 chapters JSON + description 타임스탬프 폴백의 이중 경로(2026-08-01). |
 | 이미지는 일반 `<img>` | 정적 사이트라 빌드 시 이미지 최적화 파이프라인 없음 — 자산을 직접 줄인다(주의: [PERFORMANCE.md](./PERFORMANCE.md)). |
 | 에피소드는 폼(데스크톱 앱)으로 관리 | YAML 함정·바이트 크기·뱃지·긴 레퍼런스의 수작업 제거. 단일 소스(`*.md`)는 유지하고 편집 UX 만 개선. 합성기가 피드 바이트 패리티 보장. → 아래 "에피소드 관리 데스크톱 앱" |
 

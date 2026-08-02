@@ -96,6 +96,72 @@ func TestBuildFeedMatchesGolden(t *testing.T) {
 		i, len(g), len(w), context(g, i), context(w, i))
 }
 
+// Chapters must surface in the feed two ways — a <podcast:chapters> link (with
+// the namespace declared) for Podcasting 2.0 apps, and plain "MM:SS title"
+// lines appended to the description for apps that auto-link timestamps — while
+// episodes without chapters stay untouched.
+func TestBuildFeedWithChapters(t *testing.T) {
+	withChapters := parser.Episode{
+		ID: "2h",
+		Frontmatter: parser.Frontmatter{
+			Title:       "2h. Test",
+			Date:        "2026/07/01",
+			Description: "요약.\n",
+			Author:      "Outsider",
+			Chapters: []parser.Chapter{
+				{Start: "00:00", Title: "인트로"},
+				{Start: "03:15", Title: "본론"},
+			},
+		},
+	}
+	plain := parser.Episode{
+		ID: "2g",
+		Frontmatter: parser.Frontmatter{
+			Title:       "2g. Plain",
+			Date:        "2026/03/07",
+			Description: "요약",
+			Author:      "Outsider",
+		},
+	}
+
+	feed := string(BuildFeed([]parser.Episode{withChapters, plain}, FeedConfig{SiteURL: "https://retrotech.outsider.dev"}, time.Now()))
+
+	if !strings.Contains(feed, `xmlns:podcast="https://podcastindex.org/namespace/1.0"`) {
+		t.Error("feed missing podcast namespace declaration")
+	}
+	if !strings.Contains(feed, `<podcast:chapters url="https://retrotech.outsider.dev/episodes/2h.chapters.json" type="application/json+chapters"/>`) {
+		t.Error("feed missing <podcast:chapters> for the chaptered episode")
+	}
+	if !strings.Contains(feed, "요약.\n\n00:00 인트로\n03:15 본론") {
+		t.Error("feed description missing appended chapter timestamp lines")
+	}
+	if strings.Count(feed, "podcast:chapters") != 1 {
+		t.Error("<podcast:chapters> leaked into the chapterless episode")
+	}
+}
+
+// Without any chaptered episode the feed must not change at all — no podcast
+// namespace, no chapter lines. (The golden test pins the full byte form; this
+// pins the reason it still passes.)
+func TestBuildFeedWithoutChaptersUnchanged(t *testing.T) {
+	ep := parser.Episode{
+		ID: "2g",
+		Frontmatter: parser.Frontmatter{
+			Title:       "2g. Plain",
+			Date:        "2026/03/07",
+			Description: "요약",
+			Author:      "Outsider",
+		},
+	}
+	feed := string(BuildFeed([]parser.Episode{ep}, FeedConfig{SiteURL: "https://retrotech.outsider.dev"}, time.Now()))
+	if strings.Contains(feed, "xmlns:podcast") {
+		t.Error("chapterless feed must not declare the podcast namespace")
+	}
+	if strings.Contains(feed, "podcast:chapters") {
+		t.Error("chapterless feed must not emit <podcast:chapters>")
+	}
+}
+
 func context(s string, i int) string {
 	a, b := i-100, i+100
 	if a < 0 {

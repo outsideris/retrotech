@@ -26,7 +26,7 @@
 - [ ] **테스트:** `go test ./...` 통과. 특히 **피드 골든**(`internal/builder/testdata/feed.golden.xml`)이 구독자 계약(guid/enclosure/pubDate)을 지키는지. **새 에피소드를 추가했다면** 골든도 같은 커밋에서 갱신해야 한다(절차: [TESTS.md](./TESTS.md)).
 - [ ] **빌드:** `go run ./cmd/build` 성공.
 - [ ] **RSS 생성:** `dist/feed.xml` 이 생성되고 iTunes 필드가 포함되는지.
-- [ ] **정적 산출물:** `dist/` 에 HTML(홈/episodes/404 + 에피소드 전체 편수) + `feed.xml` + `sitemap.xml` + 자산(`assets/styles.<hash>.css` 포함)이 생성되는지.
+- [ ] **정적 산출물:** `dist/` 에 HTML(홈/episodes/404 + 에피소드 전체 편수) + `feed.xml` + `sitemap.xml` + 자산(`assets/styles.<hash>.css` 포함)이 생성되는지. `chapters:` 선언 에피소드가 있으면 `episodes/<id>.chapters.json` 도 생성되는지.
 - [ ] **수동 구동 확인:** `go run ./cmd/serve` 로 홈·에피소드·다크모드 토글이 정상 렌더되는지.
 - [ ] **접근성/성능(불변식):** `go test ./...` 의 `a11y_perf_test.go` 통과(제목 계층·랜드마크·alt·토글 키보드·lazy iframe·배지 높이·preload 등 마크업).
 - [ ] **접근성/성능(Lighthouse):** `npx @lhci/cli@0.14.x autorun` — 접근성/SEO/Best-Practices=100(하드 게이트). CI `lighthouse` 잡과 동일.
@@ -52,6 +52,7 @@
 
 ## 마지막 검토
 
+- **2026-08-01:** 팟캐스트 챕터 도입 — 정적 산출물 항목에 조건부 `episodes/<id>.chapters.json` 추가. 피드 골든은 챕터 미선언 시 그대로 유효(네임스페이스 조건부 선언).
 - **2026-06-16:** 접근성/성능을 CI에서 검증하도록 추가 — `go test` 의 마크업 불변식(`a11y_perf_test.go`) + 새 `lighthouse` 잡(Lighthouse CI, a11y/SEO/BP=100 하드 게이트). 로컬 재현: `npx @lhci/cli@0.14.x autorun`.
 - **2026-06-16:** Go 정적 생성기로 마이그레이션(Next/Nextra 제거). 검증 기준을 `go build`·`go vet`·`go test`·`go run ./cmd/build` 로 교체. CI 를 Go 로 전환.
 - (이전) 2026-06-15: Next 기반 — RSS 포맷 스냅샷 + 데이터 유효성 테스트, GitHub Actions CI 도입.

@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -47,6 +48,39 @@ type Badges struct {
 	RSS     string `yaml:"rss,omitempty"`
 }
 
+// Chapter is one chapter marker of an episode: where it starts and what it
+// covers. Start keeps the source "MM:SS" / "HH:MM:SS" string verbatim (the
+// feed prints it as-is in the show notes); StartSeconds converts it for the
+// Podcasting 2.0 chapters JSON. Listing chapters in playback order with the
+// first at "00:00" is what podcast apps (and YouTube) expect.
+type Chapter struct {
+	Start string `yaml:"start"`
+	Title string `yaml:"title"`
+}
+
+// StartSeconds parses Start into total seconds. Two ("MM:SS") and three
+// ("HH:MM:SS") part forms are accepted; the leading field may exceed 59 and
+// be unpadded (mirroring how duration is written, e.g. "75:12"), trailing
+// fields must be 0–59.
+func (c Chapter) StartSeconds() (int, error) {
+	parts := strings.Split(strings.TrimSpace(c.Start), ":")
+	if len(parts) < 2 || len(parts) > 3 {
+		return 0, fmt.Errorf("invalid chapter start %q: want \"MM:SS\" or \"HH:MM:SS\"", c.Start)
+	}
+	total := 0
+	for i, p := range parts {
+		n, err := strconv.Atoi(p)
+		if err != nil || n < 0 {
+			return 0, fmt.Errorf("invalid chapter start %q", c.Start)
+		}
+		if i > 0 && n > 59 {
+			return 0, fmt.Errorf("invalid chapter start %q: field %d exceeds 59", c.Start, i+1)
+		}
+		total = total*60 + n
+	}
+	return total, nil
+}
+
 // Frontmatter mirrors the YAML frontmatter of an episode.
 //
 // Date stays a string in the source "YYYY/MM/DD" form so the feed reproduces
@@ -64,6 +98,7 @@ type Frontmatter struct {
 	Enclosure    Enclosure `yaml:"enclosure"`
 	Duration     string    `yaml:"duration"`
 	Badges       Badges    `yaml:"badges,omitempty"`
+	Chapters     []Chapter `yaml:"chapters,omitempty"`
 }
 
 // ParsedDate parses the source "YYYY/MM/DD" date for ordering. An unparseable
@@ -111,6 +146,17 @@ func LoadEpisode(path string) (Episode, error) {
 	fm, err := ParseFrontmatter(fmBytes)
 	if err != nil {
 		return Episode{}, fmt.Errorf("parsing frontmatter in %s: %w", path, err)
+	}
+
+	// A malformed chapter should fail the build here, with the file named,
+	// rather than surface later as a broken chapters JSON or feed entry.
+	for i, ch := range fm.Chapters {
+		if strings.TrimSpace(ch.Title) == "" {
+			return Episode{}, fmt.Errorf("%s: chapter %d: empty title", path, i+1)
+		}
+		if _, err := ch.StartSeconds(); err != nil {
+			return Episode{}, fmt.Errorf("%s: chapter %d: %w", path, i+1, err)
+		}
 	}
 
 	base := filepath.Base(path)

@@ -94,6 +94,9 @@ retrotech/
     youtube: "..."            #   발행 직후엔 통째로 비워두고, 플랫폼에 에피소드가
     spotify: "..."            #   등록되면 딥링크를 하나씩 채운다.
     # google 이 있으면 Google 배지, 없으면 RSS 배지
+  chapters:                   # (선택) 챕터 마커. 재생 순서대로, 첫 챕터는 "00:00" 권장
+    - start: "00:00"          #   "MM:SS" 또는 "HH:MM:SS"(선두 필드는 미패딩·60 이상 허용)
+      title: 인트로           #   잘못된 start·빈 title 은 빌드 실패(LoadEpisode 검증)
   ---
   ```
 
@@ -109,11 +112,12 @@ go run ./cmd/build
   └─ 3) styles.css → dist/assets/styles.<hash>.css 로 핑거프린트(immutable 캐시)
   └─ 4) content/episodes/*.md 로드 → []Episode (날짜 내림차순)
   └─ 5) 페이지 렌더 → dist/ (index, episodes, episodes/<id>, 404)
+        └─ chapters: 선언 에피소드는 episodes/<id>.chapters.json 도 생성
   └─ 6) feed.xml 생성 → dist/feed.xml
   └─ 7) sitemap.xml 생성 → dist/sitemap.xml
 ```
 
-- 산출물: `dist/` (HTML 26개 = 홈 + /episodes + 에피소드 23개 + /404, + feed.xml + sitemap.xml + 자산). 빌드 ~45ms.
+- 산출물: `dist/` (HTML 26개 = 홈 + /episodes + 에피소드 23개 + /404, + feed.xml + sitemap.xml + 자산). `chapters:` 를 선언한 에피소드가 있으면 `episodes/<id>.chapters.json` 이 추가된다. 빌드 ~45ms.
 - **sitemap.xml**(`internal/builder/sitemap.go`): 홈·/episodes·각 에피소드 URL 을 `encoding/xml` 로 생성. 랜딩(홈·/episodes)의 `lastmod` 는 최신 에피소드 날짜라 새 에피소드 추가 시 자동 반영. `public/robots.txt` 가 이 사이트맵을 가리킨다. 404·feed 는 제외.
 - SSR/ISR/API 가 없는 순수 정적 산출이다.
 
@@ -134,6 +138,10 @@ go run ./cmd/build
 - **이전 `scripts/gen-rss.js`(rss npm 라이브러리) 출력과 바이트 패리티**를 목표로 문자열로 재현한다(`encoding/xml` 은 CDATA·네임스페이스 순서·self-closing 을 그대로 못 냄). 휘발성 `lastBuildDate` 만 매 빌드 갱신.
 - 구독자 계약(불변): 각 항목 `guid`(=`/episodes/{id}`)·`enclosure`·`pubDate`. `pubDate` 는 날짜 09:00 UTC(빌드 머신 TZ 무관, 결정적).
 - 항목은 발행일 내림차순(동일 날짜 id 내림차순). `internal/builder/testdata/feed.golden.xml` 골든 테스트로 회귀 방지.
+- **챕터(타임스탬프).** 프론트매터 `chapters:` 가 있는 에피소드는 두 경로로 피드에 반영된다(`internal/builder/chapters.go`):
+  - **Podcasting 2.0**: `episodes/<id>.chapters.json`(`{"version":"1.2.0","chapters":[{"startTime":초,"title":…}]}`) 생성 + 아이템에 `<podcast:chapters url=… type="application/json+chapters"/>`. 지원 앱(Overcast·Pocket Casts 등)은 챕터 목록/탭 이동 UI 를 보여준다.
+  - **폴백**: 아이템 `<description>` 끝에 `MM:SS 제목` 줄을 덧붙인다 — Apple Podcasts·Spotify·YouTube 가 자동으로 클릭 가능한 타임스탬프로 인식.
+  - `xmlns:podcast` 네임스페이스는 **챕터 선언 에피소드가 하나라도 있을 때만** 선언 — 그 전까지 피드는 골든과 바이트 동일하게 유지된다.
 - **하드코딩:** `SITE_URL = 'https://retrotech.outsider.dev'`(`feed.go`/`cmd/build`).
 
 ## 에피소드 관리 데스크톱 앱 (RetroTech Editor)
