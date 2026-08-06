@@ -141,6 +141,31 @@ func (ds *DraftStore) List() ([]DraftSummary, error) {
 	return out, nil
 }
 
+// FindByEpisodeID returns the most recently updated draft whose form carries
+// the given episode id. The script import uses it to make re-analyzing the
+// same script update its existing draft instead of piling up a new draft per
+// run. ok is false when no draft matches (or id is empty).
+func (ds *DraftStore) FindByEpisodeID(id string) (slug string, form EpisodeForm, ok bool, err error) {
+	if id == "" {
+		return "", EpisodeForm{}, false, nil
+	}
+	list, err := ds.List() // newest-first
+	if err != nil {
+		return "", EpisodeForm{}, false, err
+	}
+	for _, s := range list {
+		if s.ID != id {
+			continue
+		}
+		f, err := ds.Get(s.Slug)
+		if err != nil {
+			continue // unreadable draft — fall through to the next match
+		}
+		return s.Slug, f, true, nil
+	}
+	return "", EpisodeForm{}, false, nil
+}
+
 // Get loads a draft's form.
 func (ds *DraftStore) Get(slug string) (EpisodeForm, error) {
 	df, err := ds.read(slug)

@@ -178,7 +178,26 @@ func (e *Editor) handleDraftList(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, list)
 }
 
+// handleDraftCreate makes a new draft. The optional JSON body {"id": "<slug>"}
+// turns it into find-or-create: when a draft for that episode id already
+// exists, it is returned (200) instead of a new one (201) — so re-importing
+// the same script updates one draft rather than creating another each run.
 func (e *Editor) handleDraftCreate(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		ID string `json:"id"`
+	}
+	_ = json.NewDecoder(r.Body).Decode(&req) // body is optional; ignore absence
+	if req.ID != "" {
+		slug, form, ok, err := e.drafts.FindByEpisodeID(req.ID)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		if ok {
+			writeJSON(w, http.StatusOK, map[string]any{"slug": slug, "form": form})
+			return
+		}
+	}
 	slug, form, err := e.drafts.Create()
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())

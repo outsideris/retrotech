@@ -89,6 +89,36 @@ func TestDraftSaveDerivesDescription(t *testing.T) {
 	}
 }
 
+// TestDraftFindByEpisodeID: the script import reuses the draft that already
+// carries the analyzed episode id, so re-importing the same script cannot pile
+// up drafts.
+func TestDraftFindByEpisodeID(t *testing.T) {
+	ds := NewDraftStore(t.TempDir())
+	ds.now = fixedClock(time.Date(2026, 8, 7, 1, 0, 0, 0, time.UTC))
+
+	slug, form, err := ds.Create()
+	if err != nil {
+		t.Fatal(err)
+	}
+	form.ID = "2h"
+	form.Title = "Draft 2h"
+	if err := ds.Save(slug, form); err != nil {
+		t.Fatal(err)
+	}
+
+	gotSlug, gotForm, ok, err := ds.FindByEpisodeID("2h")
+	if err != nil || !ok || gotSlug != slug || gotForm.Title != "Draft 2h" {
+		t.Errorf("find 2h: slug=%q ok=%v err=%v form=%#v", gotSlug, ok, err, gotForm)
+	}
+
+	if _, _, ok, err := ds.FindByEpisodeID("zz"); err != nil || ok {
+		t.Errorf("find zz: ok=%v err=%v, want no match", ok, err)
+	}
+	if _, _, ok, err := ds.FindByEpisodeID(""); err != nil || ok {
+		t.Errorf("find empty id: ok=%v err=%v, want no match", ok, err)
+	}
+}
+
 func TestDraftListEmptyWhenNoDir(t *testing.T) {
 	ds := NewDraftStore(filepath.Join(t.TempDir(), "absent"))
 	list, err := ds.List()

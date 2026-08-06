@@ -367,10 +367,12 @@ async function selectDraft(slug, prefetched) {
 }
 
 // newDraft creates a draft and opens it. "New episode" no longer writes a
-// published episode directly — everything starts as a draft.
-async function newDraft() {
+// published episode directly — everything starts as a draft. With an episodeID
+// the server reuses an existing draft for that id instead of creating another
+// (find-or-create), so re-importing the same script doesn't pile up drafts.
+async function newDraft(episodeID) {
   try {
-    const res = await apiJSON("POST", "/drafts");
+    const res = await apiJSON("POST", "/drafts", episodeID ? { id: episodeID } : null);
     await loadDrafts();
     await selectDraft(res.slug, res.form);
     els.id.focus();
@@ -765,6 +767,12 @@ function setImportStatus(message, kind) {
 // references; the result opens a fresh draft.
 async function importScript(file) {
   if (!file) return;
+  // One import at a time: a stray duplicate trigger (or an impatient re-drop
+  // while a minutes-long analysis runs) must not start a second CLI run.
+  if (state.importing) {
+    setImportStatus("이미 분석이 진행 중입니다 — 끝날 때까지 기다려 주세요.", "err");
+    return;
+  }
   if (!state.assistProvider) {
     setImportStatus("먼저 제공자를 선택하세요.", "err");
     return;
@@ -780,6 +788,7 @@ async function importScript(file) {
     setImportStatus("빈 파일입니다.", "err");
     return;
   }
+  state.importing = true;
   // A long transcript can take minutes (the model titles every link), so show
   // elapsed time while waiting — otherwise the UI looks frozen.
   const startedAt = Date.now();
@@ -804,15 +813,17 @@ async function importScript(file) {
     setImportStatus(err.message, "err");
   } finally {
     clearInterval(timer);
+    state.importing = false;
   }
 }
 
-// applyScriptMeta opens a fresh draft and fills the extracted title / id, the
+// applyScriptMeta opens a draft — reusing the existing draft for the same
+// episode id, else a fresh one — and fills the extracted title / id, the
 // summary as the intro (the description is derived from it on save), and the
 // script's links as reference rows (titled server-side per the house naming
 // rules), then auto-saves it.
 async function applyScriptMeta(res) {
-  await newDraft();
+  await newDraft(res.id || "");
   if (res.title) set("f-title", res.title);
   if (res.id) {
     set("f-id", res.id);
@@ -860,7 +871,7 @@ els.assistDropzone.addEventListener("drop", (e) => {
   if (e.dataTransfer.files[0]) importScript(e.dataTransfer.files[0]);
 });
 
-$("btn-new").addEventListener("click", newDraft);
+$("btn-new").addEventListener("click", () => newDraft());
 $("btn-add-ref").addEventListener("click", () => {
   addRefRow();
   markDirty();

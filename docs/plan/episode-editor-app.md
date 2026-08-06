@@ -53,7 +53,10 @@ Electron(desktop/main.js)  ──spawn──▶  Go 사이드카(cmd/app)  ─�
   URL 은 폐기 — 결과는 항상 "대본의 링크 전부, 문서 순서, 정확히 한 번". `/api/assist/analyze` 가
   `references: [{title,url}]` 로 반환하고 UI 는 레퍼런스 행으로 채운다. 제한 시간: 분석 10분·일반 실행
   3분(`assistAnalyzeTimeout`/`assistRunTimeout`) — 초과 시 CLI 가 SIGKILL 되므로 `writeAssistError` 가
-  "signal: killed" 대신 504 + 안내 메시지로 변환하고, UI 는 분석 중 경과 시간을 표시한다.
+  "signal: killed" 대신 504 + 안내 메시지로 변환하고, UI 는 분석 중 경과 시간을 표시한다. **임포트는
+  초안을 쌓지 않는다**: `POST /drafts` 에 `{id}` 를 보내면 find-or-create(`FindByEpisodeID`, 최신 우선)로
+  같은 에피소드 id 의 기존 초안을 재사용하고, 클라이언트는 `state.importing` 가드로 분석 중 중복 임포트를
+  차단한다(같은 대본 재분석 = 기존 초안 갱신).
 - **description = 도입부에서 서버가 파생(`derive.go`).** 구조화 폼의 `description` 은 클라이언트 값을
   신뢰하지 않는다: `Store.Create`·`DraftStore.Save` 는 항상 `deriveDescription(Intro)`(마크다운
   링크 → 텍스트, trailing newline 1개)로 덮어쓰고, `Store.Update` 는 **도입부가 실제로 바뀐 경우에만**

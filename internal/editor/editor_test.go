@@ -327,6 +327,48 @@ func TestDraftAPILifecycle(t *testing.T) {
 	mustStatus(t, resp, http.StatusNotFound)
 }
 
+// TestDraftCreateFindOrCreateByID: POST /drafts with {"id"} returns the
+// existing draft for that episode id (200) instead of creating another (201) —
+// the guard that keeps repeated script imports from piling up drafts.
+func TestDraftCreateFindOrCreateByID(t *testing.T) {
+	srv, _ := newTestServer(t)
+
+	// Plain create (no body), then stamp the draft with an episode id.
+	resp, body := do(t, srv, "POST", "/_write/api/drafts", nil)
+	mustStatus(t, resp, http.StatusCreated)
+	var created struct {
+		Slug string      `json:"slug"`
+		Form EpisodeForm `json:"form"`
+	}
+	json.Unmarshal(body, &created)
+	f := created.Form
+	f.ID = "2h"
+	resp, _ = do(t, srv, "PUT", "/_write/api/drafts/"+created.Slug, f)
+	mustStatus(t, resp, http.StatusOK)
+
+	// Create with the same id → the existing draft comes back, no new one.
+	resp, body = do(t, srv, "POST", "/_write/api/drafts", map[string]string{"id": "2h"})
+	mustStatus(t, resp, http.StatusOK)
+	var reused struct {
+		Slug string `json:"slug"`
+	}
+	json.Unmarshal(body, &reused)
+	if reused.Slug != created.Slug {
+		t.Errorf("want reused slug %q, got %q", created.Slug, reused.Slug)
+	}
+	resp, body = do(t, srv, "GET", "/_write/api/drafts", nil)
+	mustStatus(t, resp, http.StatusOK)
+	var list []DraftSummary
+	json.Unmarshal(body, &list)
+	if len(list) != 1 {
+		t.Errorf("draft count = %d, want 1 (no pile-up)", len(list))
+	}
+
+	// A different id still creates a fresh draft.
+	resp, _ = do(t, srv, "POST", "/_write/api/drafts", map[string]string{"id": "9z"})
+	mustStatus(t, resp, http.StatusCreated)
+}
+
 func TestDraftPublishWithoutIDIsRejected(t *testing.T) {
 	srv, _ := newTestServer(t)
 	_, body := do(t, srv, "POST", "/_write/api/drafts", nil)
