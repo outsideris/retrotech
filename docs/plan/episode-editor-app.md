@@ -51,7 +51,9 @@ Electron(desktop/main.js)  ──spawn──▶  Go 사이드카(cmd/app)  ─�
   **제목만** 붙인다(제목 규칙 `refTitleRules` — DESIGN.md 「레퍼런스 제목 규칙」과 동일). 응답은
   `reconcileRefs` 로 추출 목록과 대조: 모델이 빠뜨린 링크는 앵커 텍스트 → URL 순으로 폴백, 목록에 없는
   URL 은 폐기 — 결과는 항상 "대본의 링크 전부, 문서 순서, 정확히 한 번". `/api/assist/analyze` 가
-  `references: [{title,url}]` 로 반환하고 UI 는 레퍼런스 행으로 채운다.
+  `references: [{title,url}]` 로 반환하고 UI 는 레퍼런스 행으로 채운다. 제한 시간: 분석 10분·일반 실행
+  3분(`assistAnalyzeTimeout`/`assistRunTimeout`) — 초과 시 CLI 가 SIGKILL 되므로 `writeAssistError` 가
+  "signal: killed" 대신 504 + 안내 메시지로 변환하고, UI 는 분석 중 경과 시간을 표시한다.
 - **description = 도입부에서 서버가 파생(`derive.go`).** 구조화 폼의 `description` 은 클라이언트 값을
   신뢰하지 않는다: `Store.Create`·`DraftStore.Save` 는 항상 `deriveDescription(Intro)`(마크다운
   링크 → 텍스트, trailing newline 1개)로 덮어쓰고, `Store.Update` 는 **도입부가 실제로 바뀐 경우에만**

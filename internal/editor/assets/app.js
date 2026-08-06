@@ -780,7 +780,16 @@ async function importScript(file) {
     setImportStatus("빈 파일입니다.", "err");
     return;
   }
-  setImportStatus(`분석 중… (${file.name})`);
+  // A long transcript can take minutes (the model titles every link), so show
+  // elapsed time while waiting — otherwise the UI looks frozen.
+  const startedAt = Date.now();
+  const tick = () => {
+    const s = Math.floor((Date.now() - startedAt) / 1000);
+    const elapsed = s >= 60 ? `${Math.floor(s / 60)}분 ${s % 60}초` : `${s}초`;
+    setImportStatus(`분석 중… (${file.name}, ${elapsed})`);
+  };
+  tick();
+  const timer = setInterval(tick, 1000);
   try {
     const res = await apiJSON("POST", "/assist/analyze", {
       provider: state.assistProvider,
@@ -793,6 +802,8 @@ async function importScript(file) {
     setImportStatus("완료 — 왼쪽에 새 초안을 채웠습니다.", "ok");
   } catch (err) {
     setImportStatus(err.message, "err");
+  } finally {
+    clearInterval(timer);
   }
 }
 

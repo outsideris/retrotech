@@ -246,6 +246,30 @@ func (e *Editor) handleAssistProviders(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, out)
 }
 
+// Assist CLI timeouts. When one expires, exec.CommandContext SIGKILLs the CLI
+// and the raw error is a useless "signal: killed" — writeAssistError translates
+// it. Script analysis reads a whole transcript and titles every link in it, so
+// it gets far longer than an interactive prompt.
+const (
+	assistRunTimeout     = 3 * time.Minute
+	assistAnalyzeTimeout = 10 * time.Minute
+)
+
+// writeAssistError maps an assist provider failure to an HTTP response. A
+// context deadline (the CLI was killed mid-run) beats the provider's own error,
+// which would otherwise surface as an inscrutable "signal: killed".
+func writeAssistError(w http.ResponseWriter, ctx context.Context, err error, limit time.Duration) {
+	switch {
+	case errors.Is(ctx.Err(), context.DeadlineExceeded):
+		writeError(w, http.StatusGatewayTimeout,
+			fmt.Sprintf("AI 응답이 제한 시간(%.0f분)을 넘어 중단되었습니다. 더 빠른 모델이나 낮은 effort 로 다시 시도해 보세요.", limit.Minutes()))
+	case errors.Is(err, assist.ErrUnavailable):
+		writeError(w, http.StatusServiceUnavailable, err.Error())
+	default:
+		writeError(w, http.StatusBadGateway, err.Error())
+	}
+}
+
 // handleAssistRun runs a prompt through the selected AI CLI and returns its
 // text response. The CLI calls a model, so it can take a while; it runs under a
 // generous timeout.
@@ -271,15 +295,11 @@ func (e *Editor) handleAssistRun(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Minute)
+	ctx, cancel := context.WithTimeout(r.Context(), assistRunTimeout)
 	defer cancel()
 	output, meta, err := provider.Run(ctx, prompt, assist.Options{Model: req.Model, Effort: req.Effort})
 	if err != nil {
-		status := http.StatusBadGateway
-		if errors.Is(err, assist.ErrUnavailable) {
-			status = http.StatusServiceUnavailable
-		}
-		writeError(w, status, err.Error())
+		writeAssistError(w, ctx, err, assistRunTimeout)
 		return
 	}
 	meta.Provider = provider.Name()
@@ -311,15 +331,11 @@ func (e *Editor) handleAssistAnalyze(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Minute)
+	ctx, cancel := context.WithTimeout(r.Context(), assistAnalyzeTimeout)
 	defer cancel()
 	sm, meta, err := assist.AnalyzeScript(ctx, provider, assist.Options{Model: req.Model, Effort: req.Effort}, script)
 	if err != nil {
-		status := http.StatusBadGateway
-		if errors.Is(err, assist.ErrUnavailable) {
-			status = http.StatusServiceUnavailable
-		}
-		writeError(w, status, err.Error())
+		writeAssistError(w, ctx, err, assistAnalyzeTimeout)
 		return
 	}
 	meta.Provider = provider.Name()

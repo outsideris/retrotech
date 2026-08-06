@@ -2,7 +2,10 @@ package editor
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -10,6 +13,9 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/outsideris/retrotech/internal/editor/assist"
 )
 
 // newTestServer starts the editor over a temp repo seeded with the directories
@@ -334,6 +340,36 @@ func TestDraftPublishWithoutIDIsRejected(t *testing.T) {
 	mustStatus(t, resp, http.StatusBadRequest)
 	resp, _ = do(t, srv, "GET", "/_write/api/drafts/"+created.Slug, nil)
 	mustStatus(t, resp, http.StatusOK)
+}
+
+// TestWriteAssistError: a CLI killed by the timeout must surface as a clear
+// 504 message, not exec's raw "signal: killed"; other failures keep their
+// existing status mapping.
+func TestWriteAssistError(t *testing.T) {
+	deadline, cancel := context.WithTimeout(context.Background(), time.Nanosecond)
+	defer cancel()
+	<-deadline.Done() // ensure the deadline has fired
+
+	rec := httptest.NewRecorder()
+	writeAssistError(rec, deadline, errors.New("claude: signal: killed"), 10*time.Minute)
+	if rec.Code != http.StatusGatewayTimeout {
+		t.Errorf("timeout status = %d, want 504", rec.Code)
+	}
+	if body := rec.Body.String(); !strings.Contains(body, "제한 시간(10분)") || strings.Contains(body, "signal: killed") {
+		t.Errorf("timeout body = %s", body)
+	}
+
+	rec = httptest.NewRecorder()
+	writeAssistError(rec, context.Background(), fmt.Errorf("claude: %w", assist.ErrUnavailable), time.Minute)
+	if rec.Code != http.StatusServiceUnavailable {
+		t.Errorf("unavailable status = %d, want 503", rec.Code)
+	}
+
+	rec = httptest.NewRecorder()
+	writeAssistError(rec, context.Background(), errors.New("boom"), time.Minute)
+	if rec.Code != http.StatusBadGateway || !strings.Contains(rec.Body.String(), "boom") {
+		t.Errorf("generic: status %d body %s", rec.Code, rec.Body.String())
+	}
 }
 
 func TestAssistProvidersEndpoint(t *testing.T) {
