@@ -46,6 +46,12 @@ Electron(desktop/main.js)  ──spawn──▶  Go 사이드카(cmd/app)  ─�
   슬러그로 레퍼런스 줄을 자동 생성해 둘을 구성한다. **백엔드 무변경** — hidden `f-description2`/`f-extra`
   가 로드 원본을 들고 있다가 음악/ID 를 실제 편집할 때만 재구성하므로, 미편집 회차는 바이트 동일
   (라운드트립/피드 골든 불변).
+- **대본 링크 → 레퍼런스(`assist/links.go`·`analyze.go`).** `ExtractLinks` 가 대본에서 마크다운 링크
+  (이미지 제외)와 맨 URL 을 문서 순서·URL 중복 제거로 추출하고, 그 목록을 분석 프롬프트에 명시해 모델은
+  **제목만** 붙인다(제목 규칙 `refTitleRules` — DESIGN.md 「레퍼런스 제목 규칙」과 동일). 응답은
+  `reconcileRefs` 로 추출 목록과 대조: 모델이 빠뜨린 링크는 앵커 텍스트 → URL 순으로 폴백, 목록에 없는
+  URL 은 폐기 — 결과는 항상 "대본의 링크 전부, 문서 순서, 정확히 한 번". `/api/assist/analyze` 가
+  `references: [{title,url}]` 로 반환하고 UI 는 레퍼런스 행으로 채운다.
 - **description = 도입부에서 서버가 파생(`derive.go`).** 구조화 폼의 `description` 은 클라이언트 값을
   신뢰하지 않는다: `Store.Create`·`DraftStore.Save` 는 항상 `deriveDescription(Intro)`(마크다운
   링크 → 텍스트, trailing newline 1개)로 덮어쓰고, `Store.Update` 는 **도입부가 실제로 바뀐 경우에만**

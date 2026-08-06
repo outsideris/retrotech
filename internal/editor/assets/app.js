@@ -761,7 +761,8 @@ function setImportStatus(message, kind) {
 }
 
 // importScript sends a dropped markdown script to the selected AI CLI, which
-// extracts the title / id / description; the result opens a fresh draft.
+// extracts the title / id / intro summary and titles the script's links as
+// references; the result opens a fresh draft.
 async function importScript(file) {
   if (!file) return;
   if (!state.assistProvider) {
@@ -795,9 +796,10 @@ async function importScript(file) {
   }
 }
 
-// applyScriptMeta opens a fresh draft and fills the extracted title / id and
-// the summary as the intro (the description is derived from it on save), then
-// auto-saves it.
+// applyScriptMeta opens a fresh draft and fills the extracted title / id, the
+// summary as the intro (the description is derived from it on save), and the
+// script's links as reference rows (titled server-side per the house naming
+// rules), then auto-saves it.
 async function applyScriptMeta(res) {
   await newDraft();
   if (res.title) set("f-title", res.title);
@@ -806,6 +808,9 @@ async function applyScriptMeta(res) {
     els.id.dispatchEvent(new Event("input", { bubbles: true })); // derive enclosure URL
   }
   if (res.description) set("f-intro", res.description);
+  if (Array.isArray(res.references) && res.references.length) {
+    renderRefs(res.references.map((r) => ({ text: r.title || r.url, url: r.url, indent: 0 })));
+  }
   els.formTitle.textContent = (res.title || "").trim() || "새 초안";
   flushDraftSave();
 }

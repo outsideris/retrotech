@@ -287,7 +287,8 @@ func (e *Editor) handleAssistRun(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleAssistAnalyze reads a podcast script through the selected AI CLI and
-// returns the extracted title / id / description to prefill the episode form.
+// returns the extracted title / id / description plus the script's links
+// titled as references, to prefill the episode form.
 func (e *Editor) handleAssistAnalyze(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Provider string `json:"provider"`
@@ -326,6 +327,7 @@ func (e *Editor) handleAssistAnalyze(w http.ResponseWriter, r *http.Request) {
 		"title":       sm.Title,
 		"id":          sm.ID,
 		"description": sm.Description,
+		"references":  sm.References,
 		"meta":        meta,
 	})
 }
