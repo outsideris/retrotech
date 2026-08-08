@@ -413,13 +413,14 @@ func (e *Editor) handleRoot(w http.ResponseWriter, r *http.Request) {
 func formToEpisode(f EpisodeForm) parser.Episode {
 	return parser.Episode{
 		Frontmatter: parser.Frontmatter{
-			Title:        f.Title,
-			Date:         f.Date,
-			Description:  f.Description,
-			Description2: f.Description2,
-			Enclosure:    parser.Enclosure{URL: f.EnclosureURL, Size: f.EnclosureSize},
-			Duration:     f.Duration,
-			Badges:       f.Badges,
+			Title:           f.Title,
+			Date:            f.Date,
+			Description:     f.Description,
+			Description2:    f.Description2,
+			FeedDescription: f.FeedDescription,
+			Enclosure:       parser.Enclosure{URL: f.EnclosureURL, Size: f.EnclosureSize},
+			Duration:        f.Duration,
+			Badges:          f.Badges,
 		},
 		ID:   f.ID,
 		Body: composeBody(f),

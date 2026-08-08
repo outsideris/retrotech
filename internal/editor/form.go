@@ -46,11 +46,13 @@ type Reference struct {
 // the body does not match that shape, Structured is false and RawBody holds the
 // whole body verbatim so the UI can still edit it as markdown.
 type EpisodeForm struct {
-	ID            string        `json:"id"`
-	Title         string        `json:"title"`
-	Date          string        `json:"date"`
-	Description   string        `json:"description"`
-	Description2  string        `json:"description2"`
+	ID              string `json:"id"`
+	Title           string `json:"title"`
+	Date            string `json:"date"`
+	Description     string `json:"description"`
+	Description2    string `json:"description2"`
+	FeedDescription string `json:"feedDescription"`
+
 	EnclosureURL  string        `json:"enclosureUrl"`
 	EnclosureSize int64         `json:"enclosureSize"`
 	Duration      string        `json:"duration"`
@@ -77,11 +79,13 @@ type EpisodeSummary struct {
 // preserved verbatim in RawBody.
 func EpisodeToForm(ep parser.Episode) EpisodeForm {
 	f := EpisodeForm{
-		ID:            ep.ID,
-		Title:         ep.Title,
-		Date:          ep.Date,
-		Description:   ep.Description,
-		Description2:  ep.Description2,
+		ID:              ep.ID,
+		Title:           ep.Title,
+		Date:            ep.Date,
+		Description:     ep.Description,
+		Description2:    ep.Description2,
+		FeedDescription: ep.FeedDescription,
+
 		EnclosureURL:  ep.Enclosure.URL,
 		EnclosureSize: ep.Enclosure.Size,
 		Duration:      ep.Duration,

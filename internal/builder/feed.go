@@ -24,7 +24,7 @@ import (
 // (the description duplicated the title; the generator read "RSS for Node");
 // both now carry accurate RetroTech values. The item <description> is the one
 // other deliberate divergence: it is now the HTML podcast apps actually render
-// (see descriptionHTML) instead of raw newline-separated text, which those apps
+// (see DescriptionHTML) instead of raw newline-separated text, which those apps
 // collapsed into a single paragraph. Everything else still mirrors the old
 // output so the subscriber-facing items stay byte-stable.
 
@@ -90,7 +90,7 @@ func BuildFeed(episodes []parser.Episode, cfg FeedConfig, buildTime time.Time) [
 		url := site + "/episodes/" + ep.ID
 		b.WriteString("        <item>\n")
 		b.WriteString("            <title>" + cdata(ep.Title) + "</title>\n")
-		b.WriteString("            <description>" + cdata(descriptionHTML(feedDescription(ep.Frontmatter))) + "</description>\n")
+		b.WriteString("            <description>" + cdata(feedDescription(ep.Frontmatter)) + "</description>\n")
 		b.WriteString("            <link>" + url + "</link>\n")
 		b.WriteString(`            <guid isPermaLink="true">` + url + "</guid>\n")
 		b.WriteString("            <dc:creator>" + cdata(showAuthor) + "</dc:creator>\n")
@@ -111,18 +111,32 @@ func BuildFeed(episodes []parser.Episode, cfg FeedConfig, buildTime time.Time) [
 	return []byte(b.String())
 }
 
-// feedDescription mirrors gen-rss.js: description, with description2 appended
-// after a newline when present. Chapters, when declared, are appended as plain
-// "MM:SS title" lines — the format Apple Podcasts, Spotify and YouTube
-// auto-link as seekable timestamps, which covers apps without Podcasting 2.0
-// chapter support.
+// feedDescription builds the item <description>, which is HTML because podcast
+// apps render it as such (see DescriptionHTML).
+//
+// The episode file may carry that HTML itself in feedDescription — the editor
+// writes it so the markdown shows exactly what subscribers receive — and then
+// it is shipped verbatim. Otherwise it is derived here the way gen-rss.js
+// composed the plain text (description, with description2 appended after a
+// newline) and converted, which is what every episode written before the field
+// existed still relies on.
+//
+// Chapters are always appended by the builder, never taken from the stored
+// HTML, since they live in their own frontmatter list: they become a trailing
+// paragraph of "MM:SS title" lines — the format Apple Podcasts, Spotify and
+// YouTube auto-link as seekable timestamps, which covers apps without
+// Podcasting 2.0 chapter support.
 func feedDescription(fm parser.Frontmatter) string {
-	desc := fm.Description
-	if fm.Description2 != "" {
-		desc = desc + "\n" + fm.Description2
+	desc := strings.TrimRight(fm.FeedDescription, "\n")
+	if desc == "" {
+		plain := fm.Description
+		if fm.Description2 != "" {
+			plain = plain + "\n" + fm.Description2
+		}
+		desc = DescriptionHTML(plain)
 	}
 	if len(fm.Chapters) > 0 {
-		desc = strings.TrimRight(desc, "\n") + "\n\n" + chapterLines(fm.Chapters)
+		desc += DescriptionHTML(chapterLines(fm.Chapters))
 	}
 	return desc
 }
@@ -134,7 +148,7 @@ var descriptionBlockSep = regexp.MustCompile(`\n{2,}`)
 // bareURL matches an unmarked http(s) link in the description text.
 var bareURL = regexp.MustCompile(`https?://[^\s<>"]+`)
 
-// descriptionHTML renders the plain-text feed description as the small HTML
+// DescriptionHTML renders a plain-text feed description as the small HTML
 // subset podcast apps accept, because they render <description> as HTML: raw
 // newlines collapse into spaces, which is why Apple Podcasts showed the
 // description2 block running into the summary as one paragraph. Blank-line
@@ -143,7 +157,7 @@ var bareURL = regexp.MustCompile(`https?://[^\s<>"]+`)
 // that do not auto-link. Text is HTML-escaped (the result still ships inside
 // CDATA, so the escapes reach the app intact and render as the literal
 // characters).
-func descriptionHTML(text string) string {
+func DescriptionHTML(text string) string {
 	var b strings.Builder
 	for _, block := range descriptionBlockSep.Split(strings.Trim(text, "\n"), -1) {
 		if strings.TrimSpace(block) == "" {

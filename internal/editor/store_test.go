@@ -229,3 +229,103 @@ func TestValidID(t *testing.T) {
 		}
 	}
 }
+
+// The episode file carries the HTML the feed ships (feedDescription) so the
+// markdown shows exactly what subscribers receive. Create always writes it;
+// Update keeps the stored value while its sources are untouched, so an episode
+// written before the field existed does not gain one on an unrelated edit.
+func TestStoreWritesFeedDescription(t *testing.T) {
+	dir := t.TempDir()
+	s := NewStore(dir)
+	form := sampleForm()
+	form.Intro = "첫 문장.\n둘째 문장."
+	form.Description2 = "레퍼런스는 홈페이지 참고:\nhttps://retrotech.outsider.dev/episodes/9z\n"
+
+	if err := s.Create(form); err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	got, err := s.Get("9z")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "<p>첫 문장.<br/>둘째 문장.</p><p>레퍼런스는 홈페이지 참고:<br/>" +
+		`<a href="https://retrotech.outsider.dev/episodes/9z">https://retrotech.outsider.dev/episodes/9z</a></p>` + "\n"
+	if got.FeedDescription != want {
+		t.Errorf("create: feedDescription = %q, want %q", got.FeedDescription, want)
+	}
+
+	raw, err := os.ReadFile(filepath.Join(dir, "9z.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(raw), "feedDescription: |\n    <p>첫 문장.<br/>둘째 문장.</p>") {
+		t.Errorf("feedDescription is not in the file as a block scalar:\n%s", raw)
+	}
+
+	// An unrelated edit leaves the stored HTML alone.
+	got.Duration = "99:99"
+	if err := s.Update("9z", got); err != nil {
+		t.Fatalf("update: %v", err)
+	}
+	after, _ := s.Get("9z")
+	if after.FeedDescription != want {
+		t.Errorf("unrelated edit changed feedDescription: %q", after.FeedDescription)
+	}
+
+	// Editing the intro re-derives the description, and the HTML follows.
+	after.Intro = "완전히 새로운 도입부입니다."
+	if err := s.Update("9z", after); err != nil {
+		t.Fatalf("update: %v", err)
+	}
+	after, _ = s.Get("9z")
+	if !strings.HasPrefix(after.FeedDescription, "<p>완전히 새로운 도입부입니다.</p><p>레퍼런스는") {
+		t.Errorf("intro edit did not regenerate feedDescription: %q", after.FeedDescription)
+	}
+}
+
+// An episode file written before feedDescription existed must not gain one from
+// an edit that leaves both description fields alone — otherwise an unrelated
+// save would churn the feed for every legacy episode.
+func TestUpdateLeavesLegacyFileWithoutFeedDescription(t *testing.T) {
+	dir := t.TempDir()
+	legacy := `---
+title: >
+    9z. Legacy
+date: 2025/01/01
+description: |
+    한 줄로 된 설명입니다.
+enclosure:
+  url: https://retrotech-episodes.outsider.dev/9z.mp3
+  size: 1
+duration: "1:00"
+---
+
+한 줄로
+된 설명입니다.
+
+<!--badges-->
+`
+	if err := os.WriteFile(filepath.Join(dir, "9z.md"), []byte(legacy), 0644); err != nil {
+		t.Fatal(err)
+	}
+	s := NewStore(dir)
+
+	form, err := s.Get("9z")
+	if err != nil {
+		t.Fatal(err)
+	}
+	form.Duration = "2:00"
+	if err := s.Update("9z", form); err != nil {
+		t.Fatalf("update: %v", err)
+	}
+
+	got, _ := s.Get("9z")
+	if got.FeedDescription != "" {
+		t.Errorf("unrelated edit added feedDescription to a legacy file: %q", got.FeedDescription)
+	}
+	raw, _ := os.ReadFile(filepath.Join(dir, "9z.md"))
+	if strings.Contains(string(raw), "feedDescription") {
+		t.Errorf("legacy file gained a feedDescription key:\n%s", raw)
+	}
+}

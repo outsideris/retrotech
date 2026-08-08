@@ -34,6 +34,11 @@ func composeFrontmatter(f EpisodeForm) string {
 	if f.Description2 != "" {
 		b.WriteString(blockScalar("description2", f.Description2))
 	}
+	// The HTML the feed ships. Omitted when empty so an episode written before
+	// the field existed stays byte-identical on a round trip.
+	if f.FeedDescription != "" {
+		b.WriteString(blockScalar("feedDescription", f.FeedDescription))
+	}
 	// No author: the host is always the same, so it's hard-coded in the
 	// builder (byline + feed creator), not stored per-episode.
 	b.WriteString("enclosure:\n")

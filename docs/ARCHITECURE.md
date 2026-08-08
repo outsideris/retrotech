@@ -79,10 +79,12 @@ retrotech/
   title: >                    # 멀티라인 제목 (예: "2g. VCS: SourceForge")
       2g. VCS: SourceForge
   date: 2026/03/07            # YYYY/MM/DD(0 미패딩 허용). 피드 pubDate 는 이 날짜 09:00 UTC
-  description: |              # 요약(여러 줄). 목록·본문 상단·RSS description 에 사용
+  description: |              # 요약(여러 줄). 목록·본문 상단에 사용되는 평문 소스
       ...
-  description2: |             # (선택) RSS description 에만 줄바꿈으로 덧붙는 보조 설명
+  description2: |             # (선택) 피드에만 덧붙는 보조 설명(레퍼런스 링크·배경음악 크레딧)
       ...
+  feedDescription: |          # (선택) 위 둘을 합쳐 피드로 나가는 HTML. 에디터가 저장 시 파생.
+      <p>...</p><p>...</p>    #   없으면 빌드 시 description/description2 에서 변환(기존 회차)
   # author 는 프론트매터에 없다 — 호스트(Outsider)는 항상 동일해 빌더에 하드코딩
   # (피드 dc:creator/itunes:author + 에피소드 바이라인). builder.showAuthor 상수.
   enclosure:                  # 팟캐스트 오디오 첨부
@@ -138,7 +140,12 @@ go run ./cmd/build
 - **이전 `scripts/gen-rss.js`(rss npm 라이브러리) 출력과 바이트 패리티**를 목표로 문자열로 재현한다(`encoding/xml` 은 CDATA·네임스페이스 순서·self-closing 을 그대로 못 냄). 휘발성 `lastBuildDate` 만 매 빌드 갱신.
 - 구독자 계약(불변): 각 항목 `guid`(=`/episodes/{id}`)·`enclosure`·`pubDate`. `pubDate` 는 날짜 09:00 UTC(빌드 머신 TZ 무관, 결정적).
 - 항목은 발행일 내림차순(동일 날짜 id 내림차순). `internal/builder/testdata/feed.golden.xml` 골든 테스트로 회귀 방지.
-- **아이템 `<description>` 은 HTML.** 팟캐스트 앱은 description 을 HTML 로 렌더하므로 평문 줄바꿈이 공백으로 뭉개진다(Apple Podcasts 에서 description2 블록이 요약 문단에 붙어 나오던 원인). `descriptionHTML`(`feed.go`)이 합성 결과를 변환한다: 빈 줄로 나뉜 블록 → `<p>`, 블록 안 줄바꿈 → `<br/>`, 맨 URL → `<a href>`. 텍스트는 `&`·`<`·`>` 만 이스케이프하고(따옴표·아포스트로피는 그대로 — 태그만 걷어내는 앱에서 `&#39;` 로 보이는 것 방지) 전체는 CDATA 안에 그대로 실린다. **`gen-rss.js` 대비 의도적 divergence** — 구독자 계약(guid/enclosure/pubDate)은 불변.
+- **아이템 `<description>` 은 HTML 이고, 그 HTML 은 md 에 저장된다.** 팟캐스트 앱은 description 을 HTML 로 렌더하므로 평문 줄바꿈이 공백으로 뭉개진다(Apple Podcasts 에서 description2 블록이 요약 문단에 붙어 나오던 원인).
+  - 프론트매터 **`feedDescription`** 이 피드로 나갈 HTML 을 그대로 담는다 — 에디터가 저장 시 `description` + `description2` 에서 파생해 기록하므로(`internal/editor/derive.go` 의 `deriveFeedDescription`) md 만 봐도 구독자가 받는 내용이 보인다. `description`·`description2` 는 사람이 읽는 평문 소스로 남는다(사이트 목록 페이지는 계속 `description` 을 쓴다).
+  - 변환기는 `builder.DescriptionHTML`: 빈 줄로 나뉜 블록 → `<p>`, 블록 안 줄바꿈 → `<br/>`, 맨 URL → `<a href>`. 텍스트는 `&`·`<`·`>` 만 이스케이프하고(따옴표·아포스트로피는 그대로 — 태그만 걷어내는 앱에서 `&#39;` 로 보이는 것 방지) 전체는 CDATA 안에 그대로 실린다.
+  - `feedDescription` 이 없는 파일(필드 도입 전에 쓰인 기존 회차)은 빌드 시 `description`+`description2` 를 같은 방식으로 변환해 폴백한다 — 기존 24편은 손대지 않아도 동일한 결과가 나온다.
+  - 챕터 줄은 저장된 HTML 이 아니라 **항상 빌더가** 뒤에 문단으로 덧붙인다(챕터는 별도 프론트매터 목록이므로 챕터만 고쳐도 `feedDescription` 을 다시 만들 필요가 없다).
+  - **`gen-rss.js` 대비 의도적 divergence** — 구독자 계약(guid/enclosure/pubDate)은 불변.
 - **챕터(타임스탬프).** 프론트매터 `chapters:` 가 있는 에피소드는 두 경로로 피드에 반영된다(`internal/builder/chapters.go`):
   - **Podcasting 2.0**: `episodes/<id>.chapters.json`(`{"version":"1.2.0","chapters":[{"startTime":초,"title":…}]}`) 생성 + 아이템에 `<podcast:chapters url=… type="application/json+chapters"/>`. 지원 앱(Overcast·Pocket Casts 등)은 챕터 목록/탭 이동 UI 를 보여준다.
   - **폴백**: 아이템 `<description>` 끝에 `MM:SS 제목` 줄을 덧붙인다(HTML 변환 후엔 자체 `<p>` 안의 `<br/>` 구분 줄) — Apple Podcasts·Spotify·YouTube 가 자동으로 클릭 가능한 타임스탬프로 인식.

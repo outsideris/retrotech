@@ -216,13 +216,21 @@ function musicFromForm(f) {
   return "";
 }
 
+// musicBodyForm is the credit as the body's "## 배경음악" section writes it: the
+// license code sits in its own paragraph, one blank line below the track and
+// its link, so the section renders as two paragraphs on the site (the house
+// style — description2 keeps the compact one-line-per-entry form instead).
+function musicBodyForm(music) {
+  return music.replace(/\n+(License code:)/gi, "\n\n$1");
+}
+
 // recomposeBody rebuilds the hidden f-description2 and f-extra from the current
 // id + music field. Only called on a user edit, so an untouched episode keeps
 // its original bytes.
 function recomposeBody() {
   const id = get("f-id").trim();
   const music = clean(get("f-music")).trim();
-  set("f-extra", music ? `## 배경음악\n${music}` : "");
+  set("f-extra", music ? `## 배경음악\n${musicBodyForm(music)}` : "");
   let d2 = "";
   if (id || music) {
     const url = slugURL(id);
@@ -307,6 +315,11 @@ function fillForm(f) {
     set("f-rawbody", f.rawBody);
   }
   set("f-music", musicFromForm(f));
+  // A draft is new content with no published bytes to preserve, so it is
+  // normalised to the current house style on load (the license-code paragraph
+  // break) instead of waiting for the author to touch the music field. A
+  // published episode is left exactly as it is on disk.
+  if (state.mode === "draft") recomposeBody();
   resetAudioUpload();
 }
 

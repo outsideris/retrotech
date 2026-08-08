@@ -3,6 +3,8 @@ package editor
 import (
 	"regexp"
 	"strings"
+
+	"github.com/outsideris/retrotech/internal/builder"
 )
 
 // The frontmatter description and the body intro have always carried the same
@@ -29,4 +31,27 @@ func deriveDescription(intro string) string {
 		return ""
 	}
 	return text + "\n"
+}
+
+// deriveFeedDescription builds the frontmatter feedDescription: the HTML the
+// feed ships for this episode, which is what podcast apps actually render (a
+// plain description loses every line break there). It is stored in the file
+// rather than left to the builder so the markdown shows exactly what
+// subscribers receive — description/description2 stay the plain, readable
+// source, and this field is derived from them at save time.
+//
+// It composes the two fields the way the feed does (description2 after a blank
+// line) and converts. Chapters are not included: they live in their own
+// frontmatter list and the builder appends them, so a chapter edit does not
+// have to round-trip through here.
+func deriveFeedDescription(description, description2 string) string {
+	plain := description
+	if description2 != "" {
+		plain += "\n" + description2
+	}
+	html := builder.DescriptionHTML(plain)
+	if html == "" {
+		return ""
+	}
+	return html + "\n"
 }

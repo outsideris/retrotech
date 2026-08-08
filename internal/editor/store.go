@@ -96,6 +96,7 @@ func (s *Store) Create(f EpisodeForm) error {
 	if f.Structured {
 		f.Description = deriveDescription(f.Intro)
 	}
+	f.FeedDescription = deriveFeedDescription(f.Description, f.Description2)
 	return writeAtomic(p, ComposeFile(f))
 }
 
@@ -119,12 +120,22 @@ func (s *Store) Update(id string, f EpisodeForm) error {
 		return err
 	}
 	f.ID = id
+	cur, curErr := s.Get(id)
 	if f.Structured {
-		if cur, err := s.Get(id); err == nil && cur.Structured && cur.Intro == f.Intro {
+		if curErr == nil && cur.Structured && cur.Intro == f.Intro {
 			f.Description = cur.Description
 		} else {
 			f.Description = deriveDescription(f.Intro)
 		}
+	}
+	// The feed HTML follows the two description fields: while they are
+	// untouched the stored value stands (an episode written before the field
+	// existed keeps having none, so an unrelated edit can't churn the feed),
+	// and any change to either field regenerates it.
+	if curErr == nil && cur.Description == f.Description && cur.Description2 == f.Description2 {
+		f.FeedDescription = cur.FeedDescription
+	} else {
+		f.FeedDescription = deriveFeedDescription(f.Description, f.Description2)
 	}
 	return writeAtomic(p, ComposeFile(f))
 }

@@ -89,16 +89,24 @@ func (c Chapter) StartSeconds() (int, error) {
 // Description and Description2 are kept verbatim (including any trailing
 // newline produced by a folded/literal YAML block scalar) because the feed
 // embeds them unchanged — trimming here would diverge from the current feed.
+//
+// FeedDescription is the HTML form of description + description2 that the feed
+// ships (podcast apps render <description> as HTML, so plain newlines collapse).
+// It is kept in the file rather than derived at build time so the markdown
+// shows exactly what subscribers receive; when it is absent — every episode
+// written before the field existed — the feed falls back to converting
+// description/description2 itself, so those files keep working untouched.
 type Frontmatter struct {
-	Title        string    `yaml:"title"`
-	Date         string    `yaml:"date"`
-	Description  string    `yaml:"description"`
-	Description2 string    `yaml:"description2,omitempty"`
-	Author       string    `yaml:"author"`
-	Enclosure    Enclosure `yaml:"enclosure"`
-	Duration     string    `yaml:"duration"`
-	Badges       Badges    `yaml:"badges,omitempty"`
-	Chapters     []Chapter `yaml:"chapters,omitempty"`
+	Title           string    `yaml:"title"`
+	Date            string    `yaml:"date"`
+	Description     string    `yaml:"description"`
+	Description2    string    `yaml:"description2,omitempty"`
+	FeedDescription string    `yaml:"feedDescription,omitempty"`
+	Author          string    `yaml:"author"`
+	Enclosure       Enclosure `yaml:"enclosure"`
+	Duration        string    `yaml:"duration"`
+	Badges          Badges    `yaml:"badges,omitempty"`
+	Chapters        []Chapter `yaml:"chapters,omitempty"`
 }
 
 // ParsedDate parses the source "YYYY/MM/DD" date for ordering. An unparseable

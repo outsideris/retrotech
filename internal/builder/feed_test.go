@@ -196,8 +196,8 @@ func TestDescriptionHTML(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		if got := descriptionHTML(tt.in); got != tt.want {
-			t.Errorf("%s: descriptionHTML(%q) = %q, want %q", tt.name, tt.in, got, tt.want)
+		if got := DescriptionHTML(tt.in); got != tt.want {
+			t.Errorf("%s: DescriptionHTML(%q) = %q, want %q", tt.name, tt.in, got, tt.want)
 		}
 	}
 }
@@ -226,6 +226,52 @@ func TestFeedItemDescriptionIsHTMLInsideCDATA(t *testing.T) {
 	}
 	if strings.Contains(feed, "&lt;p&gt;") {
 		t.Error("description HTML was escaped instead of shipped raw inside CDATA")
+	}
+}
+
+// An episode file may carry the feed HTML itself (the editor writes it so the
+// markdown shows what subscribers receive); then it ships verbatim and the
+// plain description fields are not converted again.
+func TestFeedUsesStoredFeedDescription(t *testing.T) {
+	ep := parser.Episode{
+		ID: "2h",
+		Frontmatter: parser.Frontmatter{
+			Title:           "2h. Test",
+			Date:            "2026/07/01",
+			Description:     "이 값은 쓰이지 않아야 한다.\n",
+			Description2:    "이것도 마찬가지.\n",
+			FeedDescription: "<p>저장된 <b>HTML</b> 그대로.</p>\n",
+			Author:          "Outsider",
+		},
+	}
+	feed := string(BuildFeed([]parser.Episode{ep}, FeedConfig{SiteURL: "https://retrotech.outsider.dev"}, time.Now()))
+
+	if !strings.Contains(feed, "<description><![CDATA[<p>저장된 <b>HTML</b> 그대로.</p>]]></description>") {
+		t.Error("stored feedDescription was not shipped verbatim")
+	}
+	if strings.Contains(feed, "이 값은 쓰이지 않아야 한다") {
+		t.Error("plain description leaked into the feed alongside the stored HTML")
+	}
+}
+
+// Chapters live in their own frontmatter list, so the builder appends them even
+// when the episode carries stored feed HTML — a chapter edit must not require
+// regenerating that field.
+func TestFeedAppendsChaptersToStoredFeedDescription(t *testing.T) {
+	ep := parser.Episode{
+		ID: "2h",
+		Frontmatter: parser.Frontmatter{
+			Title:           "2h. Test",
+			Date:            "2026/07/01",
+			FeedDescription: "<p>저장된 HTML.</p>\n",
+			Author:          "Outsider",
+			Chapters:        []parser.Chapter{{Start: "00:00", Title: "인트로"}},
+		},
+	}
+	feed := string(BuildFeed([]parser.Episode{ep}, FeedConfig{SiteURL: "https://retrotech.outsider.dev"}, time.Now()))
+
+	if !strings.Contains(feed, "<p>저장된 HTML.</p><p>00:00 인트로</p>") {
+		t.Error("chapter lines were not appended to the stored feed HTML")
 	}
 }
 
