@@ -675,9 +675,22 @@ button.danger:hover {
   gap: 6px;
 }
 
+/* The import status (분석 중…/완료) is the only feedback during a minutes-long
+   analysis — render it large enough to read at a glance. */
+#assist-import-status {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
 .assist-dropzone {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
+  /* Tall target: the sidebar has room to spare and a big zone is easier to
+     hit while dragging a file. */
+  min-height: 190px;
   padding: 16px 12px;
   border: 1.5px dashed var(--line);
   border-radius: 10px;
@@ -738,4 +751,11 @@ button.danger:hover {
   flex: 1;
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+/* Final upload confirmation — bold and a notch larger so a successful upload
+   is unmistakable. */
+#audio-upload-status.done {
+  font-size: 14.5px;
+  font-weight: 700;
 }

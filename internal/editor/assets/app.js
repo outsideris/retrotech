@@ -640,6 +640,27 @@ function analyzeAudio(file) {
   audio.src = url;
 }
 
+function formatBytes(n) {
+  if (n >= 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+  if (n >= 1024) return `${Math.round(n / 1024)} KB`;
+  return `${n} bytes`;
+}
+
+// postAudioUpload sends the multipart body over XHR (fetch exposes no upload
+// progress) and reports transferred bytes via onProgress.
+function postAudioUpload(fd, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${API}/audio/upload`);
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable) onProgress(e.loaded, e.total);
+    });
+    xhr.addEventListener("load", () => resolve({ status: xhr.status, text: xhr.responseText }));
+    xhr.addEventListener("error", () => reject(new Error("업로드 요청이 실패했습니다.")));
+    xhr.send(fd);
+  });
+}
+
 // uploadAudio sends the analyzed mp3 to the sidecar, which puts it into the R2
 // bucket as <ID>.mp3 (the same path the derived enclosure URL points at).
 async function uploadAudio() {
@@ -654,13 +675,20 @@ async function uploadAudio() {
   const key = `${id}.mp3`;
   state.audioUploading = true;
   els.audioUpload.disabled = true;
-  // Tens of MB over a home uplink takes a while — show elapsed time so the UI
-  // doesn't look frozen (fetch exposes no upload progress).
+  // Two visible stages: bytes leaving the browser (XHR progress), then the
+  // sidecar pushing them to R2 via wrangler (only elapsed time is knowable).
   const startedAt = Date.now();
+  let sent = 0;
+  const total = file.size;
   const tick = () => {
     const s = Math.floor((Date.now() - startedAt) / 1000);
     const elapsed = s >= 60 ? `${Math.floor(s / 60)}분 ${s % 60}초` : `${s}초`;
-    setAudioUploadStatus(`R2 업로드 중… (${key}, ${elapsed})`);
+    if (sent < total) {
+      const pct = total ? Math.floor((sent / total) * 100) : 0;
+      setAudioUploadStatus(`R2 업로드 중… (${key}, ${formatBytes(sent)} / ${formatBytes(total)} · ${pct}%, ${elapsed})`);
+    } else {
+      setAudioUploadStatus(`전송 완료(${formatBytes(total)}) — R2 에 반영 중… (${key}, ${elapsed})`);
+    }
   };
   tick();
   const timer = setInterval(tick, 1000);
@@ -668,21 +696,25 @@ async function uploadAudio() {
     const fd = new FormData();
     fd.append("key", key);
     fd.append("file", file, file.name);
-    const res = await fetch(`${API}/audio/upload`, { method: "POST", body: fd });
-    const text = await res.text();
+    const res = await postAudioUpload(fd, (loaded) => {
+      sent = loaded;
+      tick();
+    });
     let payload = null;
     try {
-      payload = text ? JSON.parse(text) : null;
+      payload = res.text ? JSON.parse(res.text) : null;
     } catch {}
-    if (!res.ok) throw new Error((payload && payload.error) || `업로드 실패 (${res.status})`);
+    if (res.status < 200 || res.status >= 300) {
+      throw new Error((payload && payload.error) || `업로드 실패 (${res.status})`);
+    }
     set("f-enclosure-url", payload.url);
     markDirty();
     // Immediately verify the public URL serves what we just pushed.
     clearInterval(timer);
-    setAudioUploadStatus("업로드 완료 — 다운로드 확인 중…");
+    setAudioUploadStatus(`업로드 완료(${formatBytes(total)}) — 다운로드 확인 중…`);
     const check = await apiJSON("POST", "/audio/check", { url: payload.url, size: file.size });
     if (check.ok) {
-      setAudioUploadStatus(`업로드 + 다운로드 확인 완료 ✓ (${key})`, "ok");
+      setAudioUploadStatus(`✅ 업로드 + 다운로드 확인 완료 (${key} · ${formatBytes(total)})`, "ok done");
     } else {
       setAudioUploadStatus(`업로드는 됐지만 확인 실패: ${check.error || "다운로드 불가"}`, "err");
     }
