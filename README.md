@@ -60,8 +60,12 @@ npm start                         # 개발 실행(서버 빌드 + Electron 창)
 npm run dist                      # 패키징 → dist/mac-arm64/RetroTech Editor.app (코드사이닝 없음 — 우클릭 열기)
 ```
 
-- 폼으로 메타데이터·구독 뱃지·레퍼런스를 편집하고, 로컬 mp3 를 고르면 `enclosure.size`·`duration` 이
-  자동으로 채워진다(파일 업로드 아님). 미리보기로 실제 에피소드 페이지를 확인한다.
+- 폼으로 메타데이터·구독 뱃지·레퍼런스를 편집하고, 오디오 드롭존에 로컬 mp3 를 끌어놓으면(또는 클릭
+  선택) `enclosure.size`·`duration` 이 자동으로 채워지고, 분석이 끝나면 **R2 에 업로드** 버튼으로
+  Cloudflare R2 버킷(`retrotech` → `retrotech-episodes.outsider.dev/<ID>.mp3`)에 바로 올릴 수 있다
+  (wrangler CLI 경유 — `wrangler login` 상태 필요). 미리보기로 실제 에피소드 페이지를 확인한다.
+- **발행** 을 누르면 먼저 enclosure URL 의 mp3 가 실제로 다운로드되는지(그리고 크기가 폼 값과 맞는지)
+  확인하고, 실패하면 경고를 띄운다 — 확인을 거쳐야만 발행된다.
 - **초안→발행:** "새 에피소드"는 바로 공개되지 않고 **초안**(`content/drafts/`, gitignore·자동 저장)으로
   시작해 사이드바 초안 섹션에서 관리하다가, **발행**을 누르면 `content/episodes/<id>.md` 로 기록된다.
   (발행은 파일만 기록하고, 배포는 기존처럼 `go run ./cmd/build` + 푸시.)

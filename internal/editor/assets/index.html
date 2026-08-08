@@ -93,11 +93,15 @@
                 <input id="f-duration" name="duration" type="text" placeholder="17:27" />
               </label>
             </div>
-            <label class="field file-pick">
-              <span>로컬 mp3 선택 → 크기·길이 자동 채움</span>
-              <input id="f-audio" type="file" accept=".mp3,audio/mpeg" />
-              <small id="audio-help" class="hint"></small>
+            <label id="audio-dropzone" class="audio-dropzone">
+              <input id="f-audio" type="file" accept=".mp3,audio/mpeg" hidden />
+              <span>mp3 파일을 끌어다 놓거나 클릭해 선택<br />→ 크기·길이 분석 후 R2 에 업로드할 수 있습니다</span>
             </label>
+            <div class="audio-actions">
+              <small id="audio-help" class="hint"></small>
+              <button id="btn-audio-upload" type="button" disabled>R2 에 업로드</button>
+            </div>
+            <span id="audio-upload-status" class="assist-status" aria-live="polite"></span>
           </fieldset>
 
           <fieldset>

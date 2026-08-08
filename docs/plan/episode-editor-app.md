@@ -130,8 +130,13 @@ struct 순서로 이동). 측정: 23편 재출력 시 총 65줄 변경, **전부
 
 - 목록 사이드바(검색·날짜 내림차순) + 구조화 폼(메타/오디오/뱃지/본문).
 - 레퍼런스 행 편집(텍스트+URL+하위 들여쓰기 체크, 드래그 정렬).
-- **로컬 mp3 선택 → size·duration 자동 채움**: `<input type=file>` 로 `file.size`,
-  숨은 `<audio>` 메타데이터로 `MM:SS`. 파일은 업로드하지 않음(mp3 호스팅 별개) — 두 값만 읽음.
+- **mp3 드롭존 → size·duration 자동 채움 → R2 업로드**: 오디오 fieldset 의 드롭존에 mp3 를
+  끌어놓거나 클릭 선택하면 `file.size` 와 숨은 `<audio>` 메타데이터(`MM:SS`)로 두 값을 채우고, 분석이
+  끝나면 "R2 에 업로드" 버튼이 활성화된다. 업로드는 `/api/audio/upload`(multipart) → 사이드카가
+  wrangler CLI 로 `retrotech` 버킷에 `<ID>.mp3` 로 put(`audio.go`). 업로드 직후 공개 URL 을
+  `/api/audio/check` 로 재확인한다.
+- **발행 전 enclosure 검증**: 발행 클릭 시 `/api/audio/check`(Range GET + 크기 비교)가 실패하면 경고
+  confirm 을 거쳐야 발행된다.
 - 미리보기 `<iframe srcdoc>`. 신규 시 id→enclosure URL 자동 생성, 수정 시 id read-only(guid 보호).
 
 ## AI Assist 사이드바 (`internal/editor/assist/`)

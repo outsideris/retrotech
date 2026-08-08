@@ -39,6 +39,12 @@ type Editor struct {
 	publicDir string
 	assets    fs.FS
 	year      int
+
+	// putObject uploads a local file to the audio bucket under key. It defaults
+	// to the wrangler CLI (wranglerPut); tests substitute a fake.
+	putObject func(ctx context.Context, key, file string) error
+	// audioClient performs the pre-publish enclosure download checks.
+	audioClient *http.Client
 }
 
 // New builds an Editor for the given repo. It fails if content/episodes is
@@ -54,11 +60,13 @@ func New(cfg Config) (*Editor, error) {
 		return nil, err
 	}
 	return &Editor{
-		store:     NewStore(episodesDir),
-		drafts:    NewDraftStore(filepath.Join(cfg.RepoDir, "content", "drafts")),
-		publicDir: filepath.Join(cfg.RepoDir, "public"),
-		assets:    sub,
-		year:      time.Now().Year(),
+		store:       NewStore(episodesDir),
+		drafts:      NewDraftStore(filepath.Join(cfg.RepoDir, "content", "drafts")),
+		publicDir:   filepath.Join(cfg.RepoDir, "public"),
+		assets:      sub,
+		year:        time.Now().Year(),
+		putObject:   wranglerPut,
+		audioClient: &http.Client{},
 	}, nil
 }
 
@@ -71,6 +79,8 @@ func New(cfg Config) (*Editor, error) {
 //	PUT    /_write/api/episodes/{id} update
 //	DELETE /_write/api/episodes/{id} delete
 //	POST   /_write/api/preview       render an episode page (no save)
+//	POST   /_write/api/audio/upload  upload an mp3 to the R2 audio bucket
+//	POST   /_write/api/audio/check   verify an enclosure URL downloads
 //	/                                redirect to /_write/, else serve public/
 func (e *Editor) Handler() http.Handler {
 	mux := http.NewServeMux()
@@ -86,6 +96,8 @@ func (e *Editor) Handler() http.Handler {
 	mux.HandleFunc("PUT /_write/api/drafts/{slug}", e.handleDraftSave)
 	mux.HandleFunc("DELETE /_write/api/drafts/{slug}", e.handleDraftDelete)
 	mux.HandleFunc("POST /_write/api/drafts/{slug}/publish", e.handleDraftPublish)
+	mux.HandleFunc("POST /_write/api/audio/upload", e.handleAudioUpload)
+	mux.HandleFunc("POST /_write/api/audio/check", e.handleAudioCheck)
 	mux.HandleFunc("GET /_write/api/assist/providers", e.handleAssistProviders)
 	mux.HandleFunc("POST /_write/api/assist/run", e.handleAssistRun)
 	mux.HandleFunc("POST /_write/api/assist/analyze", e.handleAssistAnalyze)

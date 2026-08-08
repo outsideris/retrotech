@@ -25,6 +25,9 @@ const els = {
   id: $("f-id"),
   audio: $("f-audio"),
   audioHelp: $("audio-help"),
+  audioDropzone: $("audio-dropzone"),
+  audioUpload: $("btn-audio-upload"),
+  audioUploadStatus: $("audio-upload-status"),
   refs: $("refs"),
   refTemplate: $("ref-template"),
   preview: $("preview-panel"),
@@ -304,8 +307,7 @@ function fillForm(f) {
     set("f-rawbody", f.rawBody);
   }
   set("f-music", musicFromForm(f));
-  els.audioHelp.textContent = "";
-  els.audio.value = "";
+  resetAudioUpload();
 }
 
 function readForm() {
@@ -442,6 +444,7 @@ async function publishDraft() {
   }
   try {
     await flushDraftSave(); // persist the latest form (incl. id) before publishing
+    if (!(await confirmEnclosure())) return;
     const res = await apiJSON("POST", `/drafts/${encodeURIComponent(state.current)}/publish`);
     await loadAll();
     await selectEpisode(res.id);
@@ -449,6 +452,33 @@ async function publishDraft() {
   } catch (err) {
     setStatus(err.message, "err");
   }
+}
+
+// confirmEnclosure gates publishing on the enclosure mp3 actually being
+// downloadable (and the right size) at its public URL — a feed must never ship
+// a dead or half-uploaded file. On failure the author sees the reason and can
+// still force-publish via the confirm dialog.
+async function confirmEnclosure() {
+  const url = get("f-enclosure-url").trim();
+  const size = Number(get("f-enclosure-size")) || 0;
+  if (!url) {
+    return confirm("오디오 URL(enclosure)이 비어 있습니다. mp3 없이 발행할까요?");
+  }
+  setStatus(`오디오 파일 확인 중… (${url})`);
+  let res;
+  try {
+    res = await apiJSON("POST", "/audio/check", { url, size });
+  } catch (err) {
+    res = { ok: false, error: err.message };
+  }
+  if (res.ok) {
+    setStatus("");
+    return true;
+  }
+  const detail = res.error || "다운로드에 실패했습니다.";
+  const proceed = confirm(`⚠️ 오디오 파일 확인 실패\n${url}\n${detail}\n\n그래도 발행할까요?`);
+  if (!proceed) setStatus(`발행 취소 — 오디오 확인 실패: ${detail}`, "err");
+  return proceed;
 }
 
 async function deleteEpisode(id) {
@@ -554,27 +584,132 @@ function dragAfter(y) {
 
 // ---------- Audio ----------
 
-// A local mp3 fills the byte size (from the File) and the duration (from the
-// decoded metadata, formatted MM:SS). The file itself is never uploaded.
-els.audio.addEventListener("change", () => {
-  const file = els.audio.files[0];
+// Dropping (or picking) a local mp3 fills the byte size (from the File) and the
+// duration (from the decoded metadata, formatted MM:SS). Once that analysis is
+// done the file is kept in memory and the "R2 에 업로드" button activates, which
+// sends it to the sidecar → wrangler → the retrotech R2 bucket as <ID>.mp3.
+
+function setAudioUploadStatus(message, kind) {
+  els.audioUploadStatus.textContent = message || "";
+  els.audioUploadStatus.className = "assist-status" + (kind ? " " + kind : "");
+}
+
+// resetAudioUpload clears the analyzed file when another episode/draft loads,
+// so the upload button can never push a stale file under a new id.
+function resetAudioUpload() {
+  state.audioFile = null;
+  els.audio.value = "";
+  els.audioUpload.disabled = true;
+  els.audioHelp.textContent = "";
+  setAudioUploadStatus("");
+}
+
+function analyzeAudio(file) {
   if (!file) return;
+  if (!/\.mp3$/i.test(file.name) && file.type !== "audio/mpeg") {
+    setAudioUploadStatus("mp3 파일만 사용할 수 있습니다.", "err");
+    return;
+  }
+  state.audioFile = file;
+  els.audioUpload.disabled = true; // 분석이 끝난 뒤에 활성화
   set("f-enclosure-size", file.size);
   els.audioHelp.textContent = `${file.name} · ${file.size.toLocaleString()} bytes`;
+  setAudioUploadStatus("분석 중…");
   markDirty();
 
   const url = URL.createObjectURL(file);
   const audio = new Audio();
   audio.preload = "metadata";
-  audio.addEventListener("loadedmetadata", () => {
+  const finish = (message, kind) => {
     URL.revokeObjectURL(url);
+    // Another file may have been dropped while this one decoded.
+    if (state.audioFile !== file) return;
+    els.audioUpload.disabled = false;
+    setAudioUploadStatus(message, kind);
+  };
+  audio.addEventListener("loadedmetadata", () => {
     if (Number.isFinite(audio.duration)) {
       set("f-duration", formatDuration(audio.duration));
       markDirty();
     }
+    finish("분석 완료 — R2 에 업로드할 수 있습니다.", "ok");
   });
-  audio.addEventListener("error", () => URL.revokeObjectURL(url));
+  audio.addEventListener("error", () =>
+    finish("길이를 읽지 못했습니다 — 크기만 채웠습니다. 업로드는 가능합니다.", "err"),
+  );
   audio.src = url;
+}
+
+// uploadAudio sends the analyzed mp3 to the sidecar, which puts it into the R2
+// bucket as <ID>.mp3 (the same path the derived enclosure URL points at).
+async function uploadAudio() {
+  const file = state.audioFile;
+  if (!file || state.audioUploading) return;
+  const id = get("f-id").trim();
+  if (!id) {
+    setAudioUploadStatus("먼저 ID 를 입력하세요 — 업로드 파일명(<ID>.mp3)에 필요합니다.", "err");
+    els.id.focus();
+    return;
+  }
+  const key = `${id}.mp3`;
+  state.audioUploading = true;
+  els.audioUpload.disabled = true;
+  // Tens of MB over a home uplink takes a while — show elapsed time so the UI
+  // doesn't look frozen (fetch exposes no upload progress).
+  const startedAt = Date.now();
+  const tick = () => {
+    const s = Math.floor((Date.now() - startedAt) / 1000);
+    const elapsed = s >= 60 ? `${Math.floor(s / 60)}분 ${s % 60}초` : `${s}초`;
+    setAudioUploadStatus(`R2 업로드 중… (${key}, ${elapsed})`);
+  };
+  tick();
+  const timer = setInterval(tick, 1000);
+  try {
+    const fd = new FormData();
+    fd.append("key", key);
+    fd.append("file", file, file.name);
+    const res = await fetch(`${API}/audio/upload`, { method: "POST", body: fd });
+    const text = await res.text();
+    let payload = null;
+    try {
+      payload = text ? JSON.parse(text) : null;
+    } catch {}
+    if (!res.ok) throw new Error((payload && payload.error) || `업로드 실패 (${res.status})`);
+    set("f-enclosure-url", payload.url);
+    markDirty();
+    // Immediately verify the public URL serves what we just pushed.
+    clearInterval(timer);
+    setAudioUploadStatus("업로드 완료 — 다운로드 확인 중…");
+    const check = await apiJSON("POST", "/audio/check", { url: payload.url, size: file.size });
+    if (check.ok) {
+      setAudioUploadStatus(`업로드 + 다운로드 확인 완료 ✓ (${key})`, "ok");
+    } else {
+      setAudioUploadStatus(`업로드는 됐지만 확인 실패: ${check.error || "다운로드 불가"}`, "err");
+    }
+  } catch (err) {
+    setAudioUploadStatus(err.message, "err");
+  } finally {
+    clearInterval(timer);
+    state.audioUploading = false;
+    els.audioUpload.disabled = !state.audioFile;
+  }
+}
+
+els.audio.addEventListener("change", () => {
+  const file = els.audio.files[0];
+  els.audio.value = ""; // allow re-picking the same file
+  analyzeAudio(file);
+});
+els.audioUpload.addEventListener("click", uploadAudio);
+els.audioDropzone.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  els.audioDropzone.classList.add("drag");
+});
+els.audioDropzone.addEventListener("dragleave", () => els.audioDropzone.classList.remove("drag"));
+els.audioDropzone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  els.audioDropzone.classList.remove("drag");
+  if (e.dataTransfer.files[0]) analyzeAudio(e.dataTransfer.files[0]);
 });
 
 function formatDuration(seconds) {
@@ -870,6 +1005,10 @@ els.assistDropzone.addEventListener("drop", (e) => {
   els.assistDropzone.classList.remove("drag");
   if (e.dataTransfer.files[0]) importScript(e.dataTransfer.files[0]);
 });
+
+// A file dropped outside a dropzone must not navigate the window to the file.
+window.addEventListener("dragover", (e) => e.preventDefault());
+window.addEventListener("drop", (e) => e.preventDefault());
 
 $("btn-new").addEventListener("click", () => newDraft());
 $("btn-add-ref").addEventListener("click", () => {

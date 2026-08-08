@@ -155,7 +155,8 @@ go run ./cmd/build
 - **`cmd/app`** — 고정 loopback 49218(점유 시 OS 할당)에 listen → `EDITOR_PORT <n>` 출력(Electron 이
   읽어 URL 결정) → `internal/editor` 서빙. `-repo` 로 프로젝트 루트 지정(`content/episodes` 검증).
 - **`internal/editor`** — `editor.go`(HTTP mux: `/_write/` UI, `/_write/api/episodes[/{id}]` CRUD,
-  `/_write/api/drafts[/{slug}[/publish]]`, `/_write/api/preview`, `/` → `public/` 정적 서빙),
+  `/_write/api/drafts[/{slug}[/publish]]`, `/_write/api/preview`, `/_write/api/audio/upload`,
+  `/_write/api/audio/check`, `/` → `public/` 정적 서빙),
   `store.go`(에피소드 파일 CRUD·슬러그 검증·atomic write), `drafts.go`(초안 JSON 저장·발행),
   `derive.go`(구조화 폼의 `description` 을 도입부에서 파생 — 마크다운 링크 제거),
   `form.go`(본문↔구조 무손실 파싱), `compose.go`(마크다운 합성). **합성 계약:** 피드는 프론트매터 값만
@@ -170,6 +171,15 @@ go run ./cmd/build
 - **AI Assist:** `internal/editor/assist` 가 로컬 CLI(Claude/Codex/Gemini)를 비대화 모드로 셸 아웃
   (`/api/assist/providers`·`/api/assist/run`). `cmd/app` 은 `injectLoginPath()` 로 GUI 의 빈 PATH 를
   로그인 셸 PATH 로 교체해 CLI 를 찾는다. 우측 Assist 사이드바의 토대 — 구체 기능은 이후 확장.
+- **오디오 업로드·검증(`audio.go`):** 오디오 fieldset 의 드롭존에 mp3 를 끌어놓으면(또는 클릭 선택)
+  size·duration 분석 후 "R2 에 업로드" 버튼이 활성화된다. 업로드는 사이드카가 임시 파일로 스풀한 뒤
+  **wrangler CLI**(`wrangler` 또는 `npx -y wrangler`; assist CLI 처럼 자체 인증 — 앱은 키를 보관하지
+  않음)로 `r2 object put retrotech/<ID>.mp3 --remote` 실행 — 버킷 키가 곧
+  `retrotech-episodes.outsider.dev/<ID>.mp3` 공개 경로다. wrangler 는 cwd 에 `.wrangler/` 캐시를
+  만들므로 `cmd.Dir=os.TempDir()` 로 실행한다. **발행 게이트:** 발행 버튼은 먼저
+  `/api/audio/check`(Range GET 2바이트 + 서버 크기 vs 폼 `enclosureSize` 비교)로 enclosure URL 이
+  실제로 다운로드되는지 확인하고, 실패하면 경고 confirm 을 거쳐야 발행된다(죽은/미완료 mp3 가 피드에
+  실리는 사고 방지). 업로드 직후에도 같은 check 로 공개 URL 을 즉시 재확인한다.
 - **`desktop/`** — Electron 래퍼. `main.js` 가 repo 폴더 결정(env→config.json→네이티브 picker) → 서버
   spawn → `http://127.0.0.1:<port>/_write/` 로드. electron-builder 가 Go 바이너리를 `extraResources`
   로 `.app` 에 동봉(server-bin→editor-server). `npm run dist` → `RetroTech Editor.app`(arm64,
@@ -190,7 +200,8 @@ go run ./cmd/build
 | **Google Analytics 4** | `render_layout.go`(`<!-- @analytics -->` 주입) | 방문 분석(`G-PVJ12C7HR6`). `ANALYTICS_ID` 설정 시(배포)만 |
 | **GitHub Sponsors** | `render_layout.go` footer | 후원 버튼 `<iframe>`(전 페이지) |
 | **팟캐스트 플랫폼** | `badges.go`, 각 에피소드 `badges:` | Apple/Spotify/YouTube/Google/RSS 구독 링크 |
-| **오디오 호스팅** | 프론트매터 `enclosure.url` | `retrotech-episodes.outsider.dev/*.mp3` |
+| **오디오 호스팅** | 프론트매터 `enclosure.url` | `retrotech-episodes.outsider.dev/*.mp3` (Cloudflare R2 버킷 `retrotech`) |
+| **wrangler CLI** | `internal/editor/audio.go`(에디터 앱 전용) | 에디터의 mp3 → R2 업로드(`r2 object put`). `wrangler login` 자체 인증 |
 
 ## 배포
 

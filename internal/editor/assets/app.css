@@ -698,3 +698,44 @@ button.danger:hover {
   background: var(--orange-soft);
   color: var(--navy);
 }
+
+/* ---------- Audio dropzone (오디오 fieldset) ---------- */
+
+.audio-dropzone {
+  display: block;
+  text-align: center;
+  padding: 14px 12px;
+  border: 1.5px dashed var(--line);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+  cursor: pointer;
+  background: var(--cream);
+  margin-top: 4px;
+}
+
+.audio-dropzone:hover {
+  border-color: var(--orange);
+  color: var(--ink);
+}
+
+.audio-dropzone.drag {
+  border-color: var(--orange);
+  background: var(--orange-soft);
+  color: var(--navy);
+}
+
+.audio-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.audio-actions .hint {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
