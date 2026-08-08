@@ -25,7 +25,21 @@ var (
 	// bareURLRe matches an http(s) URL in plain text, likewise tolerating one
 	// level of balanced parentheses.
 	bareURLRe = regexp.MustCompile(`https?://(?:[^\s<>()]|\([^\s()]*\))+`)
+
+	// Scripts drafted with ChatGPT carry its tracking parameter on copied
+	// links; it is the one URL alteration the import performs — everything
+	// else is kept verbatim from the script. Two passes: mid-query (another
+	// parameter follows) and end-of-query (possibly before a fragment).
+	chatgptUTMMid = regexp.MustCompile(`\?utm_source=chatgpt\.com&`)
+	chatgptUTMEnd = regexp.MustCompile(`[?&]utm_source=chatgpt\.com`)
 )
+
+// stripChatGPTUTM removes a utm_source=chatgpt.com query parameter from a URL,
+// leaving every other parameter (and the fragment) untouched.
+func stripChatGPTUTM(u string) string {
+	u = chatgptUTMMid.ReplaceAllString(u, "?")
+	return chatgptUTMEnd.ReplaceAllString(u, "")
+}
 
 // ExtractLinks returns every external link in a markdown script, in document
 // order, deduplicated by URL (the first occurrence wins). Markdown links carry
@@ -67,7 +81,7 @@ func ExtractLinks(script string) []Link {
 	var links []Link
 	seen := map[string]bool{}
 	for _, c := range found {
-		url := strings.TrimRight(c.url, `.,;:!?'"`)
+		url := stripChatGPTUTM(strings.TrimRight(c.url, `.,;:!?'"`))
 		if url == "" || seen[url] {
 			continue
 		}

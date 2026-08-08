@@ -46,6 +46,39 @@ func TestExtractLinksTrimsTrailingPunctuation(t *testing.T) {
 	}
 }
 
+// TestExtractLinksStripsChatGPTUTM: ChatGPT's tracking parameter is removed
+// from script links — the only URL alteration the import makes; every other
+// parameter and fragment stays verbatim.
+func TestExtractLinksStripsChatGPTUTM(t *testing.T) {
+	script := `
+[단독 파라미터](https://a.example.com/p?utm_source=chatgpt.com)
+[뒤에 다른 파라미터](https://b.example.com/p?utm_source=chatgpt.com&x=1)
+[앞에 다른 파라미터](https://c.example.com/p?x=1&utm_source=chatgpt.com)
+[프래그먼트 유지](https://d.example.com/p?utm_source=chatgpt.com#sec)
+[다른 utm 은 유지](https://e.example.com/p?utm_source=newsletter&utm_medium=email)
+`
+	want := []Link{
+		{Text: "단독 파라미터", URL: "https://a.example.com/p"},
+		{Text: "뒤에 다른 파라미터", URL: "https://b.example.com/p?x=1"},
+		{Text: "앞에 다른 파라미터", URL: "https://c.example.com/p?x=1"},
+		{Text: "프래그먼트 유지", URL: "https://d.example.com/p#sec"},
+		{Text: "다른 utm 은 유지", URL: "https://e.example.com/p?utm_source=newsletter&utm_medium=email"},
+	}
+	got := ExtractLinks(script)
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("ExtractLinks:\n got %#v\nwant %#v", got, want)
+	}
+}
+
+// The clean URL and its utm-tagged variant in one script collapse to a single
+// reference (the 2h transcript actually contained such a duplicate).
+func TestExtractLinksDedupesUTMVariant(t *testing.T) {
+	got := ExtractLinks("[A](https://a.example.com/doc.pdf) [B](https://a.example.com/doc.pdf?utm_source=chatgpt.com)")
+	if len(got) != 1 || got[0].URL != "https://a.example.com/doc.pdf" || got[0].Text != "A" {
+		t.Errorf("utm variant not deduped: %#v", got)
+	}
+}
+
 func TestExtractLinksEmpty(t *testing.T) {
 	if got := ExtractLinks("링크가 하나도 없는 대본입니다."); len(got) != 0 {
 		t.Errorf("want no links, got %#v", got)

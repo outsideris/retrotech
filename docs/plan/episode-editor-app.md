@@ -47,7 +47,8 @@ Electron(desktop/main.js)  ──spawn──▶  Go 사이드카(cmd/app)  ─�
   가 로드 원본을 들고 있다가 음악/ID 를 실제 편집할 때만 재구성하므로, 미편집 회차는 바이트 동일
   (라운드트립/피드 골든 불변).
 - **대본 링크 → 레퍼런스(`assist/links.go`·`analyze.go`).** `ExtractLinks` 가 대본에서 마크다운 링크
-  (이미지 제외)와 맨 URL 을 문서 순서·URL 중복 제거로 추출하고, 그 목록을 분석 프롬프트에 명시해 모델은
+  (이미지 제외)와 맨 URL 을 문서 순서·URL 중복 제거로 추출하고(`utm_source=chatgpt.com` 은 항상 제거 —
+  그 외 URL 은 대본 그대로; 제거는 dedupe 전에 수행해 클린 URL 과 utm 변형이 하나로 합쳐진다), 그 목록을 분석 프롬프트에 명시해 모델은
   **제목만** 붙인다(제목 규칙 `refTitleRules` — DESIGN.md 「레퍼런스 제목 규칙」과 동일). 응답은
   `reconcileRefs` 로 추출 목록과 대조: 모델이 빠뜨린 링크는 앵커 텍스트 → URL 순으로 폴백, 목록에 없는
   URL 은 폐기 — 결과는 항상 "대본의 링크 전부, 문서 순서, 정확히 한 번". `/api/assist/analyze` 가
