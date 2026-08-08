@@ -52,6 +52,7 @@
 
 ## 마지막 검토
 
+- **2026-08-08:** 아이템 `<description>` 을 HTML 로 발행하도록 변경하며 피드 골든을 갱신. 골든은 이제 "`gen-rss.js` 바이트 패리티"가 아니라 **구독자 계약(guid/enclosure/pubDate) + 현재 피드 형태**의 회귀 가드다 — 의도된 피드 변경 시 갱신 후 `git diff` 로 계약 필드 불변을 확인한다.
 - **2026-08-01:** 팟캐스트 챕터 도입 — 정적 산출물 항목에 조건부 `episodes/<id>.chapters.json` 추가. 피드 골든은 챕터 미선언 시 그대로 유효(네임스페이스 조건부 선언).
 - **2026-06-16:** 접근성/성능을 CI에서 검증하도록 추가 — `go test` 의 마크업 불변식(`a11y_perf_test.go`) + 새 `lighthouse` 잡(Lighthouse CI, a11y/SEO/BP=100 하드 게이트). 로컬 재현: `npx @lhci/cli@0.14.x autorun`.
 - **2026-06-16:** Go 정적 생성기로 마이그레이션(Next/Nextra 제거). 검증 기준을 `go build`·`go vet`·`go test`·`go run ./cmd/build` 로 교체. CI 를 Go 로 전환.

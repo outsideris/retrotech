@@ -132,11 +132,100 @@ func TestBuildFeedWithChapters(t *testing.T) {
 	if !strings.Contains(feed, `<podcast:chapters url="https://retrotech.outsider.dev/episodes/2h.chapters.json" type="application/json+chapters"/>`) {
 		t.Error("feed missing <podcast:chapters> for the chaptered episode")
 	}
-	if !strings.Contains(feed, "요약.\n\n00:00 인트로\n03:15 본론") {
+	if !strings.Contains(feed, "<p>요약.</p><p>00:00 인트로<br/>03:15 본론</p>") {
 		t.Error("feed description missing appended chapter timestamp lines")
 	}
 	if strings.Count(feed, "podcast:chapters") != 1 {
 		t.Error("<podcast:chapters> leaked into the chapterless episode")
+	}
+}
+
+// Podcast apps render <description> as HTML, so the plain source text has to be
+// marked up: without it every newline collapses and the whole description shows
+// as one paragraph (what Apple Podcasts did to the description2 block).
+func TestDescriptionHTML(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{
+			name: "single newlines become <br/> inside one paragraph",
+			in:   "첫 문장.\n둘째 문장.",
+			want: "<p>첫 문장.<br/>둘째 문장.</p>",
+		},
+		{
+			name: "a blank line starts a new paragraph",
+			in:   "요약.\n\n레퍼런스는 홈페이지 참고:",
+			want: "<p>요약.</p><p>레퍼런스는 홈페이지 참고:</p>",
+		},
+		{
+			name: "runs of blank lines collapse to one paragraph break",
+			in:   "가.\n\n\n나.",
+			want: "<p>가.</p><p>나.</p>",
+		},
+		{
+			name: "leading and trailing newlines are dropped",
+			in:   "\n요약.\n",
+			want: "<p>요약.</p>",
+		},
+		{
+			name: "bare URLs become anchors",
+			in:   "레퍼런스는 홈페이지 참고:\nhttps://retrotech.outsider.dev/episodes/2h",
+			want: `<p>레퍼런스는 홈페이지 참고:<br/><a href="https://retrotech.outsider.dev/episodes/2h">https://retrotech.outsider.dev/episodes/2h</a></p>`,
+		},
+		{
+			name: "sentence punctuation stays outside the anchor",
+			in:   "자세히는 https://example.com/a 를 보세요.",
+			want: `<p>자세히는 <a href="https://example.com/a">https://example.com/a</a> 를 보세요.</p>`,
+		},
+		{
+			name: "markup characters in the text are escaped",
+			in:   "Q&A <태그> 이야기",
+			want: "<p>Q&amp;A &lt;태그&gt; 이야기</p>",
+		},
+		{
+			name: "an ampersand in a URL is escaped in both href and text",
+			in:   "https://example.com/?a=1&b=2",
+			want: `<p><a href="https://example.com/?a=1&amp;b=2">https://example.com/?a=1&amp;b=2</a></p>`,
+		},
+		{
+			name: "empty text yields no markup",
+			in:   "",
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		if got := descriptionHTML(tt.in); got != tt.want {
+			t.Errorf("%s: descriptionHTML(%q) = %q, want %q", tt.name, tt.in, got, tt.want)
+		}
+	}
+}
+
+// The description ships inside CDATA, so the HTML must survive unescaped by the
+// XML layer — an app reading the feed gets the tags, not "&lt;p&gt;".
+func TestFeedItemDescriptionIsHTMLInsideCDATA(t *testing.T) {
+	ep := parser.Episode{
+		ID: "2h",
+		Frontmatter: parser.Frontmatter{
+			Title:        "2h. Test",
+			Date:         "2026/07/01",
+			Description:  "첫 문장.\n둘째 문장.\n",
+			Description2: "레퍼런스는 홈페이지 참고:\nhttps://retrotech.outsider.dev/episodes/2h\n",
+			Author:       "Outsider",
+		},
+	}
+	feed := string(BuildFeed([]parser.Episode{ep}, FeedConfig{SiteURL: "https://retrotech.outsider.dev"}, time.Now()))
+
+	// description carries a trailing newline and feedDescription joins the two
+	// fields with another, so description2 lands in its own paragraph.
+	want := `<description><![CDATA[<p>첫 문장.<br/>둘째 문장.</p><p>레퍼런스는 홈페이지 참고:<br/>` +
+		`<a href="https://retrotech.outsider.dev/episodes/2h">https://retrotech.outsider.dev/episodes/2h</a></p>]]></description>`
+	if !strings.Contains(feed, want) {
+		t.Errorf("item description is not the expected HTML:\nwant substring: %s", want)
+	}
+	if strings.Contains(feed, "&lt;p&gt;") {
+		t.Error("description HTML was escaped instead of shipped raw inside CDATA")
 	}
 }
 

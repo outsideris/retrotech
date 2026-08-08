@@ -38,6 +38,11 @@
   - Apple Podcasts, YouTube, Spotify 는 항상 노출.
   - **Google Podcasts 는 선택적.** `google` prop 이 있으면 Google 배지를, 없으면 대신 **RSS 배지**(`/feed.xml`)를 노출한다. (Google Podcasts 서비스 종료 이후 RSS 로 대체하는 의도로 해석됨.)
 - **RSS 피드가 정식 배포물.** `feed.xml` 은 iTunes 팟캐스트 규격으로 생성되어 Apple 등에 등록되는 실제 피드다. 푸터·`<head>`·홈에서 모두 `/feed.xml` 로 접근 가능.
+- **에피소드 설명은 앱에서 읽히는 모양 그대로.** 팟캐스트 앱은 `<description>` 을 HTML 로 렌더하므로 평문
+  줄바꿈이 사라진다 — Apple Podcasts 에서 「레퍼런스는 홈페이지 참고: …」와 배경음악 크레딧이 요약에
+  이어붙어 한 덩어리로 보이던 이유다. 그래서 피드에는 마크업을 실어 보낸다(빈 줄 → `<p>`, 줄바꿈 →
+  `<br/>`, 맨 URL → 링크). 소스(`content/episodes/*.md`)는 계속 평문이고 변환은 빌드 시점에만 일어난다 —
+  작성자는 마크업을 신경 쓰지 않는다.
 - 오디오(mp3)는 `retrotech-episodes.outsider.dev` 에 별도 호스팅하고 프론트매터 `enclosure` 로 연결한다(사이트와 스토리지 분리).
 - **챕터(구간 이동)는 청취가 일어나는 플랫폼에서 동작하게 한다.** 프론트매터 `chapters:` 를 선언하면 피드에 Podcasting 2.0 `<podcast:chapters>`(JSON) + description 의 `MM:SS 제목` 타임스탬프 줄로 반영된다 — 사이트에는 재생기를 두지 않는다는 결정(아래 표)을 유지한 채 Apple/Spotify/YouTube/Overcast 등에서 구간 이동을 지원. 첫 챕터는 `00:00` 으로 시작해야 YouTube 가 챕터로 인식한다.
 
@@ -80,6 +85,10 @@
   중복 제거, 이미지 제외) 누락이 없고, AI 는 제목만 붙인다(모델이 빠뜨린 링크는 앵커 텍스트 → URL 순
   폴백으로 복원). URL 은 대본 그대로 쓰되 딱 하나만 고친다: ChatGPT 로 작성한 대본이 묻혀오는
   `utm_source=chatgpt.com` 트래킹 파라미터는 항상 제거한다(다른 파라미터·앵커는 유지).
+- **제목은 회차 식별자부터.** 대본 제목은 보통 「Episode 2i Subversion」처럼 앞에 `Episode` 라벨이 붙지만
+  발행 제목은 「2h. VCS: Subversion」처럼 식별자에서 시작한다. 임포트 시 이 라벨을 떼어낸다
+  (`normalizeScriptTitle`) — 프롬프트에도 규칙을 넣되 모델 출력에 기대지 않고 Go 에서 결정적으로 제거하며,
+  제목 중간의 "Episode"·"Episodes…" 는 건드리지 않는다.
 - **레퍼런스 제목 규칙.** 대본의 앵커 텍스트("여기", "이 글" 같은 문맥 표현)가 아니라 **링크 대상
   페이지/사이트의 실제 제목**을 쓴다. 기존 회차(특히 최신 2g·2h)의 관례에서 도출한 표기 규칙 — AI 대본
   분석 프롬프트(`internal/editor/assist/analyze.go` 의 `refTitleRules`)에 내장되어 이후 모든 임포트가

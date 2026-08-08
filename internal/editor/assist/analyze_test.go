@@ -30,6 +30,38 @@ func TestParseScriptMeta(t *testing.T) {
 	}
 }
 
+// Scripts head their title with "Episode" ("Episode 2i Subversion") but the
+// published title starts at the episode id, so the label is dropped on import.
+func TestNormalizeScriptTitle(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{"the script label is dropped", "Episode 2i Subversion", "2i Subversion"},
+		{"lowercase label too", "episode 2i Subversion", "2i Subversion"},
+		{"a separator after the label goes with it", "Episode: 2i Subversion", "2i Subversion"},
+		{"a dash separator too", "Episode - 2i Subversion", "2i Subversion"},
+		{"surrounding whitespace is trimmed", "  Episode 2i Subversion  ", "2i Subversion"},
+		{"a title without the label is untouched", "2h. VCS: Subversion", "2h. VCS: Subversion"},
+		{"a word merely starting with episode is untouched", "Episodes of Subversion", "Episodes of Subversion"},
+		{"the label mid-title is untouched", "2i. Episode Subversion", "2i. Episode Subversion"},
+		{"a title that is only the label is kept", "Episode", "Episode"},
+		{"empty stays empty", "", ""},
+	}
+	for _, tt := range tests {
+		if got := normalizeScriptTitle(tt.in); got != tt.want {
+			t.Errorf("%s: normalizeScriptTitle(%q) = %q, want %q", tt.name, tt.in, got, tt.want)
+		}
+	}
+
+	// The whole point is the imported form: the title arrives label-free.
+	sm, err := parseScriptMeta(`{"title":"Episode 2i Subversion","id":"2i","description":"요약"}`)
+	if err != nil || sm.Title != "2i Subversion" || sm.ID != "2i" {
+		t.Errorf("parseScriptMeta did not strip the label: %#v err %v", sm, err)
+	}
+}
+
 func TestParseScriptMetaReferences(t *testing.T) {
 	sm, err := parseScriptMeta(`{"title":"T","id":"","description":"d",
 		"references":[{"title":"jQuery","url":"https://jquery.com/"}]}`)

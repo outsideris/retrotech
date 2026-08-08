@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -70,7 +71,7 @@ func analyzePrompt(script string, links []Link) string {
 	b.WriteString(`다음은 팟캐스트 대본(마크다운)입니다. 내용을 읽고 아래 JSON 객체 하나만 출력하세요. ` +
 		`코드펜스나 다른 설명 없이 순수 JSON 만 출력합니다.
 
-{"title": "대본의 제목. 보통 첫 번째 마크다운 제목(# 또는 ##) 줄의 텍스트.",
+{"title": "대본의 제목. 보통 첫 번째 마크다운 제목(# 또는 ##) 줄의 텍스트. 맨 앞의 'Episode' 라벨은 빼고 회차 식별자부터 쓴다. 예: 'Episode 2i Subversion' → '2i Subversion'.",
  "id": "제목 맨 앞의 회차 식별자(슬러그). 예: '2h. VCS: ...' → '2h'. 식별자가 없으면 빈 문자열.",
  "description": "대본 내용을 한국어 2~4문장으로 요약. 청취자에게 이 회차에서 무엇을 다루는지 설명."`)
 	if len(links) > 0 {
@@ -134,13 +135,33 @@ func parseScriptMeta(out string) (ScriptMeta, error) {
 	if err := json.Unmarshal([]byte(raw), &sm); err != nil {
 		return ScriptMeta{}, fmt.Errorf("analyze: response was not the expected JSON: %w", err)
 	}
-	sm.Title = strings.TrimSpace(sm.Title)
+	sm.Title = normalizeScriptTitle(sm.Title)
 	sm.ID = strings.TrimSpace(sm.ID)
 	sm.Description = strings.TrimSpace(sm.Description)
 	if sm.Title == "" && sm.Description == "" {
 		return ScriptMeta{}, fmt.Errorf("analyze: model returned no title or description")
 	}
 	return sm, nil
+}
+
+// scriptTitlePrefixRE matches the "Episode" label scripts put in front of the
+// heading ("Episode 2i Subversion"), with any separator that follows it. The
+// published title never carries the label — it starts at the episode id
+// ("2i. VCS: Subversion") — so it is stripped on import rather than left for
+// the author to delete by hand. "Episodes …" is not a match ("\b" needs a
+// non-word character after the label).
+var scriptTitlePrefixRE = regexp.MustCompile(`(?i)^episode\b[\s.:_\-–—]*`)
+
+// normalizeScriptTitle trims the title the model returned and drops the leading
+// "Episode" label. A title that is nothing but the label is kept as-is, since
+// stripping it would leave no title at all.
+func normalizeScriptTitle(title string) string {
+	title = strings.TrimSpace(title)
+	stripped := strings.TrimSpace(scriptTitlePrefixRE.ReplaceAllString(title, ""))
+	if stripped == "" {
+		return title
+	}
+	return stripped
 }
 
 // extractJSONObject returns the substring from the first "{" to the last "}",

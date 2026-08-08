@@ -138,9 +138,10 @@ go run ./cmd/build
 - **이전 `scripts/gen-rss.js`(rss npm 라이브러리) 출력과 바이트 패리티**를 목표로 문자열로 재현한다(`encoding/xml` 은 CDATA·네임스페이스 순서·self-closing 을 그대로 못 냄). 휘발성 `lastBuildDate` 만 매 빌드 갱신.
 - 구독자 계약(불변): 각 항목 `guid`(=`/episodes/{id}`)·`enclosure`·`pubDate`. `pubDate` 는 날짜 09:00 UTC(빌드 머신 TZ 무관, 결정적).
 - 항목은 발행일 내림차순(동일 날짜 id 내림차순). `internal/builder/testdata/feed.golden.xml` 골든 테스트로 회귀 방지.
+- **아이템 `<description>` 은 HTML.** 팟캐스트 앱은 description 을 HTML 로 렌더하므로 평문 줄바꿈이 공백으로 뭉개진다(Apple Podcasts 에서 description2 블록이 요약 문단에 붙어 나오던 원인). `descriptionHTML`(`feed.go`)이 합성 결과를 변환한다: 빈 줄로 나뉜 블록 → `<p>`, 블록 안 줄바꿈 → `<br/>`, 맨 URL → `<a href>`. 텍스트는 `&`·`<`·`>` 만 이스케이프하고(따옴표·아포스트로피는 그대로 — 태그만 걷어내는 앱에서 `&#39;` 로 보이는 것 방지) 전체는 CDATA 안에 그대로 실린다. **`gen-rss.js` 대비 의도적 divergence** — 구독자 계약(guid/enclosure/pubDate)은 불변.
 - **챕터(타임스탬프).** 프론트매터 `chapters:` 가 있는 에피소드는 두 경로로 피드에 반영된다(`internal/builder/chapters.go`):
   - **Podcasting 2.0**: `episodes/<id>.chapters.json`(`{"version":"1.2.0","chapters":[{"startTime":초,"title":…}]}`) 생성 + 아이템에 `<podcast:chapters url=… type="application/json+chapters"/>`. 지원 앱(Overcast·Pocket Casts 등)은 챕터 목록/탭 이동 UI 를 보여준다.
-  - **폴백**: 아이템 `<description>` 끝에 `MM:SS 제목` 줄을 덧붙인다 — Apple Podcasts·Spotify·YouTube 가 자동으로 클릭 가능한 타임스탬프로 인식.
+  - **폴백**: 아이템 `<description>` 끝에 `MM:SS 제목` 줄을 덧붙인다(HTML 변환 후엔 자체 `<p>` 안의 `<br/>` 구분 줄) — Apple Podcasts·Spotify·YouTube 가 자동으로 클릭 가능한 타임스탬프로 인식.
   - `xmlns:podcast` 네임스페이스는 **챕터 선언 에피소드가 하나라도 있을 때만** 선언 — 그 전까지 피드는 골든과 바이트 동일하게 유지된다.
 - **하드코딩:** `SITE_URL = 'https://retrotech.outsider.dev'`(`feed.go`/`cmd/build`).
 

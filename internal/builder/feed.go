@@ -1,6 +1,7 @@
 package builder
 
 import (
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -21,8 +22,11 @@ import (
 //
 // The channel <description> and <generator> were artifacts of the old library
 // (the description duplicated the title; the generator read "RSS for Node");
-// both now carry accurate RetroTech values. Everything else still mirrors the
-// old output so the subscriber-facing items stay byte-stable.
+// both now carry accurate RetroTech values. The item <description> is the one
+// other deliberate divergence: it is now the HTML podcast apps actually render
+// (see descriptionHTML) instead of raw newline-separated text, which those apps
+// collapsed into a single paragraph. Everything else still mirrors the old
+// output so the subscriber-facing items stay byte-stable.
 
 const (
 	// rfc1123GMT matches the date form the `rss` lib emitted, e.g.
@@ -86,7 +90,7 @@ func BuildFeed(episodes []parser.Episode, cfg FeedConfig, buildTime time.Time) [
 		url := site + "/episodes/" + ep.ID
 		b.WriteString("        <item>\n")
 		b.WriteString("            <title>" + cdata(ep.Title) + "</title>\n")
-		b.WriteString("            <description>" + cdata(feedDescription(ep.Frontmatter)) + "</description>\n")
+		b.WriteString("            <description>" + cdata(descriptionHTML(feedDescription(ep.Frontmatter))) + "</description>\n")
 		b.WriteString("            <link>" + url + "</link>\n")
 		b.WriteString(`            <guid isPermaLink="true">` + url + "</guid>\n")
 		b.WriteString("            <dc:creator>" + cdata(showAuthor) + "</dc:creator>\n")
@@ -122,6 +126,66 @@ func feedDescription(fm parser.Frontmatter) string {
 	}
 	return desc
 }
+
+// descriptionBlockSep splits the plain description into paragraphs on one or
+// more blank lines.
+var descriptionBlockSep = regexp.MustCompile(`\n{2,}`)
+
+// bareURL matches an unmarked http(s) link in the description text.
+var bareURL = regexp.MustCompile(`https?://[^\s<>"]+`)
+
+// descriptionHTML renders the plain-text feed description as the small HTML
+// subset podcast apps accept, because they render <description> as HTML: raw
+// newlines collapse into spaces, which is why Apple Podcasts showed the
+// description2 block running into the summary as one paragraph. Blank-line
+// separated blocks become <p>, the single newlines inside a block become
+// <br/>, and bare URLs become real anchors so a link stays clickable in apps
+// that do not auto-link. Text is HTML-escaped (the result still ships inside
+// CDATA, so the escapes reach the app intact and render as the literal
+// characters).
+func descriptionHTML(text string) string {
+	var b strings.Builder
+	for _, block := range descriptionBlockSep.Split(strings.Trim(text, "\n"), -1) {
+		if strings.TrimSpace(block) == "" {
+			continue
+		}
+		lines := strings.Split(block, "\n")
+		for i, line := range lines {
+			lines[i] = escapeAndLink(line)
+		}
+		b.WriteString("<p>" + strings.Join(lines, "<br/>") + "</p>")
+	}
+	return b.String()
+}
+
+// escapeAndLink HTML-escapes one line and wraps its bare URLs in anchors.
+// Trailing sentence punctuation is left outside the anchor so a URL at the end
+// of a sentence does not swallow the period.
+func escapeAndLink(line string) string {
+	var b strings.Builder
+	last := 0
+	for _, m := range bareURL.FindAllStringIndex(line, -1) {
+		start, end := m[0], m[1]
+		for end > start && strings.ContainsRune(".,;:!?", rune(line[end-1])) {
+			end--
+		}
+		url := line[start:end]
+		b.WriteString(escapeText(line[last:start]))
+		b.WriteString(`<a href="` + escapeAttr(url) + `">` + escapeText(url) + `</a>`)
+		last = end
+	}
+	b.WriteString(escapeText(line[last:]))
+	return b.String()
+}
+
+// escapeText escapes only what a text node must escape. html.EscapeString would
+// also turn quotes and apostrophes into entities, which read as literal
+// "&#39;" in the apps that strip the tags without decoding entities — common
+// enough (and our titles are full of apostrophes) to be worth avoiding.
+var escapeText = strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;").Replace
+
+// escapeAttr additionally escapes the double quote that delimits href.
+var escapeAttr = strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;", `"`, "&quot;").Replace
 
 // chapterLines renders chapters one per line as "MM:SS title", keeping the
 // source start string verbatim.
