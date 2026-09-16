@@ -1,0 +1,57 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const [origin,dir]=process.argv.slice(2),shots=process.env.RETROTECH_BROWSER_QA_OUTPUT||'/tmp/retrotech-browser-qa';
+await fs.mkdir(shots,{recursive:true});
+const browser=await chromium.launch({channel:'chrome',headless:true});
+try {
+ const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage(),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(origin);await page.locator('#research-chapter option').first().waitFor({state:'attached'});
+ const original=await page.locator('[data-research-anchor]').evaluateAll(ns=>ns.map(n=>n.innerHTML));
+ assert.equal(original.length,119);
+ const selected=page.locator('#research-p-064');await selected.scrollIntoViewIfNeeded();await selected.click();
+ assert.equal(await page.locator('#research-chapter').inputValue(),'chapter-08');
+ assert.equal((await page.locator('#research-selected').innerText()).includes('**'),false);
+ await page.locator('#research-question').fill('SVN 메타데이터 제한을 조사해 주세요.');
+ await page.locator('#research-send').click();
+ // Read farther down while the answer is pending; insertion above must keep the scene.
+ const reading=page.locator('#research-p-071');await reading.scrollIntoViewIfNeeded();
+ await page.waitForTimeout(350);const before=(await reading.boundingBox()).y;
+ await page.locator('.research-addition').waitFor();
+ await page.waitForTimeout(400);const after=(await reading.boundingBox()).y;
+ assert(Math.abs(before-after)<8,`reading position moved ${after-before}px`);
+ assert.equal(await page.locator('.research-addition').count(),1);
+ assert.equal(await page.locator('#research-p-064 + .research-addition').count(),1);
+ assert.match(await page.locator('.research-addition').innerText(),/기존 내용 정정/);
+ assert.equal(await page.locator('.research-addition script').count(),0);
+ assert.deepEqual(await page.locator('[data-research-anchor]').evaluateAll(ns=>ns.map(n=>n.innerHTML)),original);
+ await page.locator('.research-addition').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(shots,'desktop.png')});
+ await page.locator('[data-tab="additions"]').click();await page.getByRole('button',{name:'본문에서 숨기기',exact:true}).click();
+ await page.waitForFunction(()=>!document.querySelector('.research-addition'));
+ await page.reload();await page.getByRole('tab',{name:'추가 내용',exact:true}).click();
+ await page.getByRole('button',{name:'본문에 다시 표시',exact:true}).click();await page.locator('.research-addition').waitFor();
+ await page.getByRole('tab',{name:'스킬에 남길 점',exact:true}).click();
+ await page.locator('#research-rule-list input').check();await page.locator('#research-rule-list textarea').fill('새 도구로 이전한 사례에서 변환 비용과 제약을 당시 문서로 확인합니다.');
+ await page.locator('#research-apply-skills').click();await page.waitForFunction(()=>document.querySelector('#research-skill-status').textContent.includes('1개 규칙'));
+ await page.screenshot({path:path.join(shots,'skills.png')});
+ const state=await (await page.request.get(origin+'/api/state')).json();assert.match(state.state.jobs[0].appliedRule,/변환 비용/);
+ await page.getByRole('tab',{name:'대화',exact:true}).click();await page.getByRole('button',{name:'이어서 질문',exact:true}).click();assert(await page.locator('#research-clear-parent').isVisible());
+ await page.reload();await page.locator('#research-chapter option').first().waitFor({state:'attached'});
+ assert.equal(await page.locator('.research-addition').count(),1);
+ // Offline: no server dependency, body and inserted evidence remain readable.
+ const offline=await context.newPage();await offline.goto(pathToFileURL(path.join(dir,'index.html')).href);
+ assert.equal(await offline.locator('[data-research-anchor]').count(),119);assert.equal(await offline.locator('.research-addition').count(),1);
+ await offline.locator('#research-close').click();assert.equal(await offline.locator('body').evaluate(n=>n.scrollWidth>innerWidth),false);
+ await offline.emulateMedia({media:'print'});assert.equal(await offline.locator('#research-panel').isVisible(),false);
+ const mobileContext=await browser.newContext({viewport:{width:390,height:844},isMobile:true});const mobile=await mobileContext.newPage();await mobile.goto(origin);
+ await mobile.locator('#research-chapter option').first().waitFor({state:'attached'});
+ assert.equal(await mobile.locator('#research-panel').isVisible(),false);
+ assert.equal(await mobile.locator('body').evaluate(n=>n.scrollWidth>innerWidth),false);
+ await mobile.locator('#research-toggle').click();await mobile.screenshot({path:path.join(shots,'mobile.png')});
+ assert.equal(await mobile.locator('#research-send').isVisible(),true);
+ await mobile.setViewportSize({width:320,height:740});assert.equal(await mobile.locator('body').evaluate(n=>n.scrollWidth>innerWidth),false);
+ assert.deepEqual(errors,[]);console.log(JSON.stringify({passed:true,originalParagraphs:original.length,checks:['anchor','submit','scroll preservation','escaped correction','hide/restore/reload','reviewed skill update','offline','print','mobile'],shots}));
+}finally{await browser.close();}

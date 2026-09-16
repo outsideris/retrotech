@@ -88,3 +88,7 @@ npm run dist                      # 패키징 → dist/mac-arm64/RetroTech Edito
 | [docs/TESTS.md](docs/TESTS.md) | 테스트 현황과 후보 |
 | [docs/plan/](docs/plan/) | 상세 구현 계획(Go 마이그레이션 등) |
 | [docs/worklog/](docs/worklog/) | 월별 작업 로그 |
+
+## 로컬 보고서 추가 조사
+
+`cmd/research`는 로컬 HTML 보고서에 문단별 채팅을 붙인다. Codex·Claude Code로 추가 조사한 내용과 출처를 선택한 문단 뒤에 표시하고, 질문에서 얻은 조사 규칙을 검토 후 RetroTech 스킬에 반영한다. 실행·모델·저장·복구: [문단별 추가 조사 리더](docs/RESEARCH_WORKBENCH.md).

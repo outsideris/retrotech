@@ -21,3 +21,6 @@
 
 # wrangler CLI cache (R2 upload from the editor app)
 .wrangler/
+
+# Local research reader executable (not part of public site output)
+/.local-bin/

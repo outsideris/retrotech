@@ -57,3 +57,19 @@ cd desktop && npm test   # 데스크톱 앱(Electron 메인 프로세스) JS 테
 
 - `render.go` 의 프로즈 후처리(외부 링크·heading anchor·badges 마커 치환) 단위 테스트.
 - 페이지 생성 골든(주요 페이지 HTML 스냅샷) — 단, 의도적 마크업 변경 시 갱신 부담 고려.
+
+## 로컬 조사 리더 (2026-09-16)
+
+- `internal/research/research_test.go`: 문단 위치별 HTML/Markdown 삽입, 원문 보존, 정정·이스케이프, 숨김/복원/재시작, 외부 변경 충돌, 상태 저장 실패의 출력 복구, 결과 스키마·출처 검증, HTTP Host/Origin/경로 제한, 비동기 완료·취소·동시 요청 제한, 명시적 스킬 반영·중복 방지.
+- `internal/editor/assist/research_test.go`: 모델·effort와 CLI 도구 범위, fake 실행 파일을 이용한 Codex/Claude 구조화 출력 및 로그인 오류 전달. 외부 서비스의 동작을 mock 검증하지 않는다.
+- `internal/research/browser_test.go` + `scripts/test-research-browser.mjs`: 선택 실행하는 Chrome 통합 검사. 실제 arch/Bazaar 보고서의 사본을 사용하고, 조사 결과만 결정적인 fixture로 주입한다. 기존 119개 문단 보존, 위치 선택·전송·읽던 위치 유지·정정, 숨김/복원/새로고침, 임시 스킬 반영, 오프라인·인쇄·390/320px를 검증한다.
+
+```sh
+go test -race ./internal/research ./internal/editor/assist
+RETROTECH_BROWSER_QA_NODE=/absolute/path/to/node \
+RETROTECH_BROWSER_QA_REPORT=/absolute/path/to/pristine-report \
+PLAYWRIGHT_MODULE=/absolute/path/to/playwright/index.mjs \
+go test ./internal/research -run TestBrowserWorkflow -v -count=1
+```
+
+Chrome가 필요하며 Node/Playwright는 검증 전용이다. 브라우저 검증 설정이 없는 기본 Go 실행에서는 이 선택 검사만 건너뛴다. 2026-09-16 로컬에서 전체 브라우저 검사와 실제 Codex Sol/high 호출을 별도로 실행했다. Claude는 로컬 로그인이 없어 실제 모델 호출은 미검증이며 fake CLI의 구조화 출력·오류 처리를 확인했다. 강제 전원 종료와 클라우드 서비스 가용성은 자동 테스트 범위 밖이다.

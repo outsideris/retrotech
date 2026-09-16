@@ -113,3 +113,7 @@
 ## 운영(미검증, 확인 필요)
 
 - [ ] 운영 호스트의 gzip/brotli 압축·정적 자산 캐시 헤더 설정 확인(로컬에선 검증 불가 — [PERFORMANCE.md](./PERFORMANCE.md#측정-방법--한계-먼저-읽을-것)).
+
+## Phase 10 — 문단별 추가 조사
+
+- [x] [로컬 연구 리더](plan/research-workbench.md): 문단별 질문, Codex·Claude CLI, 출처가 있는 추가·정정 블록, 원래 장면으로 복귀, 영구 기록·숨김·복원, 검토한 규칙의 스킬 반영.
