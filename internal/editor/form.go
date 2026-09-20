@@ -53,10 +53,11 @@ type EpisodeForm struct {
 	Description2    string `json:"description2"`
 	FeedDescription string `json:"feedDescription"`
 
-	EnclosureURL  string        `json:"enclosureUrl"`
-	EnclosureSize int64         `json:"enclosureSize"`
-	Duration      string        `json:"duration"`
-	Badges        parser.Badges `json:"badges"`
+	EnclosureURL  string           `json:"enclosureUrl"`
+	EnclosureSize int64            `json:"enclosureSize"`
+	Duration      string           `json:"duration"`
+	Badges        parser.Badges    `json:"badges"`
+	Chapters      []parser.Chapter `json:"chapters"`
 
 	Intro      string      `json:"intro"`
 	References []Reference `json:"references"`
@@ -90,6 +91,7 @@ func EpisodeToForm(ep parser.Episode) EpisodeForm {
 		EnclosureSize: ep.Enclosure.Size,
 		Duration:      ep.Duration,
 		Badges:        ep.Badges,
+		Chapters:      ep.Chapters,
 	}
 
 	if intro, refs, extra, ok := parseBody(ep.Body); ok {

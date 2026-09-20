@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -168,5 +169,59 @@ func TestComposeBodyOmitsEmptySections(t *testing.T) {
 	wantRefs := "intro\n\n" + badgesMarker + "\n\n" + refsHeading + "\n\n* [Go](https://go.dev)\n\n## 배경음악\nMusic"
 	if withRefs != wantRefs {
 		t.Errorf("full body: got %q want %q", withRefs, wantRefs)
+	}
+}
+
+// TestChaptersSurviveFrontmatterRoundTrip guards the chapter list explicitly,
+// rather than relying on the corpus happening to contain a chaptered episode:
+// a form's chapters must re-parse identically, including the hazards a naive
+// emitter gets wrong — a bare "MM:SS" start is sexagesimal YAML (02:41 -> 161),
+// and a title may begin with a non-ASCII character or contain ": ", "#" or a
+// quote. Losing chapters here silently drops <podcast:chapters> and the
+// timestamp lines from every subscriber's feed.
+func TestChaptersSurviveFrontmatterRoundTrip(t *testing.T) {
+	chapters := []parser.Chapter{
+		{Start: "00:00", Title: "Intro"},
+		{Start: "02:41", Title: "1990년대의 Linux 생태계"},
+		{Start: "10:00", Title: "또 시작된 패치 지연 이슈"},         // leading non-ASCII
+		{Start: "24:05", Title: "VCS: SCCS, colon space"}, // ": " breaks a plain scalar
+		{Start: "68:07", Title: `a "quoted" # hash`},      // quote + comment marker
+		{Start: "1:15:44", Title: "HH:MM:SS form"},
+		{Start: "96:05", Title: "true"}, // reserved word must stay a string
+	}
+
+	form := EpisodeForm{
+		Title: "t", Date: "2026/09/20", Description: "d\n",
+		EnclosureURL: "https://example.com/x.mp3", EnclosureSize: 1, Duration: "99:16",
+		Chapters: chapters,
+	}
+	fm, err := parser.ParseFrontmatter([]byte(composeFrontmatter(form)))
+	if err != nil {
+		t.Fatalf("parse composed frontmatter: %v\n%s", err, composeFrontmatter(form))
+	}
+	if !reflect.DeepEqual(fm.Chapters, chapters) {
+		t.Errorf("chapters changed\n got: %#v\nwant: %#v", fm.Chapters, chapters)
+	}
+
+	// Starts must survive as strings, not as the integers YAML would infer.
+	for i, want := range []int{0, 161, 600, 1445, 4087, 4544, 5765} {
+		got, err := fm.Chapters[i].StartSeconds()
+		if err != nil {
+			t.Errorf("chapter %d StartSeconds: %v", i, err)
+		} else if got != want {
+			t.Errorf("chapter %d start %q -> %d seconds, want %d", i, fm.Chapters[i].Start, got, want)
+		}
+	}
+}
+
+// TestComposeOmitsChaptersWhenEmpty keeps episodes without chapters from
+// gaining an empty "chapters:" key on save.
+func TestComposeOmitsChaptersWhenEmpty(t *testing.T) {
+	form := EpisodeForm{
+		Title: "t", Date: "2026/09/20", Description: "d\n",
+		EnclosureURL: "https://example.com/x.mp3", EnclosureSize: 1, Duration: "10:00",
+	}
+	if got := composeFrontmatter(form); strings.Contains(got, "chapters") {
+		t.Errorf("chapterless episode gained a chapters key:\n%s", got)
 	}
 }

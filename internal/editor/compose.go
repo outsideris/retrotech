@@ -54,6 +54,18 @@ func composeFrontmatter(f EpisodeForm) string {
 			b.WriteString("  " + kv.key + ": " + doubleQuote(kv.val) + "\n")
 		}
 	}
+
+	// Chapters come last, matching parser.Frontmatter field order. Omitted when
+	// empty so an episode with no chapters keeps its exact frontmatter on a
+	// round trip. start is always double-quoted for the same reason duration
+	// is: bare "02:41" is sexagesimal YAML and would parse as 161.
+	if len(f.Chapters) > 0 {
+		b.WriteString("chapters:\n")
+		for _, ch := range f.Chapters {
+			b.WriteString("  - start: " + doubleQuote(ch.Start) + "\n")
+			b.WriteString("    title: " + scalar(ch.Title) + "\n")
+		}
+	}
 	return b.String()
 }
 
