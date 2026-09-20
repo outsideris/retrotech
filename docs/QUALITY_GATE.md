@@ -52,6 +52,7 @@
 
 ## 마지막 검토
 
+- **2026-09-20:** Assist 사이드바의 모델/effort 어휘를 `internal/editor/assist/catalog.go` 한 곳으로 모았다. **CLI(claude·codex)를 업그레이드하면 이 카탈로그를 다시 확인한다** — CLI 는 기계가 읽을 모델 목록을 내주지 않아 수기 목록이고, 계정에 있는 모델이라도 설치된 CLI 버전이 못 쓰는 경우가 있다(오늘 GPT-6 Astra 가 그래서 빠져 있다). 확인 방법: 카탈로그의 모델 하나씩 `POST /_write/api/assist/run` 으로 짧게 호출. 에디터 UI 는 `cmd/build` 산출물이 아니므로 사이트 게이트에는 영향이 없다.
 - **2026-08-08:** 아이템 `<description>` 을 HTML 로 발행하도록 변경하며 피드 골든을 갱신. 골든은 이제 "`gen-rss.js` 바이트 패리티"가 아니라 **구독자 계약(guid/enclosure/pubDate) + 현재 피드 형태**의 회귀 가드다 — 의도된 피드 변경 시 갱신 후 `git diff` 로 계약 필드 불변을 확인한다.
 - **2026-08-01:** 팟캐스트 챕터 도입 — 정적 산출물 항목에 조건부 `episodes/<id>.chapters.json` 추가. 피드 골든은 챕터 미선언 시 그대로 유효(네임스페이스 조건부 선언).
 - **2026-06-16:** 접근성/성능을 CI에서 검증하도록 추가 — `go test` 의 마크업 불변식(`a11y_perf_test.go`) + 새 `lighthouse` 잡(Lighthouse CI, a11y/SEO/BP=100 하드 게이트). 로컬 재현: `npx @lhci/cli@0.14.x autorun`.

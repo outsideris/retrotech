@@ -72,7 +72,8 @@ npm run dist                      # 패키징 → dist/mac-arm64/RetroTech Edito
 - 합성기가 프론트매터 값을 정확히 보존해 RSS 피드를 바이트 동일하게 유지한다. 상세·설계는
   [docs/plan/episode-editor-app.md](docs/plan/episode-editor-app.md).
 - **AI Assist:** 우측 `✦ Assist` 사이드바에서 로컬 CLI(Claude/Codex/Gemini)를 골라 프롬프트를 실행한다
-  (설치된 CLI 만 활성화). CLI 가 스스로 인증하므로 앱은 키를 보관하지 않는다. 데스크톱 앱은 시작 시
+  (설치된 CLI 만 활성화). **모델과 effort 를 드롭다운에서 고를 수 있고**, effort 목록은 고른 모델이
+  실제로 받는 값만 보여 준다. CLI 가 스스로 인증하므로 앱은 키를 보관하지 않는다. 데스크톱 앱은 시작 시
   로그인 셸 PATH 를 채택해 CLI 들을 찾는다.
 
 ## 문서

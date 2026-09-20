@@ -414,6 +414,28 @@ func TestWriteAssistError(t *testing.T) {
 	}
 }
 
+// The sidebar fills its model/effort dropdowns from this payload, so it must
+// carry each CLI's models and the levels each model takes.
+// app.js hides the effort knob through this id when the chosen model takes no
+// level. Renaming it in one file and not the other throws at load and leaves
+// the sidebar dead, which no Go test would otherwise notice.
+func TestAssistEffortKnobIdIsWiredUp(t *testing.T) {
+	html, err := assetsFS.ReadFile("assets/index.html")
+	if err != nil {
+		t.Fatal(err)
+	}
+	js, err := assetsFS.ReadFile("assets/app.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(html), `id="assist-effort-knob"`) {
+		t.Error("index.html lost the effort knob id app.js looks up")
+	}
+	if !strings.Contains(string(js), `$("assist-effort-knob")`) {
+		t.Error("app.js no longer looks up the effort knob id")
+	}
+}
+
 func TestAssistProvidersEndpoint(t *testing.T) {
 	srv, _ := newTestServer(t)
 	resp, body := do(t, srv, "GET", "/_write/api/assist/providers", nil)
@@ -421,35 +443,107 @@ func TestAssistProvidersEndpoint(t *testing.T) {
 	var list []struct {
 		Name      string `json:"name"`
 		Available bool   `json:"available"`
+		Models    []struct {
+			ID      string   `json:"id"`
+			Label   string   `json:"label"`
+			Efforts []string `json:"efforts"`
+		} `json:"models"`
 	}
 	if err := json.Unmarshal(body, &list); err != nil {
 		t.Fatal(err)
 	}
-	names := map[string]bool{}
-	for _, p := range list {
-		names[p.Name] = true
+	byName := map[string]int{}
+	for i, p := range list {
+		byName[p.Name] = i
 	}
 	for _, n := range []string{"claude", "codex", "gemini"} {
-		if !names[n] {
-			t.Errorf("providers missing %q: %s", n, body)
+		if _, ok := byName[n]; !ok {
+			t.Fatalf("providers missing %q: %s", n, body)
+		}
+	}
+	for _, n := range []string{"claude", "codex"} {
+		models := list[byName[n]].Models
+		if len(models) == 0 {
+			t.Fatalf("%s offers no models: %s", n, body)
+		}
+		for _, m := range models {
+			if m.ID == "" || m.Label == "" {
+				t.Errorf("%s model needs an id and a label: %+v", n, m)
+			}
+		}
+		// The response must state each model's levels; at least one model has some.
+		levelled := false
+		for _, m := range models {
+			levelled = levelled || len(m.Efforts) > 0
+		}
+		if !levelled {
+			t.Errorf("%s reports no effort levels at all: %s", n, body)
+		}
+	}
+	// A CLI with no knobs serializes as an empty list, never null — the UI
+	// hides its tuning row on length, not on a missing field.
+	if models := list[byName["gemini"]].Models; models == nil || len(models) != 0 {
+		t.Errorf("gemini models = %v, want []", models)
+	}
+	if !strings.Contains(string(body), `"models":[]`) {
+		t.Errorf("gemini's models should serialize as []: %s", body)
+	}
+}
+
+// stubAssistCLIs puts fake claude/codex/gemini executables on PATH and returns
+// a check that fails if any of them ran. Validation tests must reject before
+// exec: without this, a regression would quietly spend real CLI quota instead
+// of failing. The marker is written with a shell redirection because PATH no
+// longer resolves external commands like touch.
+func stubAssistCLIs(t *testing.T) func() {
+	t.Helper()
+	binDir, ran := t.TempDir(), filepath.Join(t.TempDir(), "ran")
+	for _, name := range []string{"claude", "codex", "gemini"} {
+		script := "#!/bin/sh\n: > " + ran + "\nprintf 'unexpected run'\n"
+		if err := os.WriteFile(filepath.Join(binDir, name), []byte(script), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	t.Setenv("PATH", binDir)
+	return func() {
+		t.Helper()
+		if _, err := os.Stat(ran); err == nil {
+			t.Error("an AI CLI was executed; these requests must be rejected first")
 		}
 	}
 }
 
 func TestAssistRunValidation(t *testing.T) {
 	srv, _ := newTestServer(t)
+	noCLIRan := stubAssistCLIs(t)
+	defer noCLIRan()
 	// Unknown provider and empty prompt are rejected before any CLI runs.
 	resp, _ := do(t, srv, "POST", "/_write/api/assist/run", map[string]string{"provider": "nope", "prompt": "hi"})
 	mustStatus(t, resp, http.StatusBadRequest)
 	resp, _ = do(t, srv, "POST", "/_write/api/assist/run", map[string]string{"provider": "claude", "prompt": "   "})
 	mustStatus(t, resp, http.StatusBadRequest)
+	// A model or effort outside the catalog is a request error here, not a CLI
+	// failure — the answer is the same whether or not that CLI is installed.
+	for _, body := range []map[string]string{
+		{"provider": "claude", "prompt": "hi", "model": "opus"},
+		{"provider": "claude", "prompt": "hi", "model": "claude-opus-5", "effort": "ultra"},
+		{"provider": "codex", "prompt": "hi", "model": "gpt-5-codex"},
+		{"provider": "codex", "prompt": "hi", "model": "gpt-5.5", "effort": "max"},
+	} {
+		resp, _ := do(t, srv, "POST", "/_write/api/assist/run", body)
+		mustStatus(t, resp, http.StatusBadRequest)
+	}
 }
 
 func TestAssistAnalyzeValidation(t *testing.T) {
 	srv, _ := newTestServer(t)
+	noCLIRan := stubAssistCLIs(t)
+	defer noCLIRan()
 	// Empty script and unknown provider are rejected before any CLI runs.
 	resp, _ := do(t, srv, "POST", "/_write/api/assist/analyze", map[string]string{"provider": "claude", "script": "   "})
 	mustStatus(t, resp, http.StatusBadRequest)
 	resp, _ = do(t, srv, "POST", "/_write/api/assist/analyze", map[string]string{"provider": "nope", "script": "# Title"})
+	mustStatus(t, resp, http.StatusBadRequest)
+	resp, _ = do(t, srv, "POST", "/_write/api/assist/analyze", map[string]string{"provider": "codex", "script": "# Title", "model": "gpt-5-codex"})
 	mustStatus(t, resp, http.StatusBadRequest)
 }

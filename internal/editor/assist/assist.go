@@ -27,10 +27,13 @@ import (
 // it to 503 so the UI can say "install the CLI".
 var ErrUnavailable = errors.New("provider CLI not installed")
 
-// Options carry per-call tuning. Empty fields mean "use the CLI default".
+// Options carry per-call tuning. Empty fields mean "use the CLI default" — the
+// model the CLI is configured for, and no effort flag at all. A non-empty
+// value must name one of the provider's catalog models (see catalog.go) and a
+// level that model accepts; Validate checks both before anything runs.
 type Options struct {
-	Model  string // provider-specific (claude: haiku/sonnet/opus; codex: gpt-5.x)
-	Effort string // reasoning effort; provider-specific vocabulary
+	Model  string
+	Effort string
 }
 
 // Meta is the per-call telemetry the Assist trace shows. Fields the CLI doesn't
@@ -51,16 +54,12 @@ type Provider interface {
 	Name() string
 	// Available reports whether the CLI is installed.
 	Available() bool
+	// Models lists the models the sidebar may offer for this CLI, newest
+	// first; nil for a CLI with no model choice.
+	Models() []Model
 	// Run sends the prompt to the CLI and returns its text response + telemetry.
 	Run(ctx context.Context, prompt string, opts Options) (string, Meta, error)
 }
-
-// Closed effort sets each CLI accepts (empty = "let the CLI decide"). Validated
-// up front because an unknown value makes the CLI error unhelpfully later.
-var (
-	claudeEfforts = map[string]bool{"": true, "low": true, "medium": true, "high": true, "xhigh": true, "max": true}
-	codexEfforts  = map[string]bool{"": true, "none": true, "minimal": true, "low": true, "medium": true, "high": true, "xhigh": true}
-)
 
 // Providers returns the supported providers in display order.
 func Providers() []Provider {
@@ -131,14 +130,15 @@ func (claude) bin() (string, bool) {
 	return resolveBinary([]string{"claude"}, homePaths(".local/bin/claude"))
 }
 func (c claude) Available() bool { _, ok := c.bin(); return ok }
+func (claude) Models() []Model   { return claudeModels }
 
 func (c claude) Run(ctx context.Context, prompt string, opts Options) (string, Meta, error) {
 	bin, ok := c.bin()
 	if !ok {
 		return "", Meta{}, fmt.Errorf("claude: %w", ErrUnavailable)
 	}
-	if !claudeEfforts[opts.Effort] {
-		return "", Meta{}, fmt.Errorf("claude: invalid effort %q", opts.Effort)
+	if err := validateOptions("claude", claudeModels, opts); err != nil {
+		return "", Meta{}, err
 	}
 	args := []string{"-p", "--output-format=json"}
 	if opts.Model != "" {
@@ -211,14 +211,15 @@ func (codex) bin() (string, bool) {
 	return resolveBinary([]string{"codex"}, homePaths(".local/bin/codex", "bin/codex"))
 }
 func (c codex) Available() bool { _, ok := c.bin(); return ok }
+func (codex) Models() []Model   { return codexModels }
 
 func (c codex) Run(ctx context.Context, prompt string, opts Options) (string, Meta, error) {
 	bin, ok := c.bin()
 	if !ok {
 		return "", Meta{}, fmt.Errorf("codex: %w", ErrUnavailable)
 	}
-	if !codexEfforts[opts.Effort] {
-		return "", Meta{}, fmt.Errorf("codex: invalid effort %q", opts.Effort)
+	if err := validateOptions("codex", codexModels, opts); err != nil {
+		return "", Meta{}, err
 	}
 	// --sandbox read-only: the agent can't write to disk;
 	// --skip-git-repo-check: runs anywhere; --json: machine-readable stream.
@@ -316,13 +317,19 @@ func (gemini) bin() (string, bool) {
 	return resolveBinary([]string{"gemini", "agy"}, homePaths(".local/bin/agy", ".local/bin/gemini"))
 }
 func (g gemini) Available() bool { _, ok := g.bin(); return ok }
+func (gemini) Models() []Model   { return nil }
 
 func (g gemini) Run(ctx context.Context, prompt string, opts Options) (string, Meta, error) {
 	bin, ok := g.bin()
 	if !ok {
 		return "", Meta{}, fmt.Errorf("gemini: %w", ErrUnavailable)
 	}
-	// The agy/gemini CLI exposes no model/effort flags, so opts are ignored.
+	// The agy/gemini CLI exposes no model/effort flags. Its catalog is empty,
+	// so validateOptions refuses any model or effort rather than accepting
+	// tuning this CLI would quietly drop.
+	if err := validateOptions("gemini", nil, opts); err != nil {
+		return "", Meta{}, err
+	}
 	start := time.Now()
 	cmd := exec.CommandContext(ctx, bin, "-p", prompt)
 	var stderr bytes.Buffer

@@ -155,13 +155,22 @@ struct 순서로 이동). 측정: 23편 재출력 시 총 65줄 변경, **전부
   PATH 에서도 `claude`/`codex`/`gemini` 가 터미널처럼 해석된다.
 - **튜닝·텔레메트리:** `Options{Model,Effort}` 를 Run 에 넘긴다 — claude `--model`/`--effort`,
   codex `--model`/`-c model_reasoning_effort=`, gemini(agy) 는 미지원. 응답엔 `Meta`(model/effort/
-  durationMs/tokens/costUsd)를 담는다(claude envelope·codex usage·wall-clock). effort 는 provider 별
-  닫힌 집합으로 서버 검증.
-- **API:** `GET /api/assist/providers`(이름·설치여부), `POST /api/assist/run`
-  ({provider,prompt,model,effort}→{output,meta}, 3분 타임아웃, 미설치→503).
-- **UI:** 브랜드행 `✦ Assist` 토글 → 우측 패널. 제공자 버튼 + **모델/effort 드롭다운**(provider 별
-  옵션, gemini 는 숨김, localStorage 저장) + **디버그 모드 체크박스**(체크해야 대화창=프롬프트/실행/
-  출력 열림) + **최근 사용 trace 3개**(`provider · model · effort · 시간 · 비용USD`, localStorage 보존).
+  durationMs/tokens/costUsd)를 담는다(claude envelope·codex usage·wall-clock).
+- **모델 카탈로그(`assist/catalog.go`):** provider 별 `Model{ID,Label,Efforts}` 목록이 **유일한 원본**
+  이다. effort 는 provider 가 아니라 **모델별 닫힌 집합** — 같은 CLI 안에서도 모델마다 상한이 다르고
+  (GPT-5.5 는 xhigh 까지, Sol/Terra 는 ultra 까지), `Efforts` 가 비면 그 모델은 effort 플래그를 아예
+  받지 않는다(Haiku 4.5 — CLI 는 `--effort` 를 받아 조용히 버린다). `assist.Validate` 가 HTTP 진입점과
+  `Run` 양쪽에서 검사하므로, 모르는 모델·모델이 못 받는 effort 는 CLI 가 돌기 전에 400 으로 끊긴다.
+  모델 id 는 별칭(`opus`)이 아니라 정식 id(`claude-opus-5`)라 trace 와 요청이 같은 이름을 가리킨다.
+  **CLI 업그레이드 때 갱신한다** — CLI 가 기계가 읽을 모델 목록을 내주지 않아 손으로 유지한다.
+- **API:** `GET /api/assist/providers`(이름·설치여부·**모델 목록**: `{id,label,efforts}`, 노브 없는
+  CLI 는 `[]`), `POST /api/assist/run`({provider,prompt,model,effort}→{output,meta}, 3분 타임아웃,
+  미설치→503, 카탈로그 밖 model/effort→400).
+- **UI:** 브랜드행 `✦ Assist` 토글 → 우측 패널. 제공자 버튼 + **모델/effort 드롭다운**(서버 카탈로그로
+  채운다 — 모델을 바꾸면 effort 목록이 그 모델 기준으로 다시 그려지고, 못 받는 effort 는 `(기본)` 으로
+  떨어진다. effort 를 안 받는 모델은 effort 노브만, 모델이 없는 gemini 는 줄 전체를 숨긴다.
+  localStorage 저장) + **디버그 모드 체크박스**(체크해야 대화창=프롬프트/실행/출력 열림) + **최근 사용
+  trace 3개**(`provider · model · effort · 시간 · 비용USD`, localStorage 보존).
   레이아웃 flex 라 미리보기와 공존, 미설치 제공자 비활성, ⌘/Ctrl+Enter 실행.
 - **대본 import:** 사이드바 하단 드롭존(.md 드래그앤드롭/클릭). `POST /api/assist/analyze` 가 선택 CLI 로
   대본을 분석해 `{title,id,description}` 추출(`assist.AnalyzeScript` — JSON 추출 프롬프트 + 펜스/prose

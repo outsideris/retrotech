@@ -179,6 +179,9 @@ go run ./cmd/build
 - **AI Assist:** `internal/editor/assist` 가 로컬 CLI(Claude/Codex/Gemini)를 비대화 모드로 셸 아웃
   (`/api/assist/providers`·`/api/assist/run`). `cmd/app` 은 `injectLoginPath()` 로 GUI 의 빈 PATH 를
   로그인 셸 PATH 로 교체해 CLI 를 찾는다. 우측 Assist 사이드바의 토대 — 구체 기능은 이후 확장.
+  고를 수 있는 **모델과 모델별 effort 는 `assist/catalog.go` 한 곳**에 있고 `/api/assist/providers`
+  가 그대로 내보내므로, 사이드바 드롭다운과 서버 검증이 갈라지지 않는다. 카탈로그는 설치된 CLI 기준의
+  수기 목록이라 CLI 업그레이드 때 함께 갱신한다([episode-editor-app.md](plan/episode-editor-app.md)).
 - **오디오 업로드·검증(`audio.go`):** 오디오 fieldset 의 드롭존에 mp3 를 끌어놓으면(또는 클릭 선택)
   size·duration 분석 후 "R2 에 업로드" 버튼이 활성화된다. 업로드는 사이드카가 임시 파일로 스풀한 뒤
   **wrangler CLI**(`wrangler` 또는 `npx -y wrangler`; assist CLI 처럼 자체 인증 — 앱은 키를 보관하지

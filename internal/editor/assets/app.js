@@ -36,6 +36,7 @@ const els = {
   assistTuning: $("assist-tuning"),
   assistModel: $("assist-model"),
   assistEffort: $("assist-effort"),
+  assistEffortKnob: $("assist-effort-knob"),
   assistDebug: $("assist-debug-toggle"),
   assistChat: $("assist-chat"),
   assistPrompt: $("assist-prompt"),
@@ -784,13 +785,12 @@ $("f-music").addEventListener("input", recomposeBody);
 
 const PROVIDER_LABELS = { claude: "Claude", codex: "Codex", gemini: "Gemini" };
 
-// Per-provider model/effort vocab (matches the CLIs; the server validates too).
-// "" means "use the CLI default". Gemini's CLI exposes no knobs.
-const ASSIST_TUNING = {
-  claude: { models: ["", "haiku", "sonnet", "opus"], efforts: ["", "low", "medium", "high", "xhigh", "max"] },
-  codex: { models: ["", "gpt-5.5", "gpt-5", "gpt-5-codex"], efforts: ["", "none", "minimal", "low", "medium", "high", "xhigh"] },
-  gemini: { models: [], efforts: [] },
-};
+// provider -> [{id, label, efforts}], filled from GET /assist/providers. The
+// CLIs' model and effort vocabulary lives in the Go catalog the server
+// validates against, so the sidebar can't offer something the server refuses.
+// A model with no efforts takes no effort flag at all; a provider with no
+// models (gemini) has no knobs to show.
+const assistModels = new Map();
 
 const ASSIST_TRACE_KEY = "editor:assist-traces";
 
@@ -816,7 +816,9 @@ async function loadAssistProviders() {
     setAssistStatus(err.message, "err");
     return;
   }
+  assistModels.clear();
   for (const p of list) {
+    assistModels.set(p.name, p.models || []);
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "assist-provider";
@@ -847,24 +849,57 @@ function selectAssistProvider(name) {
   renderTuning(name);
 }
 
-// renderTuning fills the model/effort dropdowns for a provider, restoring the
-// saved choice, and hides the row for a provider with no knobs (gemini).
+// renderTuning fills the model dropdown for a provider, restoring the saved
+// choice, and hides the row for a provider with no knobs (gemini). The effort
+// dropdown depends on the chosen model, so it is rendered separately.
 function renderTuning(provider) {
-  const tuning = ASSIST_TUNING[provider] || { models: [], efforts: [] };
-  els.assistTuning.hidden = tuning.models.length === 0 && tuning.efforts.length === 0;
-  fillSelect(els.assistModel, tuning.models, lsGet(`editor:assist-model:${provider}`));
-  fillSelect(els.assistEffort, tuning.efforts, lsGet(`editor:assist-effort:${provider}`));
+  const models = assistModels.get(provider) || [];
+  els.assistTuning.hidden = models.length === 0;
+  fillSelect(
+    els.assistModel,
+    models.map((m) => ({ value: m.id, label: m.label })),
+    lsGet(`editor:assist-model:${provider}`),
+  );
+  renderEfforts(provider);
 }
 
-function fillSelect(select, values, saved) {
+// renderEfforts lists the levels the selected model accepts. Models differ
+// (GPT-5.5 stops at xhigh, Sol goes to ultra) and some take no level at all,
+// so the knob is hidden rather than offering one the CLI would refuse. On the
+// "(기본)" model — whatever the CLI itself is configured for — every level any
+// of the provider's models accepts is offered.
+function renderEfforts(provider) {
+  const models = assistModels.get(provider) || [];
+  const chosen = models.find((m) => m.id === els.assistModel.value);
+  const efforts = chosen ? chosen.efforts || [] : unionEfforts(models);
+  els.assistEffortKnob.hidden = efforts.length === 0;
+  fillSelect(
+    els.assistEffort,
+    efforts.map((e) => ({ value: e, label: e })),
+    lsGet(`editor:assist-effort:${provider}`),
+  );
+}
+
+function unionEfforts(models) {
+  const all = [];
+  for (const m of models) {
+    for (const e of m.efforts || []) if (!all.includes(e)) all.push(e);
+  }
+  return all;
+}
+
+// fillSelect renders options after a leading "(기본)" = let the CLI decide,
+// and restores saved only if it is still on offer — a model dropped from the
+// catalog, or an effort the newly chosen model can't take, falls back to it.
+function fillSelect(select, options, saved) {
   select.replaceChildren();
-  for (const v of values) {
+  for (const { value, label } of [{ value: "", label: "(기본)" }, ...options]) {
     const opt = document.createElement("option");
-    opt.value = v;
-    opt.textContent = v === "" ? "(기본)" : v;
+    opt.value = value;
+    opt.textContent = label;
     select.appendChild(opt);
   }
-  select.value = values.includes(saved) ? saved : values[0] || "";
+  select.value = options.some((o) => o.value === saved) ? saved : "";
 }
 
 function setAssistStatus(message, kind) {
@@ -1025,6 +1060,7 @@ els.assistDebug.addEventListener("change", () => {
 });
 els.assistModel.addEventListener("change", () => {
   lsSet(`editor:assist-model:${state.assistProvider}`, els.assistModel.value);
+  renderEfforts(state.assistProvider);
 });
 els.assistEffort.addEventListener("change", () => {
   lsSet(`editor:assist-effort:${state.assistProvider}`, els.assistEffort.value);

@@ -265,14 +265,22 @@ func (e *Editor) handleDraftPublish(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"id": id})
 }
 
+// handleAssistProviders lists the AI CLIs with the models each one offers, so
+// the sidebar's model/effort dropdowns are filled from this one catalog instead
+// of a second copy in the UI that could drift from what the server accepts.
 func (e *Editor) handleAssistProviders(w http.ResponseWriter, r *http.Request) {
 	type providerInfo struct {
-		Name      string `json:"name"`
-		Available bool   `json:"available"`
+		Name      string         `json:"name"`
+		Available bool           `json:"available"`
+		Models    []assist.Model `json:"models"`
 	}
 	out := make([]providerInfo, 0)
 	for _, p := range assist.Providers() {
-		out = append(out, providerInfo{Name: p.Name(), Available: p.Available()})
+		models := p.Models()
+		if models == nil {
+			models = []assist.Model{} // a CLI with no knobs serializes as [], not null
+		}
+		out = append(out, providerInfo{Name: p.Name(), Available: p.Available(), Models: models})
 	}
 	writeJSON(w, http.StatusOK, out)
 }
@@ -325,10 +333,15 @@ func (e *Editor) handleAssistRun(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "empty prompt")
 		return
 	}
+	opts := assist.Options{Model: req.Model, Effort: req.Effort}
+	if err := assist.Validate(provider, opts); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 
 	ctx, cancel := context.WithTimeout(r.Context(), assistRunTimeout)
 	defer cancel()
-	output, meta, err := provider.Run(ctx, prompt, assist.Options{Model: req.Model, Effort: req.Effort})
+	output, meta, err := provider.Run(ctx, prompt, opts)
 	if err != nil {
 		writeAssistError(w, ctx, err, assistRunTimeout)
 		return
@@ -361,10 +374,15 @@ func (e *Editor) handleAssistAnalyze(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "empty script")
 		return
 	}
+	opts := assist.Options{Model: req.Model, Effort: req.Effort}
+	if err := assist.Validate(provider, opts); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 
 	ctx, cancel := context.WithTimeout(r.Context(), assistAnalyzeTimeout)
 	defer cancel()
-	sm, meta, err := assist.AnalyzeScript(ctx, provider, assist.Options{Model: req.Model, Effort: req.Effort}, script)
+	sm, meta, err := assist.AnalyzeScript(ctx, provider, opts, script)
 	if err != nil {
 		writeAssistError(w, ctx, err, assistAnalyzeTimeout)
 		return
