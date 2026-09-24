@@ -82,7 +82,7 @@ func run() error {
 			if *openFlag {
 				openBrowser(saved.Origin)
 			}
-			fmt.Println(saved.Origin)
+			fmt.Printf("%s 로컬 연결 프로그램이 실행 중입니다. 열어 둔 HTML의 사이드바로 돌아가세요.\n", time.Now().Format(time.RFC3339))
 			return nil
 		}
 		return fmt.Errorf("another research server holds this report")
@@ -107,7 +107,7 @@ func run() error {
 	if e != nil {
 		return e
 	}
-	script := "#!/bin/zsh\n# RetroTech local research reader\nexec " + quote(exe) + " -report " + quote(dir) + " -skill " + quote(*skill) + " -open\n"
+	script := launcherScript(exe, dir, *skill)
 	launcher := filepath.Join(dir, "start-research.command")
 	if old, e := os.ReadFile(launcher); e == nil && !strings.Contains(string(old), "# RetroTech local research reader") {
 		return fmt.Errorf("existing launcher belongs to another workflow")
@@ -131,6 +131,7 @@ func run() error {
 		_ = srv.Shutdown(ctx)
 	}()
 	fmt.Printf("%s RESEARCH_URL %s\n", time.Now().Format(time.RFC3339), origin)
+	fmt.Printf("%s 연결 준비 완료. 열어 둔 HTML의 사이드바가 자동 연결됩니다. 이 터미널을 열어 두세요. 종료: Ctrl+C\n", time.Now().Format(time.RFC3339))
 	if *openFlag {
 		openBrowser(origin)
 	}
@@ -162,4 +163,8 @@ func sameReport(origin, dir string) bool {
 	}
 	h := sha256.Sum256([]byte(dir))
 	return v.ID == hex.EncodeToString(h[:])[:16]
+}
+
+func launcherScript(exe, dir, skill string) string {
+	return "#!/bin/zsh\n# RetroTech local research reader\nexec " + quote(exe) + " -report " + quote(dir) + " -skill " + quote(skill) + "\n"
 }

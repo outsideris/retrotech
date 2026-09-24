@@ -35,6 +35,7 @@ var ErrConflict = errors.New("보고서 파일이 다른 곳에서 변경되었�
 type Store struct {
 	mu                    sync.Mutex
 	Dir, SkillDir, Origin string
+	browserToken          string
 	baseHTML, baseMD      []byte
 	Anchors               []Anchor
 	State                 State
@@ -128,6 +129,10 @@ func NewStore(dir, skillDir, origin string) (*Store, error) {
 		}
 	} else {
 		return nil, se
+	}
+	s.browserToken, e = loadBrowserToken(meta)
+	if e != nil {
+		return nil, e
 	}
 	if e = s.parseAnchors(); e != nil {
 		return nil, e
@@ -289,7 +294,7 @@ func (s *Store) render() ([]byte, []byte, error) {
 	css, _ := assets.ReadFile("assets/workbench.css")
 	js, _ := assets.ReadFile("assets/workbench.js")
 	panel, _ := assets.ReadFile("assets/panel.html")
-	config, _ := json.Marshal(map[string]string{"origin": s.Origin, "reportId": hash([]byte(s.Dir))[:16]})
+	config, _ := json.Marshal(map[string]string{"origin": s.Origin, "reportId": hash([]byte(s.Dir))[:16], "browserToken": s.browserToken})
 	injection := "<!-- retrotech-research-ui -->\n<style>" + string(css) + "</style>" + string(panel) + "<script>window.RESEARCH_CONFIG=" + string(config) + ";</script><script>" + string(js) + "</script>"
 	h = strings.Replace(h, "</body>", injection+"</body>", 1)
 	md := append([]byte(nil), s.baseMD...)

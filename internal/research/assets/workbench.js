@@ -5,24 +5,29 @@
   const key = `retrotech-research:${config.reportId}`;
   const load = () => { try { return JSON.parse(localStorage.getItem(key)) || {}; } catch { return {}; } };
   let saved = load(), anchors = [], jobs = [], selected = saved.anchorId || '', parentId = '', active = null;
-  let timer, busy = false, additionSignature = '', ruleSignature = '', initialized = false;
+  let timer, busy = false, additionSignature = '', ruleSignature = '', initialized = false, connected = false, refreshing = false;
   const rules = new Map();
   const save = patch => { saved = {...saved, ...patch}; try { localStorage.setItem(key, JSON.stringify(saved)); } catch {} };
   const el = (tag, text, cls) => { const n = document.createElement(tag); if (text != null) n.textContent = text; if (cls) n.className = cls; return n; };
   const button = (text, fn) => { const b = el('button', text); b.type = 'button'; b.addEventListener('click', fn); return b; };
-  const showError = message => { $('research-error').hidden = !message; $('research-error').textContent = message; };
+  const showError = message => { const box=$('research-error');box.hidden=!message;box.replaceChildren();if(message)box.append(el('span',message),button('오류 알림 닫기',()=>showError(''))); };
   const openPanel = open => { document.body.classList.toggle('research-open', open); $('research-toggle').setAttribute('aria-expanded', String(open)); $('research-panel').hidden = !open; save({open}); };
   openPanel(saved.open ?? (innerWidth > 1100));
   $('research-toggle').onclick = () => openPanel($('research-panel').hidden);
   $('research-close').onclick = () => openPanel(false);
-  const live = location.protocol === 'http:' && location.origin === config.origin;
-  $('research-offline').hidden = live;
-  $('research-connected').hidden = !live;
-  $('research-live-link').href = config.origin;
-  if (!live) {
-    document.querySelectorAll('[data-open-job]').forEach(b => b.onclick = () => { openPanel(true); });
-    return;
-  }
+  const canConnect = location.protocol === 'file:' || (location.protocol === 'http:' && location.origin === config.origin);
+  const connection = (ok, message) => {
+    connected = ok;
+    $('research-connection').dataset.state = ok ? 'connected' : 'disconnected';
+    $('research-connection').textContent = message || (ok ? '연결됨 · 이 사이드바에서 조사할 수 있습니다' : '로컬 연결 프로그램에 연결되지 않았습니다');
+    $('research-offline').hidden = ok;
+    $('research-connected').hidden = !ok && !initialized;
+    $('research-send').disabled = !ok || busy || !!active;
+    $('research-cancel').disabled = !ok;
+    $('research-apply-skills').disabled = !ok;
+  };
+  if (!canConnect) { connection(false, '로컬에 저장된 HTML 파일에서 열어 주세요.'); return; }
+  $('research-retry').onclick = () => refresh();
   if ([...$('research-model').options].some(o => o.value === saved.model)) $('research-model').value = saved.model;
   if (['medium','high','xhigh'].includes(saved.effort)) $('research-effort').value = saved.effort;
   $('research-question').value = saved.draft || '';
@@ -30,10 +35,16 @@
   $('research-effort').onchange = () => save({effort: $('research-effort').value});
   $('research-question').oninput = () => save({draft: $('research-question').value});
   async function api(path, data) {
-    const response = await fetch(path, data === undefined ? {} : {method:'POST',headers:{'Content-Type':'application/json','X-RetroTech-Request':'1'},body:JSON.stringify(data)});
-    const value = await response.json();
-    if (!response.ok) throw new Error(value.error || `요청 실패 (${response.status})`);
-    return value;
+    const controller = new AbortController(), timeout = setTimeout(() => controller.abort(), 6000);
+    try {
+      const headers = {'X-RetroTech-Token':config.browserToken};
+      const options = {headers,signal:controller.signal,credentials:'omit'};
+      if (data !== undefined) { options.method='POST';headers['Content-Type']='application/json';headers['X-RetroTech-Request']='1';options.body=JSON.stringify(data); }
+      const response = await fetch(new URL(path,config.origin),options);
+      const value = await response.json();
+      if (!response.ok) throw new Error(value.error || `요청 실패 (${response.status})`);
+      return value;
+    } finally { clearTimeout(timeout); }
   }
   function tab(name) {
     document.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
@@ -154,17 +165,20 @@
     catch(e){showError(e.message);}finally{$('research-apply-skills').disabled=false;}
   };
   $('research-form').onsubmit = async event => {
-    event.preventDefault();if(busy||active)return;
+    event.preventDefault();if(busy||active||!connected)return;
     busy=true;$('research-send').disabled=true;showError('');
     const [provider,model]=$('research-model').value.split(':');
     try {await api('/api/jobs',{anchorId:selected,question:$('research-question').value,provider,model,effort:$('research-effort').value,parentId});$('research-question').value='';save({draft:''});await refresh();}
-    catch(e){showError(e.message);}finally{busy=false;$('research-send').disabled=!!active;}
+    catch(e){showError(e.message);}finally{busy=false;$('research-send').disabled=!connected||!!active;}
   };
   $('research-cancel').onclick=async()=>{if(!active)return;try{await api('/api/cancel',{id:active.id});$('research-run-status').textContent='조사를 취소하고 있습니다.';}catch(e){showError(e.message);}};
   async function refresh() {
-    clearTimeout(timer);
+    if (refreshing) return;
+    refreshing=true;clearTimeout(timer);
     try {
-      const data=await api('/api/state');anchors=data.anchors;jobs=data.state.jobs;
+      const data=await api('/api/state');
+      if(data.reportId!==config.reportId)throw new Error('다른 보고서의 연결입니다. 이 폴더의 실행기를 실행하고 HTML을 새로 고쳐 주세요.');
+      anchors=data.anchors;jobs=data.state.jobs;connection(true);
       if(!initialized){
         const chapters=new Map(anchors.map(a=>[a.chapterId,a.chapterTitle]));
         for(const [id,title]of chapters){const option=el('option',title);option.value=id;$('research-chapter').append(option);}
@@ -178,7 +192,8 @@
       renderMessages();renderAdditions();renderRules();
       if(!initialized){initialized=true;if(!location.hash && saved.reading)restoreMark(saved.reading);}
       timer=setTimeout(refresh,active?1500:4000);
-    } catch(e){showError(`로컬 서버 연결을 확인해 주세요. ${e.message}`);timer=setTimeout(refresh,8000);}
+    } catch(e){connection(false, e instanceof TypeError || e.name==='AbortError' ? undefined : e.message);timer=setTimeout(refresh,5000);}
+    finally {refreshing=false;}
   }
   let scrollTimer;
   addEventListener('scroll',()=>{clearTimeout(scrollTimer);scrollTimer=setTimeout(()=>{if(initialized)save({reading:readingMark()});},200);},{passive:true});

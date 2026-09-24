@@ -233,3 +233,7 @@ go run ./cmd/build
 ## 로컬 연구 보고서 리더
 
 `cmd/research`는 공개 사이트 빌드와 독립적으로 보고서 폴더를 연다. `internal/research`가 원문 보존·문단 앵커·질문 상태·HTML/Markdown 파생 출력을 관리하며, `internal/editor/assist/research.go`가 로컬 CLI의 웹 조사와 구조화 출력을 연결한다. 스킬 규칙은 사용자가 선택한 항목만 백업 후 기록한다. HTTP 경계·실행·저장 구조는 [RESEARCH_WORKBENCH.md](RESEARCH_WORKBENCH.md)에 설명한다.
+
+### 파일 HTML의 로컬 연결
+
+`file://` 리더는 저장된 loopback 주소의 API로 직접 요청한다. `internal/research/connection.go`가 보고서별 연결 토큰과 Origin을 확인하고 파일 출처에 제한된 CORS를 제공한다. 연결 여부·재시도는 같은 사이드바에서 처리하며 실행기는 브라우저를 자동으로 열지 않는다. 연결 프로그램은 사용 중 실행해야 한다. 자세한 종료·재연결 동작은 [RESEARCH_WORKBENCH.md](RESEARCH_WORKBENCH.md#연결이-안-될-때)에 둔다.

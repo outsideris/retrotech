@@ -58,8 +58,7 @@ func (s *Server) serve(w http.ResponseWriter, r *http.Request) {
 		fail(w, 403, errors.New("허용되지 않은 로컬 주소입니다"))
 		return
 	}
-	if r.Method != "GET" && (r.Header.Get("Origin") != s.Store.Origin || r.Header.Get("X-RetroTech-Request") != "1" || r.Header.Get("Content-Type") != "application/json") {
-		fail(w, 403, errors.New("보고서 화면에서 요청해 주세요"))
+	if !s.authorizeBrowser(w, r) {
 		return
 	}
 	r.Body = http.MaxBytesReader(w, r.Body, 32768)
@@ -90,7 +89,7 @@ func (s *Server) serve(w http.ResponseWriter, r *http.Request) {
 				ps[p.Name()] = p.Available()
 			}
 		}
-		send(w, 200, map[string]any{"anchors": anchors, "state": st, "providers": ps})
+		send(w, 200, map[string]any{"anchors": anchors, "state": st, "providers": ps, "reportId": hash([]byte(s.Store.Dir))[:16]})
 	case r.Method == "POST" && r.URL.Path == "/api/jobs":
 		var req Request
 		if e := decode(r, &req); e != nil {

@@ -9,7 +9,8 @@ const browser=await chromium.launch({channel:'chrome',headless:true});
 try {
  const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
- await page.goto(origin);await page.locator('#research-chapter option').first().waitFor({state:'attached'});
+ const fileURL=pathToFileURL(path.join(dir,'index.html')).href;
+ await page.goto(fileURL);await page.locator('#research-chapter option').first().waitFor({state:'attached'});
  const original=await page.locator('[data-research-anchor]').evaluateAll(ns=>ns.map(n=>n.innerHTML));
  assert.equal(original.length,119);
  const selected=page.locator('#research-p-064');await selected.scrollIntoViewIfNeeded();await selected.click();
@@ -41,8 +42,23 @@ try {
  await page.getByRole('tab',{name:'대화',exact:true}).click();await page.getByRole('button',{name:'이어서 질문',exact:true}).click();assert(await page.locator('#research-clear-parent').isVisible());
  await page.reload();await page.locator('#research-chapter option').first().waitFor({state:'attached'});
  assert.equal(await page.locator('.research-addition').count(),1);
+ // Connection loss and recovery stay inside the same file and preserve the draft.
+ await page.locator('#research-question').fill('연결이 복구되면 이어서 질문합니다.');
+ await page.route(origin+'/**',route=>route.abort());
+ await page.locator('#research-send').click();await page.locator('#research-error').waitFor();
+ await page.getByRole('button',{name:'오류 알림 닫기'}).click();
+ assert.equal(await page.locator('#research-error').isVisible(),false);
+ await page.locator('#research-connection[data-state=disconnected]').waitFor();
+ assert.equal(await page.locator('#research-send').isDisabled(),true);
+ assert.equal(await page.locator('#research-question').inputValue(),'연결이 복구되면 이어서 질문합니다.');
+ assert.equal(page.url(),fileURL);assert.equal(context.pages().length,1);
+ await page.unroute(origin+'/**');await page.locator('#research-retry').click();
+ await page.locator('#research-connection[data-state=connected]').waitFor();
+ assert.equal(await page.locator('#research-question').inputValue(),'연결이 복구되면 이어서 질문합니다.');
+ assert.equal(page.url(),fileURL);assert.equal(context.pages().length,1);
  // Offline: no server dependency, body and inserted evidence remain readable.
- const offline=await context.newPage();await offline.goto(pathToFileURL(path.join(dir,'index.html')).href);
+ const offline=await context.newPage();await offline.route(origin+'/**',route=>route.abort());await offline.goto(pathToFileURL(path.join(dir,'index.html')).href);
+ await offline.locator('#research-connection[data-state=disconnected]').waitFor();
  assert.equal(await offline.locator('[data-research-anchor]').count(),119);assert.equal(await offline.locator('.research-addition').count(),1);
  await offline.locator('#research-close').click();assert.equal(await offline.locator('body').evaluate(n=>n.scrollWidth>innerWidth),false);
  await offline.emulateMedia({media:'print'});assert.equal(await offline.locator('#research-panel').isVisible(),false);
@@ -53,5 +69,5 @@ try {
  await mobile.locator('#research-toggle').click();await mobile.screenshot({path:path.join(shots,'mobile.png')});
  assert.equal(await mobile.locator('#research-send').isVisible(),true);
  await mobile.setViewportSize({width:320,height:740});assert.equal(await mobile.locator('body').evaluate(n=>n.scrollWidth>innerWidth),false);
- assert.deepEqual(errors,[]);console.log(JSON.stringify({passed:true,originalParagraphs:original.length,checks:['anchor','submit','scroll preservation','escaped correction','hide/restore/reload','reviewed skill update','offline','print','mobile'],shots}));
+ assert.deepEqual(errors,[]);console.log(JSON.stringify({passed:true,originalParagraphs:original.length,checks:['file-origin CORS','no navigation/new window','disconnect/reconnect/draft preservation','anchor','submit','scroll preservation','escaped correction','hide/restore/reload','reviewed skill update','offline','print','mobile'],shots}));
 }finally{await browser.close();}

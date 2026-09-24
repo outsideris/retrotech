@@ -117,3 +117,5 @@
 ## Phase 10 — 문단별 추가 조사
 
 - [x] [로컬 연구 리더](plan/research-workbench.md): 문단별 질문, Codex·Claude CLI, 출처가 있는 추가·정정 블록, 원래 장면으로 복귀, 영구 기록·숨김·복원, 검토한 규칙의 스킬 반영.
+
+- [x] [파일 HTML에서 추가 조사 연결 복구](plan/research-inline-connection.md): 별도 창 이동 제거, 연결 상태·재시도, 보고서별 접근 검사, 파일 출처의 브라우저 회귀 테스트.

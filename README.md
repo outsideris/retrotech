@@ -92,4 +92,4 @@ npm run dist                      # 패키징 → dist/mac-arm64/RetroTech Edito
 
 ## 로컬 보고서 추가 조사
 
-`cmd/research`는 로컬 HTML 보고서에 문단별 채팅을 붙인다. Codex·Claude Code로 추가 조사한 내용과 출처를 선택한 문단 뒤에 표시하고, 질문에서 얻은 조사 규칙을 검토 후 RetroTech 스킬에 반영한다. 실행·모델·저장·복구: [문단별 추가 조사 리더](docs/RESEARCH_WORKBENCH.md).
+`cmd/research`는 로컬 HTML 보고서에 문단별 채팅을 붙인다. Codex·Claude Code로 추가 조사한 내용과 출처를 선택한 문단 뒤에 표시하고, 질문에서 얻은 조사 규칙을 검토 후 RetroTech 스킬에 반영한다. `start-research.command`는 연결 프로그램만 켜며, 파일로 연 HTML의 같은 사이드바에서 조사한다. 실행·모델·저장·복구: [문단별 추가 조사 리더](docs/RESEARCH_WORKBENCH.md).

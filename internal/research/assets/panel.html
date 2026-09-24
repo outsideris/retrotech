@@ -1,7 +1,8 @@
 <button type="button" id="research-toggle" aria-controls="research-panel" aria-expanded="true">추가 조사 <span id="research-count">0</span></button>
 <aside id="research-panel" aria-label="문단별 추가 조사">
  <header class="research-header"><div><span class="research-eyebrow">RETROTECH / RESEARCH</span><h2>이야기 옆에서 더 깊이</h2></div><button type="button" id="research-close" aria-label="추가 조사 패널 닫기">×</button></header>
- <div id="research-offline" hidden><strong>읽던 곳에서 추가 조사하기</strong><p>이 폴더의 <code>start-research.command</code>를 실행하면 로컬 Claude Code·Codex에 질문할 수 있습니다.</p><a id="research-live-link">추가 조사 모드 열기 ↗</a><p>본문과 이미 추가된 내용은 이 HTML만으로 읽을 수 있습니다.</p></div>
+ <div id="research-connection" role="status" data-state="connecting">로컬 연결 프로그램을 확인하고 있습니다…</div>
+ <div id="research-offline" hidden><strong>이 화면에서 연결할 수 있습니다</strong><p>같은 폴더의 <code>start-research.command</code>를 실행해 주세요. 실행 터미널은 열어 두세요. 새 브라우저 창을 열지 않고 이 사이드바가 자동으로 연결됩니다.</p><button id="research-retry" type="button">지금 다시 연결</button><p class="research-connection-help">브라우저가 로컬 네트워크 접근을 물으면 허용해 주세요. HTML 파일만으로는 로컬 CLI를 직접 실행할 수 없습니다.</p></div>
  <div id="research-connected" hidden>
   <div class="research-location"><label for="research-chapter">조사할 장</label><select id="research-chapter"></select><div class="research-anchor-label">문단을 클릭하거나 문장을 선택해 질문에 연결하세요.</div><blockquote id="research-selected"></blockquote><button type="button" id="research-clear-parent" hidden>후속 대화 연결 해제</button></div>
   <div class="research-tabs" role="tablist" aria-label="조사 작업"><button type="button" role="tab" aria-selected="true" data-tab="chat">대화</button><button type="button" role="tab" aria-selected="false" data-tab="additions">추가 내용</button><button type="button" role="tab" aria-selected="false" data-tab="skills">스킬에 남길 점</button></div>

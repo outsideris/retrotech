@@ -75,3 +75,9 @@ go test ./internal/research -run TestBrowserWorkflow -v -count=1
 ```
 
 Chrome가 필요하며 Node/Playwright는 검증 전용이다. 브라우저 검증 설정이 없는 기본 Go 실행에서는 이 선택 검사만 건너뛴다. 2026-09-16 로컬에서 전체 브라우저 검사와 실제 Codex Sol/high 호출을 별도로 실행했다. Claude는 로컬 로그인이 없어 실제 모델 호출은 미검증이며 fake CLI의 구조화 출력·오류 처리를 확인했다. 강제 전원 종료와 클라우드 서비스 가용성은 자동 테스트 범위 밖이다.
+
+### 파일 HTML 연결 회귀 (2026-09-24)
+
+- `TestFileOriginConnection`: `Origin: null`의 토큰 없는 읽기·잘못된 토큰·외부 웹 출처 거부, API preflight, 올바른 토큰의 읽기/쓰기, 재시작 후 연결 토큰 보존 및 다른 보고서와의 분리.
+- `cmd/research/main_test.go`: 실행기가 경로를 인용하고 `-open` 없이 서버만 실행하는 계약.
+- Chrome 통합 검사는 이제 주 흐름을 `file://…/index.html`에서 시작한다. 실제 CORS를 통한 질문·삽입·스킬 반영과 새 창/URL 이동 없음, 통신 중단·복구·질문 초안 유지, 끊긴 순간 전송했을 때 오류 알림을 닫고 재시도, 완전 오프라인을 검사한다. 테스트의 모델 응답은 기존과 같이 fixture이며 실제 로컬 AI CLI 호출 계약은 이번 변경 범위 밖이다.

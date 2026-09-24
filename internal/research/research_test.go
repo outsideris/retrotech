@@ -244,3 +244,65 @@ func TestFollowUpUsesSelectedConversation(t *testing.T) {
 		t.Fatal("follow-up lost its selected parent")
 	}
 }
+
+func TestFileOriginConnection(t *testing.T) {
+	s := fixture(t)
+	app := NewServer(s, nil)
+	defer app.Close()
+	check := func(method, path, origin, token, body string) *httptest.ResponseRecorder {
+		r := httptest.NewRequest(method, testOrigin+path, strings.NewReader(body))
+		r.Header.Set("Origin", origin)
+		r.Header.Set("X-RetroTech-Token", token)
+		r.Header.Set("X-RetroTech-Request", "1")
+		r.Header.Set("Content-Type", "application/json")
+		if method == "OPTIONS" {
+			r.Header.Set("Access-Control-Request-Method", "POST")
+			r.Header.Set("Access-Control-Request-Headers", "content-type,x-retrotech-request,x-retrotech-token")
+		}
+		w := httptest.NewRecorder()
+		app.Handler().ServeHTTP(w, r)
+		return w
+	}
+	for _, token := range []string{"", "wrong-token"} {
+		if w := check("GET", "/api/state", "null", token, ""); w.Code != 403 {
+			t.Fatal("opaque origin accessed state without report capability")
+		}
+	}
+	if w := check("OPTIONS", "/api/jobs", "null", "", ""); w.Code != 204 || w.Header().Get("Access-Control-Allow-Origin") != "null" {
+		t.Fatal("file preflight failed")
+	}
+	if w := check("OPTIONS", "/api/jobs", "https://evil.example", "", ""); w.Code != 403 || w.Header().Get("Access-Control-Allow-Origin") != "" {
+		t.Fatal("website preflight allowed")
+	}
+	if w := check("GET", "/api/state", "https://evil.example", s.browserToken, ""); w.Code != 403 {
+		t.Fatal("website used file capability")
+	}
+	if w := check("GET", "/", "null", s.browserToken, ""); w.Code != 403 {
+		t.Fatal("CORS must be limited to API")
+	}
+	if w := check("GET", "/api/state", "null", s.browserToken, ""); w.Code != 200 || w.Header().Get("Access-Control-Allow-Origin") != "null" {
+		t.Fatal("file GET denied")
+	}
+	j := completed(s)
+	if e := s.saveLocked(true); e != nil {
+		t.Fatal(e)
+	}
+	if w := check("POST", "/api/visibility", "null", s.browserToken, `{"id":"`+j.ID+`","hidden":true}`); w.Code != 200 {
+		t.Fatal(w.Body.String())
+	}
+	if !j.Hidden {
+		t.Fatal("authenticated file mutation did not persist")
+	}
+	token := s.browserToken
+	restored, e := NewStore(s.Dir, s.SkillDir, testOrigin)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if restored.browserToken != token {
+		t.Fatal("restarting invalidates an already open report")
+	}
+	other := fixture(t)
+	if other.browserToken == token {
+		t.Fatal("reports share a capability")
+	}
+}
