@@ -232,7 +232,7 @@ go run ./cmd/build
 
 ## 로컬 연구 보고서 리더
 
-`cmd/research`는 공개 사이트 빌드와 독립적으로 보고서 폴더를 연다. `internal/research`가 원문 보존·문단 앵커·질문 상태·HTML/Markdown 파생 출력을 관리하며, `internal/editor/assist/research.go`가 로컬 CLI의 웹 조사와 구조화 출력을 연결한다. 스킬 규칙은 사용자가 선택한 항목만 백업 후 기록한다. HTTP 경계·실행·저장 구조는 [RESEARCH_WORKBENCH.md](RESEARCH_WORKBENCH.md)에 설명한다.
+`cmd/research`는 공개 사이트 빌드와 독립적으로 보고서 폴더를 연다. `internal/research`가 원문 보존·문단 앵커·질문 상태·HTML/Markdown 파생 출력을 관리하며, `internal/editor/assist/research.go`가 로컬 CLI의 웹 조사와 구조화 출력을 연결한다. 조사에 쓸 모델·effort 목록은 Assist 카탈로그와 별도로 이 파일 한 곳에 두고, HTTP 요청 검증(`assist.ValidateResearch`)과 CLI 인자 생성이 같은 목록을 쓴다. 스킬 규칙은 사용자가 선택한 항목만 백업 후 기록한다. HTTP 경계·실행·저장 구조는 [RESEARCH_WORKBENCH.md](RESEARCH_WORKBENCH.md)에 설명한다.
 
 ### 파일 HTML의 로컬 연결
 

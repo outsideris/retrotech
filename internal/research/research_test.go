@@ -9,9 +9,15 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"reflect"
+	"regexp"
+	"slices"
 	"strings"
+	"sync"
 	"testing"
 	"time"
+
+	"github.com/outsideris/retrotech/internal/editor/assist"
 )
 
 const testOrigin = "http://127.0.0.1:49327"
@@ -36,7 +42,7 @@ func result() *Result {
 	return &Result{Title: "A follow-up", Answer: "Summary", Status: "verified", Paragraphs: []Paragraph{{Text: "The evidence <script>alert(1)</script> is explicit.", SourceIDs: []string{"S1"}}}, Sources: []Source{{ID: "S1", Title: "Original record", URL: "https://example.org/primary?x=1&y=2", Author: "A", Date: "2005-01-01", Locator: "Second paragraph", Supports: "Exact supported claim", Kind: "contemporary primary source"}}, Learning: Learning{Gap: "The original story lacked migration costs.", Rule: "Check migration costs when a new tool replaces an earlier one."}}
 }
 func completed(s *Store) *Job {
-	j := &Job{ID: "abc123", Request: Request{AnchorID: s.Anchors[1].ID, Question: "What happened?", Provider: "codex", Model: "gpt-5.6-sol", Effort: "high"}, ChapterID: s.Anchors[1].ChapterID, CreatedAt: now(), UpdatedAt: now(), Status: "completed", Result: result()}
+	j := &Job{ID: "abc123", Request: Request{AnchorID: s.Anchors[1].ID, Question: "What happened?", Provider: "codex", Model: "gpt-6-sol", Effort: "high"}, ChapterID: s.Anchors[1].ChapterID, CreatedAt: now(), UpdatedAt: now(), Status: "completed", Result: result()}
 	s.State.Jobs = append(s.State.Jobs, j)
 	return j
 }
@@ -170,7 +176,7 @@ func TestHTTPJobsCancellationAndSecurity(t *testing.T) {
 		}
 	})
 	defer app.Close()
-	body := `{"anchorId":"research-p-002","question":"What happened?","provider":"codex","model":"gpt-5.6-sol","effort":"high","parentId":""}`
+	body := `{"anchorId":"research-p-002","question":"What happened?","provider":"codex","model":"gpt-6-sol","effort":"high","parentId":""}`
 	if w := request(app, "POST", "/api/jobs", body, "https://attacker.example"); w.Code != 403 {
 		t.Fatal(w.Code)
 	}
@@ -200,6 +206,123 @@ func TestHTTPJobsCancellationAndSecurity(t *testing.T) {
 		t.Fatal(w.Body.String())
 	}
 	awaitJob(t, s, j.ID, "cancelled")
+}
+
+// menu reads one of the sidebar's selects from the embedded panel, in order.
+func menu(t *testing.T, id string) []string {
+	t.Helper()
+	panel, e := assets.ReadFile("assets/panel.html")
+	if e != nil {
+		t.Fatal(e)
+	}
+	sel := regexp.MustCompile(`<select id="` + id + `">(.*?)</select>`).FindSubmatch(panel)
+	if sel == nil {
+		t.Fatalf("no #%s menu in the panel", id)
+	}
+	var values []string
+	for _, m := range regexp.MustCompile(`<option value="([^"]+)"`).FindAllSubmatch(sel[1], -1) {
+		values = append(values, string(m[1]))
+	}
+	return values
+}
+
+// The menu is static HTML while the server checks requests with
+// assist.ValidateResearch. For every model in the Assist catalog at every
+// level, the server must accept exactly what the menu offers: otherwise a menu
+// choice fails only after the host has written the question.
+func TestModelMenuIsWhatTheServerAccepts(t *testing.T) {
+	models, efforts := menu(t, "research-model"), menu(t, "research-effort")
+	// The first entry and the preselected level are the documented default.
+	panel, _ := assets.ReadFile("assets/panel.html")
+	if len(models) == 0 || models[0] != "codex:gpt-6-sol" || !bytes.Contains(panel, []byte(`<option value="high" selected>`)) {
+		t.Fatalf("menu default is not GPT-6 Sol / high: %v", models)
+	}
+	s := fixture(t)
+	var mu sync.Mutex
+	ran := map[string]bool{}
+	app := NewServer(s, func(ctx context.Context, p string, r Request, dir string, progress func(string)) (*Result, error) {
+		mu.Lock()
+		defer mu.Unlock()
+		ran[r.Provider+":"+r.Model+"/"+r.Effort] = true
+		return result(), nil
+	})
+	defer app.Close()
+	catalog, want := map[string]bool{}, map[string]bool{}
+	for _, p := range assist.Providers() {
+		for _, m := range p.Models() {
+			choice := p.Name() + ":" + m.ID
+			catalog[choice] = true
+			for _, effort := range []string{"low", "medium", "high", "xhigh", "max", "ultra"} {
+				body, _ := json.Marshal(Request{AnchorID: s.Anchors[1].ID, Question: "What happened?", Provider: p.Name(), Model: m.ID, Effort: effort})
+				w := request(app, "POST", "/api/jobs", string(body), testOrigin)
+				switch {
+				case !slices.Contains(efforts, effort):
+					if w.Code != 400 || !strings.Contains(w.Body.String(), "조사 effort를 확인해 주세요") {
+						t.Errorf("%s/%s: level not in the menu, got %d %s", choice, effort, w.Code, w.Body)
+					}
+				case !slices.Contains(models, choice):
+					if w.Code != 400 || !strings.Contains(w.Body.String(), "지원하지 않는 조사 모델입니다") {
+						t.Errorf("%s/%s: model not in the menu, got %d %s", choice, effort, w.Code, w.Body)
+					}
+				case w.Code != 202:
+					t.Errorf("%s/%s: in the menu but refused: %d %s", choice, effort, w.Code, w.Body)
+				default:
+					want[choice+"/"+effort] = true
+					var j Job
+					json.Unmarshal(w.Body.Bytes(), &j)
+					awaitJob(t, s, j.ID, "completed")
+				}
+			}
+		}
+	}
+	for _, choice := range models {
+		if !catalog[choice] {
+			t.Errorf("menu offers %s, which no installed CLI lists", choice)
+		}
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	if len(want) != len(models)*len(efforts) || !reflect.DeepEqual(ran, want) {
+		t.Errorf("CLI runs %v, want each menu model at each menu level", ran)
+	}
+}
+
+// The installed report already holds answers from a model the menu has since
+// dropped. They still load and render under the model that wrote them, and a
+// follow-up runs on a current pick: only new requests are checked.
+func TestRetiredModelHistoryStaysUsable(t *testing.T) {
+	s := fixture(t)
+	old := completed(s)
+	old.Request.Model = "gpt-5.6-sol"
+	if e := s.saveLocked(true); e != nil {
+		t.Fatal(e)
+	}
+	restored, e := NewStore(s.Dir, s.SkillDir, testOrigin)
+	if e != nil {
+		t.Fatal(e)
+	}
+	h, _ := os.ReadFile(filepath.Join(s.Dir, "index.html"))
+	if !bytes.Contains(h, []byte("<span>gpt-5.6-sol · high</span>")) {
+		t.Fatal("history lost the model that answered")
+	}
+	app := NewServer(restored, func(ctx context.Context, p string, r Request, dir string, progress func(string)) (*Result, error) {
+		return result(), nil
+	})
+	defer app.Close()
+	followUp := func(model string) *httptest.ResponseRecorder {
+		body, _ := json.Marshal(Request{AnchorID: old.Request.AnchorID, Question: "And then?", Provider: "codex", Model: model, Effort: "high", ParentID: old.ID})
+		return request(app, "POST", "/api/jobs", string(body), testOrigin)
+	}
+	if w := followUp("gpt-5.6-sol"); w.Code != 400 {
+		t.Fatal("a dropped model was accepted for a new request")
+	}
+	w := followUp("gpt-6-sol")
+	if w.Code != 202 {
+		t.Fatal(w.Body.String())
+	}
+	var j Job
+	json.Unmarshal(w.Body.Bytes(), &j)
+	awaitJob(t, restored, j.ID, "completed")
 }
 func TestRulesAreExplicitAndDeduplicated(t *testing.T) {
 	s := fixture(t)

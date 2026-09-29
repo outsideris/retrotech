@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 )
@@ -22,25 +23,64 @@ type ResearchOptions struct {
 	Progress                                   func(string)
 }
 
+// researchModels and researchEfforts are the research reader's own short list,
+// kept apart from the Assist catalog on purpose: picks for source-checked web
+// research, not everything a CLI can run. The reader's model menu
+// (internal/research/assets/panel.html) offers exactly this list, and
+// docs/RESEARCH_WORKBENCH.md says which pick suits which question.
+//
+// Refreshed with the CLIs on 2026-09-30 (claude 2.1.284, codex 0.159.0); every
+// pick must stay runnable in the Assist catalog. Left out: GPT-6 Luna, the
+// efficient tier for summarization and extraction; Fable 5.1, which can bill
+// usage credits, and a -p run never asks before it does; Haiku 4.5, which takes
+// no effort; and the previous generation. Effort stops at xhigh: low is too shallow for
+// checking sources, Claude documents max as prone to overthinking, and codex's
+// ultra delegates to sub-agents, which the codex run below disables.
+var (
+	researchModels = map[string][]string{
+		"codex":  {"gpt-6-sol", "gpt-6-astra"},
+		"claude": {"claude-sonnet-5-5", "claude-opus-5-5"},
+	}
+	researchEfforts = []string{"medium", "high", "xhigh"}
+)
+
+// Why ValidateResearch turned a request down, kept apart so the reader can
+// tell the user which choice to change.
+var (
+	ErrResearchProvider = errors.New("unsupported research provider")
+	ErrResearchModel    = errors.New("unsupported research model")
+	ErrResearchEffort   = errors.New("unsupported research effort")
+)
+
+// ValidateResearch reports whether the reader offers this provider, model and
+// effort. researchArgs checks the same, so nothing else reaches a CLI.
+func ValidateResearch(provider, model, effort string) error {
+	if !slices.Contains(researchEfforts, effort) {
+		return ErrResearchEffort
+	}
+	models, ok := researchModels[provider]
+	if !ok {
+		return ErrResearchProvider
+	}
+	if !slices.Contains(models, model) {
+		return ErrResearchModel
+	}
+	return nil
+}
+
 func researchArgs(o ResearchOptions, schemaPath, resultPath string) ([]string, error) {
-	if o.Effort != "medium" && o.Effort != "high" && o.Effort != "xhigh" {
-		return nil, errors.New("unsupported research effort")
+	if e := ValidateResearch(o.Provider, o.Model, o.Effort); e != nil {
+		return nil, e
 	}
 	switch o.Provider {
 	case "codex":
-		if o.Model != "gpt-5.6-sol" && o.Model != "gpt-5.6-terra" {
-			return nil, errors.New("unsupported research model")
-		}
 		return []string{"exec", "--ignore-user-config", "--ephemeral", "--skip-git-repo-check", "--sandbox", "read-only", "--json", "--color", "never", "--model", o.Model, "-c", `approval_policy="never"`, "-c", `web_search="live"`, "-c", `features.shell_tool=false`, "-c", `features.apps=false`, "-c", `features.multi_agent=false`, "-c", `model_reasoning_effort="` + o.Effort + `"`, "--output-schema", schemaPath, "--output-last-message", resultPath, "-"}, nil
 	case "claude":
-		if o.Model != "claude-sonnet-5" && o.Model != "claude-opus-5" {
-			return nil, errors.New("unsupported research model")
-		}
 		// Safe mode preserves subscription authentication, unlike --bare. Only the
 		// two web tools and the structured-output tool are available to this run.
 		return []string{"--safe-mode", "-p", "--output-format", "stream-json", "--verbose", "--no-session-persistence", "--strict-mcp-config", "--mcp-config", `{"mcpServers":{}}`, "--tools", "WebSearch,WebFetch", "--allowedTools", "WebSearch,WebFetch", "--permission-mode", "dontAsk", "--model", o.Model, "--effort", o.Effort, "--json-schema", o.Schema}, nil
 	default:
-		return nil, errors.New("unsupported research provider")
+		return nil, ErrResearchProvider
 	}
 }
 

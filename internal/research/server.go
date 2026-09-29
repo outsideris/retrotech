@@ -188,11 +188,10 @@ func (s *Server) Start(req Request) (*Job, error) {
 	if len([]rune(req.Question)) < 2 || len([]rune(req.Question)) > 4000 {
 		return nil, errors.New("질문은 2~4,000자로 입력해 주세요")
 	}
-	if req.Effort != "medium" && req.Effort != "high" && req.Effort != "xhigh" {
+	switch e := assist.ValidateResearch(req.Provider, req.Model, req.Effort); {
+	case errors.Is(e, assist.ErrResearchEffort):
 		return nil, errors.New("조사 effort를 확인해 주세요")
-	}
-	allowed := (req.Provider == "codex" && (req.Model == "gpt-5.6-sol" || req.Model == "gpt-5.6-terra")) || (req.Provider == "claude" && (req.Model == "claude-sonnet-5" || req.Model == "claude-opus-5"))
-	if !allowed {
+	case e != nil:
 		return nil, errors.New("지원하지 않는 조사 모델입니다")
 	}
 	s.Store.mu.Lock()

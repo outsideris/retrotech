@@ -28,8 +28,9 @@
   };
   if (!canConnect) { connection(false, '로컬에 저장된 HTML 파일에서 열어 주세요.'); return; }
   $('research-retry').onclick = () => refresh();
-  if ([...$('research-model').options].some(o => o.value === saved.model)) $('research-model').value = saved.model;
-  if (['medium','high','xhigh'].includes(saved.effort)) $('research-effort').value = saved.effort;
+  // The menus hold the only list: a saved choice they no longer offer keeps the default.
+  const restore = (id, value) => { if ([...$(id).options].some(o => o.value === value)) $(id).value = value; };
+  restore('research-model', saved.model); restore('research-effort', saved.effort);
   $('research-question').value = saved.draft || '';
   $('research-model').onchange = () => save({model: $('research-model').value});
   $('research-effort').onchange = () => save({effort: $('research-effort').value});

@@ -29,13 +29,18 @@ go build -o .local-bin/retrotech-research ./cmd/research
 
 ## 모델과 로그인
 
-- 기본: **Codex GPT-5.6 Sol / high**. 원자료를 대조하고 이야기의 빈틈을 채우는 질문에 사용한다.
-- 짧은 사실·날짜 확인: **GPT-5.6 Terra / medium**. 출처 확인 기준은 동일하다.
+- 기본: **Codex GPT-6 Sol / high**. 원자료를 대조하고 이야기의 빈틈을 채우는 질문에 사용한다.
+- 짧은 사실·날짜 확인: **Sol / medium**. 출처 확인 기준은 동일하다. GPT-5.6 Terra를 이을 GPT-6 모델이 없어 같은 Sol의 깊이만 낮춘다.
 - 상충하는 증언·메일 스레드·이전 버전 설계의 복원: **Sol / xhigh**.
-- Claude 대안: **Sonnet 5 / high**. 더 까다로운 질문은 **Opus 5 / high 또는 xhigh**.
-- Astra는 이 리더의 선택지에 두지 않는다. 이 추천은 작업 성격에 따른 선택이며 실제 품질·소요 시간은 질문에 따라 다르다.
+- Sol / xhigh로도 결론이 서지 않는 가장 까다로운 질문: **GPT-6 Astra / medium**, 필요하면 high. 공식 안내는 Astra를 Light(low)부터 시작하라고 권하지만 이 리더에는 low가 없다.
+- Claude 대안: **Sonnet 5.5 / high**. 더 까다로운 질문은 **Opus 5.5 / high 또는 xhigh**.
+- 깊이는 medium·high·xhigh만 둔다. low는 출처 대조에 얕다. max는 Claude 문서가 과잉 사고(overthinking)를 경고한다. codex의 ultra는 하위 에이전트에 작업을 나누는데, 이 리더는 하위 에이전트를 끄고 실행한다.
+- 두지 않는 모델: **Fable 5.1**은 요금제에 따라 사용 크레딧으로 청구될 수 있고 `-p` 실행에서는 그때 동의를 묻지 않으므로, 정액 구독을 전제로 한 이 리더에 맞지 않는다. **GPT-6 Luna**는 요약·추출 같은 대량 작업용 효율 모델이다. **Haiku 4.5**는 effort 단계가 없다. 이전 세대(GPT-5.6, Opus 5·Sonnet 5)도 뺐다.
+- 이 추천은 작업 성격에 따른 선택이며 실제 품질·소요 시간은 질문에 따라 다르다.
 
-앱은 설치된 `codex`·`claude` 실행 파일을 찾고 기존 CLI 인증을 사용한다. API 키를 읽거나 저장하지 않는다. 사용자가 터미널에서 `codex login` 또는 `claude auth login`으로 로그인한다. 구독·모델 접근 권한은 각 CLI 계정에 따른다. 모델 목록은 2026-09-16의 공식 안내를 기준으로 했으며 후속 변경 시 CLI와 함께 갱신한다.
+앱은 설치된 `codex`·`claude` 실행 파일을 찾고 기존 CLI 인증을 사용한다. API 키를 읽거나 저장하지 않는다. 사용자가 터미널에서 `codex login` 또는 `claude auth login`으로 로그인한다. 구독·모델 접근 권한은 각 CLI 계정에 따른다. 모델 목록은 2026-09-30의 공식 안내와 claude 2.1.284·codex 0.159.0을 기준으로 2026-09-16 목록에서 갱신했다. Astra는 9/16에 제외했다가 2026-09-30 사용자 결정으로 가장 까다로운 질문용으로 추가했다.
+
+목록을 바꿀 때는 CLI를 먼저 올리고 Assist 카탈로그(`internal/editor/assist/catalog.go`)를 갱신한 뒤 이 목록을 고친다. 목록의 원본은 `internal/editor/assist/research.go`의 `researchModels`·`researchEfforts` 한 곳이며 서버의 요청 검증도 이것을 쓴다. 카탈로그에 없는 모델은 테스트가 거부한다. 사이드바 메뉴(`internal/research/assets/panel.html`)는 정적 HTML이라 함께 고치며, 둘이 어긋나면 `go test`가 실패한다. 그다음 로그인된 제공자로 보고서 사본에서 모델마다 실제 조사를 한 번 확인하고 `.local-bin/retrotech-research`를 다시 빌드한다. 이미 저장된 추가 조사는 답한 모델의 이름을 그대로 유지하며, 새 요청만 목록으로 검사한다.
 
 근거: [Codex 모델](https://learn.chatgpt.com/docs/models), [Codex 비대화형 실행](https://learn.chatgpt.com/docs/non-interactive-mode), [Claude 모델·effort](https://code.claude.com/docs/en/model-config), [Claude 비대화형 실행](https://code.claude.com/docs/en/headless).
 
@@ -62,5 +67,5 @@ HTTP는 보고서와 지정 API만 제공한다. Host를 검증하고 변경 요
 - 사이드바는 최초 연결과 연결 끊김을 구분해 표시하고 5초마다 다시 연결한다. **지금 다시 연결**로 즉시 재시도할 수 있다. 연결이 돌아오면 같은 화면에서 계속하며 질문 초안·선택 문단·본문 위치를 유지한다.
 - 서버가 꺼져 있으면 `start-research.command`를 실행한다. HTML 자체에는 임의의 로컬 프로그램을 실행할 권한이 없으므로 브라우저만으로 꺼진 CLI 연결 프로그램을 시작할 수는 없다.
 - 브라우저가 로컬 네트워크 접근 허용을 요청하면 이 보고서에 허용한다. 파일 URL의 출처 처리는 Chrome에서 검증했다.
-- 업데이트 전 HTML을 이미 열어 둔 경우 한 번 새로 고친다. 다른 프로그램이 포트를 차지해서 서버가 새 포트로 시작한 경우에도 생성된 HTML을 새로 고치면 새 주소를 사용한다.
+- 업데이트 전 HTML을 이미 열어 둔 경우 한 번 새로 고친다. 모델 목록이 바뀐 뒤 예전 메뉴로 보내면 "지원하지 않는 조사 모델입니다"가 표시되며, 새로 고치면 해결된다. 다른 프로그램이 포트를 차지해서 서버가 새 포트로 시작한 경우에도 생성된 HTML을 새로 고치면 새 주소를 사용한다.
 - 2026-09-24 수정 전에는 파일로 열면 채팅 연결을 건너뛰고 다른 주소로 이동하게 했다. 현재 버전은 파일 HTML에서 직접 연결한다. 기존 서버가 종료된 상태라면 수정 여부와 별개로 다시 실행해야 한다.
