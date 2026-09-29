@@ -54,8 +54,8 @@ type Provider interface {
 	Name() string
 	// Available reports whether the CLI is installed.
 	Available() bool
-	// Models lists the models the sidebar may offer for this CLI, newest
-	// first; nil for a CLI with no model choice.
+	// Models lists the models the sidebar may offer for this CLI, in the
+	// CLI's own picker order; nil for a CLI with no model choice.
 	Models() []Model
 	// Run sends the prompt to the CLI and returns its text response + telemetry.
 	Run(ctx context.Context, prompt string, opts Options) (string, Meta, error)

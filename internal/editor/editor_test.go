@@ -526,9 +526,9 @@ func TestAssistRunValidation(t *testing.T) {
 	// failure — the answer is the same whether or not that CLI is installed.
 	for _, body := range []map[string]string{
 		{"provider": "claude", "prompt": "hi", "model": "opus"},
-		{"provider": "claude", "prompt": "hi", "model": "claude-opus-5", "effort": "ultra"},
+		{"provider": "claude", "prompt": "hi", "model": "claude-opus-5-5", "effort": "ultra"},
 		{"provider": "codex", "prompt": "hi", "model": "gpt-5-codex"},
-		{"provider": "codex", "prompt": "hi", "model": "gpt-5.5", "effort": "max"},
+		{"provider": "codex", "prompt": "hi", "model": "gpt-6-luna", "effort": "ultra"},
 	} {
 		resp, _ := do(t, srv, "POST", "/_write/api/assist/run", body)
 		mustStatus(t, resp, http.StatusBadRequest)

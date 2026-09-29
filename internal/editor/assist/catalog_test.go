@@ -52,16 +52,18 @@ func TestCatalogEntriesAreWellFormed(t *testing.T) {
 func TestCatalogOffersTheCurrentModels(t *testing.T) {
 	want := map[string][]Model{
 		"claude": {
-			{ID: "claude-opus-5", Label: "Opus 5", Efforts: []string{"low", "medium", "high", "xhigh", "max"}},
-			{ID: "claude-sonnet-5", Label: "Sonnet 5", Efforts: []string{"low", "medium", "high", "xhigh", "max"}},
+			{ID: "claude-opus-5-5", Label: "Opus 5.5", Efforts: []string{"low", "medium", "high", "xhigh", "max"}},
+			{ID: "claude-sonnet-5-5", Label: "Sonnet 5.5", Efforts: []string{"low", "medium", "high", "xhigh", "max"}},
 			{ID: "claude-fable-5-1", Label: "Fable 5.1", Efforts: []string{"low", "medium", "high", "xhigh", "max"}},
 			{ID: "claude-haiku-4-5-20251001", Label: "Haiku 4.5", Efforts: nil}, // takes no level
 		},
 		"codex": {
+			{ID: "gpt-6-astra", Label: "GPT-6 Astra", Efforts: []string{"low", "medium", "high", "xhigh", "max", "ultra"}},
+			{ID: "gpt-6-sol", Label: "GPT-6 Sol", Efforts: []string{"low", "medium", "high", "xhigh", "max", "ultra"}},
+			{ID: "gpt-6-luna", Label: "GPT-6 Luna", Efforts: []string{"low", "medium", "high", "xhigh", "max"}},
 			{ID: "gpt-5.6-sol", Label: "GPT-5.6 Sol", Efforts: []string{"low", "medium", "high", "xhigh", "max", "ultra"}},
 			{ID: "gpt-5.6-terra", Label: "GPT-5.6 Terra", Efforts: []string{"low", "medium", "high", "xhigh", "max", "ultra"}},
 			{ID: "gpt-5.6-luna", Label: "GPT-5.6 Luna", Efforts: []string{"low", "medium", "high", "xhigh", "max"}},
-			{ID: "gpt-5.5", Label: "GPT-5.5", Efforts: []string{"low", "medium", "high", "xhigh"}},
 		},
 		"gemini": nil, // the agy/gemini CLI exposes no model or effort flags
 	}
@@ -85,17 +87,20 @@ func TestValidateOptions(t *testing.T) {
 		{"cli default model and effort", "claude", Options{}, ""},
 		{"cli default model takes any level a model offers", "claude", Options{Effort: "max"}, ""},
 		{"cli default model rejects a level no model offers", "claude", Options{Effort: "ultra"}, "unsupported effort"},
-		{"claude model with a supported level", "claude", Options{Model: "claude-opus-5", Effort: "xhigh"}, ""},
-		{"claude model with codex's top level", "claude", Options{Model: "claude-sonnet-5", Effort: "ultra"}, "does not support effort"},
+		{"claude model with a supported level", "claude", Options{Model: "claude-opus-5-5", Effort: "xhigh"}, ""},
+		{"claude model at its top level", "claude", Options{Model: "claude-sonnet-5-5", Effort: "max"}, ""},
+		{"claude model with codex's top level", "claude", Options{Model: "claude-sonnet-5-5", Effort: "ultra"}, "does not support effort"},
 		{"model that takes no level", "claude", Options{Model: "claude-haiku-4-5-20251001"}, ""},
 		{"model that takes no level, given one", "claude", Options{Model: "claude-haiku-4-5-20251001", Effort: "low"}, "takes no effort level"},
 		{"retired claude alias", "claude", Options{Model: "opus"}, "unknown model"},
+		{"superseded claude model", "claude", Options{Model: "claude-opus-5"}, "unknown model"},
 
-		{"codex model at ultra", "codex", Options{Model: "gpt-5.6-sol", Effort: "ultra"}, ""},
-		{"codex model past its own ultra", "codex", Options{Model: "gpt-5.6-luna", Effort: "ultra"}, "does not support effort"},
-		{"model this codex cannot run", "codex", Options{Model: "gpt-6-astra"}, "unknown model"},
-		{"codex model past its top level", "codex", Options{Model: "gpt-5.5", Effort: "max"}, "does not support effort"},
-		{"retired codex effort", "codex", Options{Model: "gpt-5.6-sol", Effort: "minimal"}, "does not support effort"},
+		{"cli default model takes codex's top level", "codex", Options{Effort: "ultra"}, ""},
+		{"codex model at ultra", "codex", Options{Model: "gpt-6-astra", Effort: "ultra"}, ""},
+		{"codex model past its own ultra", "codex", Options{Model: "gpt-6-luna", Effort: "ultra"}, "does not support effort"},
+		{"older codex model past its top level", "codex", Options{Model: "gpt-5.6-luna", Effort: "ultra"}, "does not support effort"},
+		{"retiring codex model", "codex", Options{Model: "gpt-5.5"}, "unknown model"},
+		{"retired codex effort", "codex", Options{Model: "gpt-6-sol", Effort: "minimal"}, "does not support effort"},
 		{"retired codex model", "codex", Options{Model: "gpt-5-codex"}, "unknown model"},
 		{"codex model hidden from the account's catalog", "codex", Options{Model: "gpt-reserve"}, "unknown model"},
 
@@ -136,11 +141,12 @@ func TestRunRejectsUncatalogedOptionsWithoutRunningTheCLI(t *testing.T) {
 		opts     Options
 	}{
 		{"retired claude alias", "claude", Options{Model: "opus", Effort: "high"}},
-		{"claude at codex's top level", "claude", Options{Model: "claude-opus-5", Effort: "ultra"}},
+		{"claude at codex's top level", "claude", Options{Model: "claude-opus-5-5", Effort: "ultra"}},
 		{"effort on a model that takes none", "claude", Options{Model: "claude-haiku-4-5-20251001", Effort: "high"}},
 		{"retired codex model", "codex", Options{Model: "gpt-5-codex"}},
-		{"codex past its model's top level", "codex", Options{Model: "gpt-5.5", Effort: "ultra"}},
-		{"retired codex effort", "codex", Options{Model: "gpt-5.6-sol", Effort: "minimal"}},
+		{"retiring codex model", "codex", Options{Model: "gpt-5.5", Effort: "low"}},
+		{"codex past its model's top level", "codex", Options{Model: "gpt-6-luna", Effort: "ultra"}},
+		{"retired codex effort", "codex", Options{Model: "gpt-6-sol", Effort: "minimal"}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			binDir := t.TempDir()

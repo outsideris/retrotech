@@ -52,6 +52,7 @@
 
 ## 마지막 검토
 
+- **2026-09-30:** Assist 카탈로그를 claude 2.1.284·codex 0.159.0 기준으로 갱신했다. **새 모델은 설치된 CLI 가 알아야 돈다** — codex 0.146.0 은 GPT-6 를 서버에서 거절당했고 claude 2.1.278 은 Opus 5.5 를 `unrecognized_model` 로 표시했다. 그래서 카탈로그 갱신은 **CLI 업그레이드 → 카탈로그 → 모델마다 `POST /_write/api/assist/run` 으로 짧게 호출** 순서다. 호출은 "모델이 돈다"만 보여 준다: CLI 는 모델이 못 받는 effort 를 오류 없이 실행하므로(GPT-6 Luna 에 ultra) 모델별 effort 상한은 CLI 모델 레지스트리와 codex 계정 카탈로그로 확인한다. claude 호출은 CLI 로그인(`claude auth status` 의 `loggedIn`)이 살아 있어야 한다.
 - **2026-09-20:** Assist 사이드바의 모델/effort 어휘를 `internal/editor/assist/catalog.go` 한 곳으로 모았다. **CLI(claude·codex)를 업그레이드하면 이 카탈로그를 다시 확인한다** — CLI 는 기계가 읽을 모델 목록을 내주지 않아 수기 목록이고, 계정에 있는 모델이라도 설치된 CLI 버전이 못 쓰는 경우가 있다(오늘 GPT-6 Astra 가 그래서 빠져 있다). 확인 방법: 카탈로그의 모델 하나씩 `POST /_write/api/assist/run` 으로 짧게 호출. 에디터 UI 는 `cmd/build` 산출물이 아니므로 사이트 게이트에는 영향이 없다.
 - **2026-08-08:** 아이템 `<description>` 을 HTML 로 발행하도록 변경하며 피드 골든을 갱신. 골든은 이제 "`gen-rss.js` 바이트 패리티"가 아니라 **구독자 계약(guid/enclosure/pubDate) + 현재 피드 형태**의 회귀 가드다 — 의도된 피드 변경 시 갱신 후 `git diff` 로 계약 필드 불변을 확인한다.
 - **2026-08-01:** 팟캐스트 챕터 도입 — 정적 산출물 항목에 조건부 `episodes/<id>.chapters.json` 추가. 피드 골든은 챕터 미선언 시 그대로 유효(네임스페이스 조건부 선언).

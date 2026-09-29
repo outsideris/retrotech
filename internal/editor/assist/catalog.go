@@ -17,40 +17,49 @@ type Model struct {
 var (
 	effortsToMax   = []string{"low", "medium", "high", "xhigh", "max"}
 	effortsToUltra = []string{"low", "medium", "high", "xhigh", "max", "ultra"}
-	effortsToXHigh = []string{"low", "medium", "high", "xhigh"}
 )
 
-// claudeModels / codexModels are the models each CLI can run today, newest
-// first. An empty model id ("use whatever the CLI is configured for") is not
-// listed here — the sidebar prepends that choice itself and validateOptions
-// accepts it against the provider's union of levels.
+// claudeModels / codexModels are the models each CLI can run today, in the
+// order the CLI's own model picker lists them. An empty model id ("use
+// whatever the CLI is configured for") is not listed here — the sidebar
+// prepends that choice itself and validateOptions accepts it against the
+// provider's union of levels.
 //
-// Kept by hand and checked against the installed CLIs on 2026-09-20 —
-// claude 2.1.278 and codex 0.146.0. Refresh it after a CLI upgrade; the CLIs
-// do not report a machine-readable list this code could read instead.
+// Kept by hand and checked against the installed CLIs on 2026-09-30 —
+// claude 2.1.284 and codex 0.159.0. Refresh it after a CLI upgrade; the CLIs
+// do not report a machine-readable list this code could read instead. A new
+// model can outrun the installed CLI: codex 0.146.0 refused the GPT-6 models
+// ("not supported when using Codex with a ChatGPT account") and claude 2.1.278
+// flagged Opus 5.5 as an unrecognized model, so upgrade the CLI first.
 //
-//   - claude: ids and display names come from the CLI's own model catalog.
-//     Every 5-family model takes low…max. Haiku 4.5 takes no level at all:
-//     the CLI accepts --effort for it and silently drops it, so offering one
-//     would only promise thinking that never happens.
-//   - codex: the account's catalog (~/.codex/models_cache.json) and the API's
-//     own per-model error enumerate these levels. GPT-6 Astra is deliberately
-//     absent: it is the account's newest model, but this codex refuses it with
-//     "The 'gpt-6-astra' model requires a newer version of Codex" — add it
-//     (low…ultra, like Sol) once codex is upgraded.
+//   - claude: ids, display names and effort support come from the CLI's own
+//     model registry. Only the current lineup is offered; the CLI's picker
+//     now labels Opus 5 and Sonnet 5 "Previous … version". Every 5-family
+//     model takes low…max. Haiku 4.5 takes no level at all: the CLI accepts
+//     --effort for it and silently drops it, so offering one would only
+//     promise thinking that never happens.
+//   - codex: the account's catalog (~/.codex/models_cache.json) lists the
+//     models and the levels each accepts; hidden entries (gpt-reserve,
+//     codex-auto-review) are not offered. GPT-5.5 is left out although the
+//     catalog still lists it: it retires on 2026-10-14, with GPT-5.6 Sol
+//     named as its replacement. Neither the CLI nor the API enforces those
+//     levels any more — GPT-6 Luna given ultra ran without an error — so, as
+//     with Haiku, the catalog has to hold each model's ceiling itself.
 var (
 	claudeModels = []Model{
-		{ID: "claude-opus-5", Label: "Opus 5", Efforts: effortsToMax},
-		{ID: "claude-sonnet-5", Label: "Sonnet 5", Efforts: effortsToMax},
+		{ID: "claude-opus-5-5", Label: "Opus 5.5", Efforts: effortsToMax},
+		{ID: "claude-sonnet-5-5", Label: "Sonnet 5.5", Efforts: effortsToMax},
 		{ID: "claude-fable-5-1", Label: "Fable 5.1", Efforts: effortsToMax},
 		{ID: "claude-haiku-4-5-20251001", Label: "Haiku 4.5", Efforts: nil},
 	}
 
 	codexModels = []Model{
+		{ID: "gpt-6-astra", Label: "GPT-6 Astra", Efforts: effortsToUltra},
+		{ID: "gpt-6-sol", Label: "GPT-6 Sol", Efforts: effortsToUltra},
+		{ID: "gpt-6-luna", Label: "GPT-6 Luna", Efforts: effortsToMax},
 		{ID: "gpt-5.6-sol", Label: "GPT-5.6 Sol", Efforts: effortsToUltra},
 		{ID: "gpt-5.6-terra", Label: "GPT-5.6 Terra", Efforts: effortsToUltra},
 		{ID: "gpt-5.6-luna", Label: "GPT-5.6 Luna", Efforts: effortsToMax},
-		{ID: "gpt-5.5", Label: "GPT-5.5", Efforts: effortsToXHigh},
 	}
 )
 
