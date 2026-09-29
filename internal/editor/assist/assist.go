@@ -28,9 +28,10 @@ import (
 var ErrUnavailable = errors.New("provider CLI not installed")
 
 // Options carry per-call tuning. Empty fields mean "use the CLI default" — the
-// model the CLI is configured for, and no effort flag at all. A non-empty
-// value must name one of the provider's catalog models (see catalog.go) and a
-// level that model accepts; Validate checks both before anything runs.
+// model the CLI is configured for, and no effort flag at all — except that a
+// provider may require a model (see RequiresModel). A non-empty value must
+// name one of the provider's catalog models (see catalog.go) and a level that
+// model accepts; Validate checks all of this before anything runs.
 type Options struct {
 	Model  string
 	Effort string

@@ -165,15 +165,27 @@ struct 순서로 이동). 측정: 23편 재출력 시 총 65줄 변경, **전부
   **CLI 업그레이드 때 갱신한다** — CLI 가 기계가 읽을 모델 목록을 내주지 않아 손으로 유지한다.
   반대로 새 모델이 설치된 CLI 보다 앞서 나오기도 하므로(codex 0.146.0 은 GPT-6 를 거절했고 claude
   2.1.278 은 Opus 5.5 를 모르는 모델로 표시했다) **새 모델을 넣기 전에 CLI 부터 올린다.** 목록 기준:
-  claude 는 CLI 모델 레지스트리의 현재 라인업만(이전 세대 Opus 5·Sonnet 5 제외), codex 는 계정
-  카탈로그(`~/.codex/models_cache.json`)에서 숨김이 아니고 은퇴 일정이 잡히지 않은 모델.
+  claude 는 CLI 모델 레지스트리의 현재 라인업만(이전 세대 Opus 5·Sonnet 5 제외, Fable 은 아래 가드로
+  제외), codex 는 계정 카탈로그(`~/.codex/models_cache.json`)에서 숨김이 아니고 은퇴 일정이 잡히지 않은 모델.
+- **사용 크레딧 가드(2026-09-30):** Fable 은 요금제·좌석 등급에 따라 플랜 한도 대신 **사용 크레딧**으로
+  청구되고, `-p` 비대화 실행은 대화형 세션의 동의 창 없이 그대로 청구한다. 이를 끄는 플래그·설정은 없다
+  ([model-config](https://code.claude.com/docs/en/model-config)). 정액 구독 안에서만 쓰도록 두 경로를 막는다.
+  ① **카탈로그에서 제외** — Fable 5.1 이 목록에 없어 `claude-fable-5-1`(과 별칭 `fable`·`best`)은 CLI 가
+  돌기 전에 400 이다. 갱신 때도 CLI `/model` 피커가 "Requires usage credits" 로 표시하는 모델은 넣지 않는다.
+  ② **claude 는 모델 명시 필수**(`catalog.go` 의 `modelRequired`, `assist.RequiresModel`) — 빈 모델은 CLI
+  설정의 모델을 따르는데 대화형 `/model` 선택이 사용자 설정에 저장되므로 Fable 이 될 수 있다. `--model` 은
+  설정·`ANTHROPIC_MODEL` 보다 우선하므로 카탈로그 모델을 넘기면 CLI 설정과 무관하게 목록 안에서만 돈다.
+  codex 는 빈 모델(`~/.codex/config.toml` 의 모델)을 그대로 받는다. 조사 리더도 같은 이유로 Fable 을 두지
+  않는다([RESEARCH_WORKBENCH.md](../RESEARCH_WORKBENCH.md#모델과-로그인)).
 - **API:** `GET /api/assist/providers`(이름·설치여부·**모델 목록**: `{id,label,efforts}`, 노브 없는
-  CLI 는 `[]`), `POST /api/assist/run`({provider,prompt,model,effort}→{output,meta}, 3분 타임아웃,
-  미설치→503, 카탈로그 밖 model/effort→400).
+  CLI 는 `[]`, **`requiresModel`**: 빈 모델을 받지 않는 제공자 — 지금은 claude 만 true),
+  `POST /api/assist/run`({provider,prompt,model,effort}→{output,meta}, 3분 타임아웃, 미설치→503,
+  카탈로그 밖 model/effort·claude 의 빈 model→400 — `analyze` 도 같은 검증).
 - **UI:** 브랜드행 `✦ Assist` 토글 → 우측 패널. 제공자 버튼 + **모델/effort 드롭다운**(서버 카탈로그로
   채운다 — 모델을 바꾸면 effort 목록이 그 모델 기준으로 다시 그려지고, 못 받는 effort 는 `(기본)` 으로
-  떨어진다. effort 를 안 받는 모델은 effort 노브만, 모델이 없는 gemini 는 줄 전체를 숨긴다.
-  localStorage 저장) + **디버그 모드 체크박스**(체크해야 대화창=프롬프트/실행/출력 열림) + **최근 사용
+  떨어진다. `requiresModel` 인 claude 는 모델 목록에 `(기본)` 이 없어, 저장값이 목록에 없으면(예전에
+  고른 Fable·`(기본)`) 첫 모델 Opus 5.5 로 떨어진다. effort 를 안 받는 모델은 effort 노브만, 모델이 없는
+  gemini 는 줄 전체를 숨긴다. localStorage 저장) + **디버그 모드 체크박스**(체크해야 대화창=프롬프트/실행/출력 열림) + **최근 사용
   trace 3개**(`provider · model · effort · 시간 · 비용USD`, localStorage 보존).
   레이아웃 flex 라 미리보기와 공존, 미설치 제공자 비활성, ⌘/Ctrl+Enter 실행.
 - **대본 import:** 사이드바 하단 드롭존(.md 드래그앤드롭/클릭). `POST /api/assist/analyze` 가 선택 CLI 로

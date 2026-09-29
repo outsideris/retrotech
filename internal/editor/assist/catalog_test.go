@@ -51,10 +51,9 @@ func TestCatalogEntriesAreWellFormed(t *testing.T) {
 // that updates this expectation too.
 func TestCatalogOffersTheCurrentModels(t *testing.T) {
 	want := map[string][]Model{
-		"claude": {
+		"claude": { // Fable 5.1 left out: see TestCatalogLeavesOutFable
 			{ID: "claude-opus-5-5", Label: "Opus 5.5", Efforts: []string{"low", "medium", "high", "xhigh", "max"}},
 			{ID: "claude-sonnet-5-5", Label: "Sonnet 5.5", Efforts: []string{"low", "medium", "high", "xhigh", "max"}},
-			{ID: "claude-fable-5-1", Label: "Fable 5.1", Efforts: []string{"low", "medium", "high", "xhigh", "max"}},
 			{ID: "claude-haiku-4-5-20251001", Label: "Haiku 4.5", Efforts: nil}, // takes no level
 		},
 		"codex": {
@@ -77,6 +76,36 @@ func TestCatalogOffersTheCurrentModels(t *testing.T) {
 	}
 }
 
+// Depending on the plan, Fable bills usage credits instead of the plan's
+// included limits, and a -p run bills them without the consent prompt an
+// interactive session shows. The pin above changes with every CLI refresh;
+// this keeps a refresh from quietly bringing Fable back, under its id or
+// under "best", the alias that picks Fable wherever it is available.
+func TestCatalogLeavesOutFable(t *testing.T) {
+	for _, p := range Providers() {
+		for _, m := range p.Models() {
+			if strings.Contains(strings.ToLower(m.ID+" "+m.Label), "fable") || m.ID == "best" {
+				t.Errorf("%s offers %q (%s): Fable can bill usage credits without asking", p.Name(), m.ID, m.Label)
+			}
+		}
+	}
+}
+
+// Without --model the claude CLI runs the model its settings name, and an
+// interactive /model pick is saved there — a Fable pick too. So every claude
+// run must name a catalog model; codex and gemini keep the CLI default.
+func TestOnlyClaudeRequiresAModel(t *testing.T) {
+	want := map[string]bool{"claude": true, "codex": false, "gemini": false}
+	for _, p := range Providers() {
+		if got := RequiresModel(p); got != want[p.Name()] {
+			t.Errorf("RequiresModel(%s) = %v, want %v", p.Name(), got, want[p.Name()])
+		}
+	}
+	if len(want) != len(Providers()) {
+		t.Errorf("a provider was added or removed without updating this expectation")
+	}
+}
+
 func TestValidateOptions(t *testing.T) {
 	for _, tc := range []struct {
 		name     string
@@ -84,18 +113,23 @@ func TestValidateOptions(t *testing.T) {
 		opts     Options
 		wantErr  string // "" = must be accepted
 	}{
-		{"cli default model and effort", "claude", Options{}, ""},
-		{"cli default model takes any level a model offers", "claude", Options{Effort: "max"}, ""},
-		{"cli default model rejects a level no model offers", "claude", Options{Effort: "ultra"}, "unsupported effort"},
+		{"claude refuses the cli default model", "claude", Options{}, "model is required"},
+		{"claude refuses the cli default model with a level", "claude", Options{Effort: "max"}, "model is required"},
+		{"claude model with the cli default level", "claude", Options{Model: "claude-opus-5-5"}, ""},
 		{"claude model with a supported level", "claude", Options{Model: "claude-opus-5-5", Effort: "xhigh"}, ""},
 		{"claude model at its top level", "claude", Options{Model: "claude-sonnet-5-5", Effort: "max"}, ""},
 		{"claude model with codex's top level", "claude", Options{Model: "claude-sonnet-5-5", Effort: "ultra"}, "does not support effort"},
 		{"model that takes no level", "claude", Options{Model: "claude-haiku-4-5-20251001"}, ""},
 		{"model that takes no level, given one", "claude", Options{Model: "claude-haiku-4-5-20251001", Effort: "low"}, "takes no effort level"},
+		{"fable, which can bill usage credits unasked", "claude", Options{Model: "claude-fable-5-1", Effort: "high"}, "unknown model"},
+		{"fable alias", "claude", Options{Model: "fable"}, "unknown model"},
+		{"best alias, which picks fable where available", "claude", Options{Model: "best"}, "unknown model"},
 		{"retired claude alias", "claude", Options{Model: "opus"}, "unknown model"},
 		{"superseded claude model", "claude", Options{Model: "claude-opus-5"}, "unknown model"},
 
+		{"cli default model and effort", "codex", Options{}, ""},
 		{"cli default model takes codex's top level", "codex", Options{Effort: "ultra"}, ""},
+		{"cli default model rejects a level no model offers", "codex", Options{Effort: "minimal"}, "unsupported effort"},
 		{"codex model at ultra", "codex", Options{Model: "gpt-6-astra", Effort: "ultra"}, ""},
 		{"codex model past its own ultra", "codex", Options{Model: "gpt-6-luna", Effort: "ultra"}, "does not support effort"},
 		{"older codex model past its top level", "codex", Options{Model: "gpt-5.6-luna", Effort: "ultra"}, "does not support effort"},
@@ -141,6 +175,8 @@ func TestRunRejectsUncatalogedOptionsWithoutRunningTheCLI(t *testing.T) {
 		opts     Options
 	}{
 		{"retired claude alias", "claude", Options{Model: "opus", Effort: "high"}},
+		{"fable, which can bill usage credits unasked", "claude", Options{Model: "claude-fable-5-1", Effort: "high"}},
+		{"claude on the cli default model, which could be fable", "claude", Options{}},
 		{"claude at codex's top level", "claude", Options{Model: "claude-opus-5-5", Effort: "ultra"}},
 		{"effort on a model that takes none", "claude", Options{Model: "claude-haiku-4-5-20251001", Effort: "high"}},
 		{"retired codex model", "codex", Options{Model: "gpt-5-codex"}},

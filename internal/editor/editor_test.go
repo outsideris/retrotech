@@ -414,8 +414,6 @@ func TestWriteAssistError(t *testing.T) {
 	}
 }
 
-// The sidebar fills its model/effort dropdowns from this payload, so it must
-// carry each CLI's models and the levels each model takes.
 // app.js hides the effort knob through this id when the chosen model takes no
 // level. Renaming it in one file and not the other throws at load and leaves
 // the sidebar dead, which no Go test would otherwise notice.
@@ -436,14 +434,31 @@ func TestAssistEffortKnobIdIsWiredUp(t *testing.T) {
 	}
 }
 
+// app.js leaves "(기본)" out of the model list of a provider whose payload says
+// requiresModel. Renaming the field on one side only would put "(기본)" back in
+// claude's list, as a choice the server then refuses on every run.
+func TestAssistRequiresModelFieldIsWiredUp(t *testing.T) {
+	js, err := assetsFS.ReadFile("assets/app.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(js), "p.requiresModel") {
+		t.Error("app.js no longer reads requiresModel from the providers payload")
+	}
+}
+
+// The sidebar fills its model/effort dropdowns from this payload, so it must
+// carry each CLI's models, the levels each model takes, and whether a run may
+// leave the model to the CLI.
 func TestAssistProvidersEndpoint(t *testing.T) {
 	srv, _ := newTestServer(t)
 	resp, body := do(t, srv, "GET", "/_write/api/assist/providers", nil)
 	mustStatus(t, resp, http.StatusOK)
 	var list []struct {
-		Name      string `json:"name"`
-		Available bool   `json:"available"`
-		Models    []struct {
+		Name          string `json:"name"`
+		Available     bool   `json:"available"`
+		RequiresModel bool   `json:"requiresModel"`
+		Models        []struct {
 			ID      string   `json:"id"`
 			Label   string   `json:"label"`
 			Efforts []string `json:"efforts"`
@@ -488,6 +503,12 @@ func TestAssistProvidersEndpoint(t *testing.T) {
 	if !strings.Contains(string(body), `"models":[]`) {
 		t.Errorf("gemini's models should serialize as []: %s", body)
 	}
+	// Only claude drops the CLI's own model: its settings could name Fable.
+	for n, want := range map[string]bool{"claude": true, "codex": false, "gemini": false} {
+		if got := list[byName[n]].RequiresModel; got != want {
+			t.Errorf("%s requiresModel = %v, want %v: %s", n, got, want, body)
+		}
+	}
 }
 
 // stubAssistCLIs puts fake claude/codex/gemini executables on PATH and returns
@@ -520,11 +541,14 @@ func TestAssistRunValidation(t *testing.T) {
 	// Unknown provider and empty prompt are rejected before any CLI runs.
 	resp, _ := do(t, srv, "POST", "/_write/api/assist/run", map[string]string{"provider": "nope", "prompt": "hi"})
 	mustStatus(t, resp, http.StatusBadRequest)
-	resp, _ = do(t, srv, "POST", "/_write/api/assist/run", map[string]string{"provider": "claude", "prompt": "   "})
+	resp, _ = do(t, srv, "POST", "/_write/api/assist/run", map[string]string{"provider": "claude", "model": "claude-opus-5-5", "prompt": "   "})
 	mustStatus(t, resp, http.StatusBadRequest)
-	// A model or effort outside the catalog is a request error here, not a CLI
-	// failure — the answer is the same whether or not that CLI is installed.
+	// A model or effort outside the catalog, or no model where the provider
+	// requires one, is a request error here, not a CLI failure — the answer is
+	// the same whether or not that CLI is installed.
 	for _, body := range []map[string]string{
+		{"provider": "claude", "prompt": "hi"}, // the CLI's own model could be Fable
+		{"provider": "claude", "prompt": "hi", "model": "claude-fable-5-1"},
 		{"provider": "claude", "prompt": "hi", "model": "opus"},
 		{"provider": "claude", "prompt": "hi", "model": "claude-opus-5-5", "effort": "ultra"},
 		{"provider": "codex", "prompt": "hi", "model": "gpt-5-codex"},
@@ -540,10 +564,18 @@ func TestAssistAnalyzeValidation(t *testing.T) {
 	noCLIRan := stubAssistCLIs(t)
 	defer noCLIRan()
 	// Empty script and unknown provider are rejected before any CLI runs.
-	resp, _ := do(t, srv, "POST", "/_write/api/assist/analyze", map[string]string{"provider": "claude", "script": "   "})
+	resp, _ := do(t, srv, "POST", "/_write/api/assist/analyze", map[string]string{"provider": "claude", "model": "claude-opus-5-5", "script": "   "})
 	mustStatus(t, resp, http.StatusBadRequest)
 	resp, _ = do(t, srv, "POST", "/_write/api/assist/analyze", map[string]string{"provider": "nope", "script": "# Title"})
 	mustStatus(t, resp, http.StatusBadRequest)
-	resp, _ = do(t, srv, "POST", "/_write/api/assist/analyze", map[string]string{"provider": "codex", "script": "# Title", "model": "gpt-5-codex"})
-	mustStatus(t, resp, http.StatusBadRequest)
+	// So are the options the catalog refuses — a long analysis is the run
+	// where an unasked Fable bill would hurt most.
+	for _, body := range []map[string]string{
+		{"provider": "codex", "script": "# Title", "model": "gpt-5-codex"},
+		{"provider": "claude", "script": "# Title"},
+		{"provider": "claude", "script": "# Title", "model": "claude-fable-5-1"},
+	} {
+		resp, _ := do(t, srv, "POST", "/_write/api/assist/analyze", body)
+		mustStatus(t, resp, http.StatusBadRequest)
+	}
 }

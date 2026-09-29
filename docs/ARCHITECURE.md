@@ -182,6 +182,8 @@ go run ./cmd/build
   고를 수 있는 **모델과 모델별 effort 는 `assist/catalog.go` 한 곳**에 있고 `/api/assist/providers`
   가 그대로 내보내므로, 사이드바 드롭다운과 서버 검증이 갈라지지 않는다. 카탈로그는 설치된 CLI 기준의
   수기 목록이라 CLI 업그레이드 때 함께 갱신한다([episode-editor-app.md](plan/episode-editor-app.md)).
+  사용 크레딧으로 청구될 수 있는 Fable 은 카탈로그에 없고, claude 는 요청마다 카탈로그 모델을 명시해야
+  한다(`requiresModel` — 빈 모델은 400). `--model` 이 CLI 설정보다 우선하므로 claude 실행은 늘 이 목록 안에 있다.
 - **오디오 업로드·검증(`audio.go`):** 오디오 fieldset 의 드롭존에 mp3 를 끌어놓으면(또는 클릭 선택)
   size·duration 분석 후 "R2 에 업로드" 버튼이 활성화된다. 업로드는 사이드카가 임시 파일로 스풀한 뒤
   **wrangler CLI**(`wrangler` 또는 `npx -y wrangler`; assist CLI 처럼 자체 인증 — 앱은 키를 보관하지

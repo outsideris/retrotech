@@ -792,6 +792,12 @@ const PROVIDER_LABELS = { claude: "Claude", codex: "Codex", gemini: "Gemini" };
 // models (gemini) has no knobs to show.
 const assistModels = new Map();
 
+// Providers whose every run must name a catalog model (requiresModel): their
+// model dropdown has no "(기본)". For claude, "(기본)" would run whatever
+// model the CLI's settings name — possibly Fable, which can bill usage
+// credits without asking in a non-interactive run.
+const modelRequired = new Set();
+
 const ASSIST_TRACE_KEY = "editor:assist-traces";
 
 function lsGet(key) {
@@ -817,8 +823,10 @@ async function loadAssistProviders() {
     return;
   }
   assistModels.clear();
+  modelRequired.clear();
   for (const p of list) {
     assistModels.set(p.name, p.models || []);
+    if (p.requiresModel) modelRequired.add(p.name);
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "assist-provider";
@@ -859,6 +867,7 @@ function renderTuning(provider) {
     els.assistModel,
     models.map((m) => ({ value: m.id, label: m.label })),
     lsGet(`editor:assist-model:${provider}`),
+    !modelRequired.has(provider),
   );
   renderEfforts(provider);
 }
@@ -888,18 +897,22 @@ function unionEfforts(models) {
   return all;
 }
 
-// fillSelect renders options after a leading "(기본)" = let the CLI decide,
-// and restores saved only if it is still on offer — a model dropped from the
-// catalog, or an effort the newly chosen model can't take, falls back to it.
-function fillSelect(select, options, saved) {
+// fillSelect renders options after a leading "(기본)" = let the CLI decide
+// (left out when withDefault is false), and restores saved only if it is
+// still on offer — a model dropped from the catalog, or an effort the newly
+// chosen model can't take, falls back to the first entry: "(기본)", or the
+// first option where there is no "(기본)".
+function fillSelect(select, options, saved, withDefault = true) {
+  const entries = withDefault ? [{ value: "", label: "(기본)" }, ...options] : options;
   select.replaceChildren();
-  for (const { value, label } of [{ value: "", label: "(기본)" }, ...options]) {
+  for (const { value, label } of entries) {
     const opt = document.createElement("option");
     opt.value = value;
     opt.textContent = label;
     select.appendChild(opt);
   }
-  select.value = options.some((o) => o.value === saved) ? saved : "";
+  if (entries.some((o) => o.value === saved)) select.value = saved;
+  else select.selectedIndex = 0;
 }
 
 function setAssistStatus(message, kind) {

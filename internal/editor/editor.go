@@ -265,14 +265,16 @@ func (e *Editor) handleDraftPublish(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"id": id})
 }
 
-// handleAssistProviders lists the AI CLIs with the models each one offers, so
-// the sidebar's model/effort dropdowns are filled from this one catalog instead
-// of a second copy in the UI that could drift from what the server accepts.
+// handleAssistProviders lists the AI CLIs with the models each one offers, and
+// whether a run must name one of them, so the sidebar's model/effort dropdowns
+// are filled from this one catalog instead of a second copy in the UI that
+// could drift from what the server accepts.
 func (e *Editor) handleAssistProviders(w http.ResponseWriter, r *http.Request) {
 	type providerInfo struct {
-		Name      string         `json:"name"`
-		Available bool           `json:"available"`
-		Models    []assist.Model `json:"models"`
+		Name          string         `json:"name"`
+		Available     bool           `json:"available"`
+		Models        []assist.Model `json:"models"`
+		RequiresModel bool           `json:"requiresModel"`
 	}
 	out := make([]providerInfo, 0)
 	for _, p := range assist.Providers() {
@@ -280,7 +282,12 @@ func (e *Editor) handleAssistProviders(w http.ResponseWriter, r *http.Request) {
 		if models == nil {
 			models = []assist.Model{} // a CLI with no knobs serializes as [], not null
 		}
-		out = append(out, providerInfo{Name: p.Name(), Available: p.Available(), Models: models})
+		out = append(out, providerInfo{
+			Name:          p.Name(),
+			Available:     p.Available(),
+			Models:        models,
+			RequiresModel: assist.RequiresModel(p),
+		})
 	}
 	writeJSON(w, http.StatusOK, out)
 }
