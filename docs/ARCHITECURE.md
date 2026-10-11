@@ -62,7 +62,7 @@ retrotech/
 │  ├─ styles.css           # 테마+보정 CSS 컴파일본(빌드가 /assets/styles.<hash>.css 로 핑거프린트)
 │  └─ _headers             # Cloudflare Pages 응답 헤더(/assets/* 캐시) — DEPLOYMENT.md
 ├─ scripts/
-│  └─ cf-build.sh          # Cloudflare 빌드 래퍼(go run ./cmd/build + 텔레그램 알림)
+│  └─ cf-build.sh          # Cloudflare 빌드 래퍼(go run ./cmd/build + 배포 알림)
 ├─ go.mod / go.sum
 └─ dist/                   # 빌드 산출물(gitignore). 배포 대상.
 ```
@@ -219,7 +219,7 @@ go run ./cmd/build
 ## 배포
 
 - **Cloudflare Pages** git 연동으로 빌드(`bash scripts/cf-build.sh` → `go run ./cmd/build`) 후 `dist/` 를 배포. 운영 도메인 `https://retrotech.outsider.dev`.
-- 대시보드에 `GO_VERSION` 환경변수가 필요하고, 프로덕션에 `ANALYTICS_ID` 를 설정한다. 배포 알림(텔레그램) 포함 상세는 → [DEPLOYMENT.md](./DEPLOYMENT.md).
+- 대시보드에 `GO_VERSION` 환경변수가 필요하고, 프로덕션에 `ANALYTICS_ID` 를 설정한다. 배포 알림(Chime) 포함 상세는 → [DEPLOYMENT.md](./DEPLOYMENT.md).
 - 오디오(mp3)는 `retrotech-episodes.outsider.dev` 에 분리 호스팅.
 
 ## 알려진 제약 / 주의사항

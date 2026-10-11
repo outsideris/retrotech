@@ -82,7 +82,7 @@ npm run dist                      # 패키징 → dist/mac-arm64/RetroTech Edito
 | 문서 | 내용 |
 | --- | --- |
 | [docs/ARCHITECURE.md](docs/ARCHITECURE.md) | 아키텍처·구성·빌드 파이프라인·외부 통합·주의사항 |
-| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | 배포(Cloudflare Pages)·빌드 설정·텔레그램 알림 |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | 배포(Cloudflare Pages)·빌드 설정·배포 알림 |
 | [docs/DESIGN.md](docs/DESIGN.md) | 제품/기획 의도, UX, 도메인 규칙, 의사결정 |
 | [docs/PERFORMANCE.md](docs/PERFORMANCE.md) | 성능 감사 결과와 개선 우선순위 |
 | [docs/TODO.md](docs/TODO.md) | 개선 백로그(Phase/Todo) |

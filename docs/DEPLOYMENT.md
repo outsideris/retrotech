@@ -1,6 +1,6 @@
 # Deployment — RetroTech
 
-> 배포 방식과 배포 알림(텔레그램) 정리. 구조/구성은 [ARCHITECURE.md](./ARCHITECURE.md).
+> 배포 방식과 배포 알림(Chime → Telegram·Buzz) 정리. 구조/구성은 [ARCHITECURE.md](./ARCHITECURE.md).
 
 ## 배포 개요
 
@@ -15,42 +15,50 @@
 
 | 항목 | 값 | 비고 |
 | --- | --- | --- |
-| 빌드 명령 | `bash scripts/cf-build.sh` | `go test ./...`(게이트) → `go run ./cmd/build` → 배포 결과를 텔레그램 Worker 로 통지. **테스트/빌드 실패 시 non-zero 종료 → Cloudflare 가 배포 차단(직전 버전 유지)**. 게이트·알림이 필요 없으면 `go run ./cmd/build` 만으로도 됨 |
+| 빌드 명령 | `bash scripts/cf-build.sh` | `go test ./...`(게이트) → `go run ./cmd/build` → 배포 결과를 Chime 으로 통지. **테스트/빌드 실패 시 non-zero 종료 → Cloudflare 가 배포 차단(직전 버전 유지)**. 게이트·알림이 필요 없으면 `go run ./cmd/build` 만으로도 됨 |
 | 출력 디렉터리 | `dist` | `cmd/build` 가 `dist/` 에 생성 |
 | `ANALYTICS_ID` (환경변수, 프로덕션) | GA4 측정 ID(예 `G-PVJ12C7HR6`) | 설정 시에만 GA 스니펫을 주입. 미설정(프리뷰/로컬/CI)이면 분석 코드 미포함 |
 
 > **Go 버전:** Cloudflare Pages 가 `go.mod` 의 `go` 지시자에서 버전을 자동 감지하므로 `GO_VERSION` 환경변수는 **보통 불필요**하다(같은 패턴의 `blog.outsider.ne.kr` 도 미설정으로 빌드된다). 빌드가 Go 버전 문제로 실패할 때만 `GO_VERSION` 으로 고정한다.
 
-## 배포 알림 → 텔레그램
+## 배포 알림 → Chime
 
-> 상태: **구현됨** — 빌드 래퍼 `scripts/cf-build.sh` 가 배포 결과를 Worker 로 POST.
+> 상태: **구현됨** — 빌드 래퍼 `scripts/cf-build.sh` 가 배포 결과를 terrarium 수신함을 거쳐 Chime 으로 보낸다.
 
-텔레그램 전송 자체는 별도 Cloudflare Worker(`cf-webhook.outsideris.workers.dev`)가 담당하고, 이 사이트는 **빌드 종료 코드(0=성공)에 따라** 그 Worker 로 결과를 POST 한다. (Cloudflare 네이티브 알림 웹훅은 자체 스키마라 이 Worker 의 커스텀 페이로드와 맞지 않아 빌드 래퍼 방식을 쓴다.)
+알림 전송은 알림 서비스 **Chime** 이 담당한다(Telegram 과 등급별 Buzz 채널로 함께 보낸다). Chime 은 사설망 안에 있어 인터넷에서 닿지 않으므로, Cloudflare 빌드는 terrarium 의 **공개 수신함**(`https://terrarium-inbox.outsideris.workers.dev/in/chime`)으로 POST 하고 terrarium 이 그것을 Chime 의 `/notify` 로 넘긴다. 이 사이트는 **빌드 종료 코드(0=성공)에 따라** 결과를 보낸다. (2026-10-11 이전에는 Cloudflare Worker `cf-webhook` 의 `/webhook/generic` 으로 보냈다.)
 
 ### 동작 — `scripts/cf-build.sh`
 1. **`go test ./...`(게이트)** → 통과하면 `go run ./cmd/build`. 둘 중 하나라도 실패하면 멈추고 non-zero 로 종료(Cloudflare 는 이 종료 코드로 성공/실패를 판정 → 실패 시 배포 차단, 직전 버전 유지).
-2. 성공(0)/실패(≠0)에 따라 Worker 의 **`/webhook/generic`** 으로 POST(상태 이모지·라벨은 Worker 가 붙인다). 실패 메시지엔 실패 단계(`test`/`build`)를 표시:
+2. 성공(0)/실패(≠0)에 따라 수신함으로 POST 한다. 인증은 `Authorization: Bearer <수신함 비밀>`, 본문은 Chime 의 알림 필드(최상위 키)다:
    ```json
-   {"status":"success|failure","project":"retrotech","branch":"<CF_PAGES_BRANCH>","commitSha":"<CF_PAGES_COMMIT_SHA>","url":"<CF_PAGES_URL>","message":"실패 시 <phase> failed (exit N)"}
+   {"project":"retrotech","status":"success|failed","level":"info|warn","environment":"production|preview","branch":"<CF_PAGES_BRANCH>","commitSha":"<CF_PAGES_COMMIT_SHA>","commitMessage":"<커밋 제목>","url":"<CF_PAGES_URL, 성공 시에만>","message":"실패 시 <phase> failed (exit N)"}
    ```
 3. 종료 코드로 그대로 종료 → Pages 가 성공/실패를 정확히 표시.
 
-- 웹훅 전송 실패는 무시한다(배포 결과에 영향 없음). `DEPLOY_WEBHOOK_URL` 미설정이면 알림만 건너뛴다.
-- 빈 필드는 Worker 가 자동 생략하므로 항상 포함해 보낸다. generic 어댑터가 `status`(`failure`→`failed`)·`project`·`branch`·`commitSha`·`url`·`message` 를 최상위 키에서 읽는다.
+- `title` 은 보내지 않는다 — 상태 이모지와 `Deploy succeeded`/`Deploy failed` 제목은 Chime 이 붙인다.
+- `level` 은 성공 `info`, 실패 `warn` 이다(Buzz 채널이 등급으로 갈린다). 실패해도 직전 배포가 그대로 서비스되므로 `critical` 이 아니다.
+- `environment` 는 `CF_PAGES_BRANCH` 가 `main` 이면 `production`, 그 밖의 브랜치면 `preview` 다.
+- `commitMessage` 는 `git log -1 --pretty=%s` 다. 브랜치 이름과 커밋 제목은 따옴표·백슬래시를 이스케이프하고 제어 문자를 지운 뒤 넣는다.
+- `url` 은 성공했을 때만 넣는다 — 실패한 배포의 주소는 아무것도 서빙하지 않는다.
+- 빈 필드는 Chime 이 생략하므로 항상 포함해 보낸다.
+- 수신함의 `200` 은 **큐에 넣었다**는 뜻이지 채널에 게시했다는 뜻이 아니다. 보통 30초 안에 Chime 으로 넘어가고, 운영 기계가 꺼져 있었으면 다시 뜬 뒤에 간다.
+- 웹훅 전송 실패는 무시한다(15초 제한, 배포 결과에 영향 없음). `DEPLOY_WEBHOOK_URL`·`DEPLOY_WEBHOOK_TOKEN` 중 하나라도 없으면 알림만 건너뛴다.
+- 래퍼는 재시도하지 않고 `Idempotency-Key` 도 보내지 않는다 — 수신함이 이벤트 id 로 붙인다.
 
 ### Cloudflare Pages 설정 (대시보드에서 1회)
 - **Build command:** `bash scripts/cf-build.sh`
 - **Build output directory:** `dist`
-- **환경변수(암호화) `DEPLOY_WEBHOOK_URL`:**
-  `https://cf-webhook.outsideris.workers.dev/webhook/generic?token=<SECRET_TOKEN>`
-  ⚠️ **`/webhook/generic`** 을 쓴다 — `/webhook/cloudflare` 는 Cloudflare **네이티브** 알림 페이로드용이라 이 커스텀 페이로드(`status/project/...` 최상위 키)를 못 읽는다.
-  토큰은 이 secret 에만 두고 저장소엔 넣지 않는다. (Production / Preview 각각 설정 가능)
+- **환경변수(암호화) `DEPLOY_WEBHOOK_URL`:** `https://terrarium-inbox.outsideris.workers.dev/in/chime`
+- **환경변수(암호화) `DEPLOY_WEBHOOK_TOKEN`:** 수신함의 `chime` 대상 비밀(43자). 주소와 비밀은 `terrarium inbox url chime` 이 보여 준다.
+  ⚠️ 수신함은 **헤더로만** 인증한다 — 비밀을 URL(`?token=…`)에 넣지 않는다. 이 값은 Chime 의 API 키(`WEBHOOK_SECRET`)와 다른 값이다.
+  비밀은 이 환경변수에만 두고 저장소엔 넣지 않는다. (Production / Preview 각각 설정 가능)
 
 ### 한계 / 대안
 - 래퍼는 **빌드 단계**의 성공/실패를 잡는다. 빌드 성공 후 Cloudflare 업로드 단계 실패나 빌드 컨테이너 기동 실패 같은 **플랫폼 레벨 장애는 못 잡는다**(드묾).
-- 그것까지 받으려면 Dashboard → **Notifications → Destinations → Webhooks** 로 Worker 의 **`/webhook/cloudflare`** 를 등록하고(인증은 secret 을 `cf-webhook-auth` 헤더로 전달) 배포 알림을 생성한다. 이 엔드포인트는 Worker 의 cloudflare 어댑터가 Cloudflare 네이티브 페이로드를 파싱한다(공식 배포 `data` 스키마가 비공개라 `text`/`alert_type` 기반 **베스트 에포트** 상태 추론). 즉 빌드 래퍼(generic)와 네이티브 알림(cloudflare)은 **서로 다른 엔드포인트**로 공존 가능하다.
+- 그것까지 받으려면 Dashboard → **Notifications → Destinations → Webhooks** 에 **같은 주소**(`…/in/chime`)를 등록하고 Secret 칸에 **같은 수신함 비밀**을 넣은 뒤(Cloudflare 가 `cf-webhook-auth` 헤더로 보낸다) 배포 알림을 생성한다. Cloudflare 네이티브 본문은 Chime 의 범용 파서가 읽는다(공식 배포 `data` 스키마가 비공개라 `text`/`alert_type` 기반 **베스트 에포트** 상태 추론). 빌드 래퍼와 네이티브 알림은 주소와 비밀을 함께 쓰며 공존할 수 있다.
 
 ## 참고 링크
+- Chime 저장소의 `docs/SENDING.md`(알림 필드·등급), terrarium 저장소의 `docs/DEPLOY.md` 16장(수신함 주소·비밀·인증 방법)
 - [Cloudflare Pages 빌드 설정(종료 코드로 성공/실패 판정)](https://developers.cloudflare.com/pages/configuration/build-configuration/)
 - [Cloudflare Notifications 웹훅 설정](https://developers.cloudflare.com/notifications/get-started/configure-webhooks/)
 - [Cloudflare 웹훅 payload 스키마](https://developers.cloudflare.com/notifications/reference/webhook-payload-schema/)
