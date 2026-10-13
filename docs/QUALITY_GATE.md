@@ -52,6 +52,7 @@
 
 ## 마지막 검토
 
+- **2026-10-13:** Assist 카탈로그를 claude 2.1.296·codex 0.160.0 기준으로 갱신했다(Haiku 4.5 → Haiku 5.5, GPT-6.1 Sol 추가). claude 2.1.289 는 Haiku 5.5 를 `unrecognized_model` 로 표시해 CLI 부터 올렸다(Haiku 5.5 는 2.1.293 이상). codex 0.160.0 은 GPT-6.1 Sol 을 그대로 돌려서 올리지 않았다 — **설치된 CLI 가 새 모델을 돌리면 업그레이드는 필수가 아니다.** 10개 모델 모두 `POST /_write/api/assist/run` 으로 짧게 호출해 확인했다. 카탈로그에 effort 를 안 받는 모델이 없어졌으므로 사이드바의 "노브 숨김"은 실행 중인 앱으로 확인할 수 없고, 서버 쪽 거부만 단위 테스트(가상 목록)가 지킨다.
 - **2026-09-30 (Assist 사용 크레딧 가드):** Assist 카탈로그에서 Fable 5.1 을 빼고, claude 는 모델을 반드시 명시하게 했다(빈 모델 → 400). 카탈로그를 갱신할 때 확인할 것이 하나 늘었다: **CLI `/model` 피커가 "Requires usage credits" 로 표시하는 모델은 넣지 않는다** — `-p` 실행은 동의 창 없이 사용 크레딧으로 청구하고 이를 끄는 설정이 없다. `go test ./...` 의 `TestCatalogLeavesOutFable` 이 Fable 의 재유입을, `TestOnlyClaudeRequiresAModel` 이 claude 의 모델 명시를 지킨다. 실제 호출 확인에 쓰는 claude 요청도 이제 모델을 명시해야 한다(빈 모델은 400).
 - **2026-09-30 (조사 리더):** 리더의 큐레이션 목록을 같은 CLI 기준(GPT-6 Sol·Astra, Sonnet 5.5·Opus 5.5)으로 갱신하고, 서버 검증이 `research.go`의 목록을 재사용하도록 모았다. 리더 절에 "조사 모델 목록 변경 시" 항목을 추가했다.
 - **2026-09-30:** Assist 카탈로그를 claude 2.1.284·codex 0.159.0 기준으로 갱신했다. **새 모델은 설치된 CLI 가 알아야 돈다** — codex 0.146.0 은 GPT-6 를 서버에서 거절당했고 claude 2.1.278 은 Opus 5.5 를 `unrecognized_model` 로 표시했다. 그래서 카탈로그 갱신은 **CLI 업그레이드 → 카탈로그 → 모델마다 `POST /_write/api/assist/run` 으로 짧게 호출** 순서다. 호출은 "모델이 돈다"만 보여 준다: CLI 는 모델이 못 받는 effort 를 오류 없이 실행하므로(GPT-6 Luna 에 ultra) 모델별 effort 상한은 CLI 모델 레지스트리와 codex 계정 카탈로그로 확인한다. claude 호출은 CLI 로그인(`claude auth status` 의 `loggedIn`)이 살아 있어야 한다.

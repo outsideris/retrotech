@@ -159,13 +159,15 @@ struct 순서로 이동). 측정: 23편 재출력 시 총 65줄 변경, **전부
 - **모델 카탈로그(`assist/catalog.go`):** provider 별 `Model{ID,Label,Efforts}` 목록이 **유일한 원본**
   이다. effort 는 provider 가 아니라 **모델별 닫힌 집합** — 같은 CLI 안에서도 모델마다 상한이 다르고
   (Luna 는 max 까지, Astra/Sol/Terra 는 ultra 까지), `Efforts` 가 비면 그 모델은 effort 플래그를 아예
-  받지 않는다(Haiku 4.5 — CLI 는 `--effort` 를 받아 조용히 버린다). `assist.Validate` 가 HTTP 진입점과
+  받지 않는다(지금은 그런 모델이 없다. Haiku 5.5 로 바뀌기 전의 Haiku 4.5 가 그랬다 — CLI 는 `--effort` 를
+  받아 조용히 버린다). `assist.Validate` 가 HTTP 진입점과
   `Run` 양쪽에서 검사하므로, 모르는 모델·모델이 못 받는 effort 는 CLI 가 돌기 전에 400 으로 끊긴다.
   모델 id 는 별칭(`opus`)이 아니라 정식 id(`claude-opus-5-5`)라 trace 와 요청이 같은 이름을 가리킨다.
   **CLI 업그레이드 때 갱신한다** — CLI 가 기계가 읽을 모델 목록을 내주지 않아 손으로 유지한다.
   반대로 새 모델이 설치된 CLI 보다 앞서 나오기도 하므로(codex 0.146.0 은 GPT-6 를 거절했고 claude
-  2.1.278 은 Opus 5.5 를 모르는 모델로 표시했다) **새 모델을 넣기 전에 CLI 부터 올린다.** 목록 기준:
-  claude 는 CLI 모델 레지스트리의 현재 라인업만(이전 세대 Opus 5·Sonnet 5 제외, Fable 은 아래 가드로
+  2.1.278 은 Opus 5.5 를, 2.1.289 는 Haiku 5.5 를 모르는 모델로 표시했다) **새 모델을 넣기 전에 CLI 부터
+  올린다.** 설치된 CLI 가 새 모델을 그대로 돌리면 올리지 않아도 된다(codex 0.160.0 과 GPT-6.1 Sol). 목록 기준:
+  claude 는 CLI 모델 레지스트리의 현재 라인업만(이전 세대 Opus 5·Sonnet 5·Haiku 4.5 제외, Fable 은 아래 가드로
   제외), codex 는 계정 카탈로그(`~/.codex/models_cache.json`)에서 숨김이 아니고 은퇴 일정이 잡히지 않은 모델.
 - **사용 크레딧 가드(2026-09-30):** Fable 은 요금제·좌석 등급에 따라 플랜 한도 대신 **사용 크레딧**으로
   청구되고, `-p` 비대화 실행은 대화형 세션의 동의 창 없이 그대로 청구한다. 이를 끄는 플래그·설정은 없다

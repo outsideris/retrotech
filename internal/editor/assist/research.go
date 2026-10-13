@@ -32,10 +32,11 @@ type ResearchOptions struct {
 // Refreshed with the CLIs on 2026-09-30 (claude 2.1.284, codex 0.159.0); every
 // pick must stay runnable in the Assist catalog. Left out: GPT-6 Luna, the
 // efficient tier for summarization and extraction; Fable 5.1, which can bill
-// usage credits, and a -p run never asks before it does; Haiku 4.5, which takes
-// no effort; and the previous generation. Effort stops at xhigh: low is too shallow for
-// checking sources, Claude documents max as prone to overthinking, and codex's
-// ultra delegates to sub-agents, which the codex run below disables.
+// usage credits, and a -p run never asks before it does; Haiku 5.5, the fastest
+// tier for quick answers; and the previous generation. Effort stops at xhigh:
+// low is too shallow for checking sources, Claude documents max as prone to
+// overthinking, and codex's ultra delegates to sub-agents, which the codex run
+// below disables.
 var (
 	researchModels = map[string][]string{
 		"codex":  {"gpt-6-sol", "gpt-6-astra"},

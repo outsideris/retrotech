@@ -873,7 +873,7 @@ function renderTuning(provider) {
 }
 
 // renderEfforts lists the levels the selected model accepts. Models differ
-// (Luna stops at max, Sol goes to ultra) and some take no level at all,
+// (Luna stops at max, Sol goes to ultra) and one may take no level at all,
 // so the knob is hidden rather than offering one the CLI would refuse. On the
 // "(기본)" model — whatever the CLI itself is configured for — every level any
 // of the provider's models accepts is offered.

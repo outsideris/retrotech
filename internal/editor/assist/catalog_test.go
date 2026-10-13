@@ -54,9 +54,10 @@ func TestCatalogOffersTheCurrentModels(t *testing.T) {
 		"claude": { // Fable 5.1 left out: see TestCatalogLeavesOutFable
 			{ID: "claude-opus-5-5", Label: "Opus 5.5", Efforts: []string{"low", "medium", "high", "xhigh", "max"}},
 			{ID: "claude-sonnet-5-5", Label: "Sonnet 5.5", Efforts: []string{"low", "medium", "high", "xhigh", "max"}},
-			{ID: "claude-haiku-4-5-20251001", Label: "Haiku 4.5", Efforts: nil}, // takes no level
+			{ID: "claude-haiku-5-5", Label: "Haiku 5.5", Efforts: []string{"low", "medium", "high", "xhigh", "max"}},
 		},
 		"codex": {
+			{ID: "gpt-6.1-sol", Label: "GPT-6.1 Sol", Efforts: []string{"low", "medium", "high", "xhigh", "max", "ultra"}},
 			{ID: "gpt-6-astra", Label: "GPT-6 Astra", Efforts: []string{"low", "medium", "high", "xhigh", "max", "ultra"}},
 			{ID: "gpt-6-sol", Label: "GPT-6 Sol", Efforts: []string{"low", "medium", "high", "xhigh", "max", "ultra"}},
 			{ID: "gpt-6-luna", Label: "GPT-6 Luna", Efforts: []string{"low", "medium", "high", "xhigh", "max"}},
@@ -119,8 +120,9 @@ func TestValidateOptions(t *testing.T) {
 		{"claude model with a supported level", "claude", Options{Model: "claude-opus-5-5", Effort: "xhigh"}, ""},
 		{"claude model at its top level", "claude", Options{Model: "claude-sonnet-5-5", Effort: "max"}, ""},
 		{"claude model with codex's top level", "claude", Options{Model: "claude-sonnet-5-5", Effort: "ultra"}, "does not support effort"},
-		{"model that takes no level", "claude", Options{Model: "claude-haiku-4-5-20251001"}, ""},
-		{"model that takes no level, given one", "claude", Options{Model: "claude-haiku-4-5-20251001", Effort: "low"}, "takes no effort level"},
+		{"smallest claude model with the cli default level", "claude", Options{Model: "claude-haiku-5-5"}, ""},
+		{"smallest claude model at its top level", "claude", Options{Model: "claude-haiku-5-5", Effort: "max"}, ""},
+		{"superseded claude haiku", "claude", Options{Model: "claude-haiku-4-5-20251001"}, "unknown model"},
 		{"fable, which can bill usage credits unasked", "claude", Options{Model: "claude-fable-5-1", Effort: "high"}, "unknown model"},
 		{"fable alias", "claude", Options{Model: "fable"}, "unknown model"},
 		{"best alias, which picks fable where available", "claude", Options{Model: "best"}, "unknown model"},
@@ -131,6 +133,7 @@ func TestValidateOptions(t *testing.T) {
 		{"cli default model takes codex's top level", "codex", Options{Effort: "ultra"}, ""},
 		{"cli default model rejects a level no model offers", "codex", Options{Effort: "minimal"}, "unsupported effort"},
 		{"codex model at ultra", "codex", Options{Model: "gpt-6-astra", Effort: "ultra"}, ""},
+		{"newest codex model at ultra", "codex", Options{Model: "gpt-6.1-sol", Effort: "ultra"}, ""},
 		{"codex model past its own ultra", "codex", Options{Model: "gpt-6-luna", Effort: "ultra"}, "does not support effort"},
 		{"older codex model past its top level", "codex", Options{Model: "gpt-5.6-luna", Effort: "ultra"}, "does not support effort"},
 		{"retiring codex model", "codex", Options{Model: "gpt-5.5"}, "unknown model"},
@@ -165,6 +168,23 @@ func TestValidateOptions(t *testing.T) {
 	}
 }
 
+// No catalog model is without effort levels today, but one can be again (Haiku
+// 4.5 was): the CLI accepts --effort for such a model and silently drops it, so
+// the catalog lists it with nil Efforts and any level must be refused here.
+func TestValidateOptionsRefusesALevelOnAModelThatTakesNone(t *testing.T) {
+	models := []Model{
+		{ID: "levelled", Label: "Levelled", Efforts: []string{"low", "high"}},
+		{ID: "flat", Label: "Flat", Efforts: nil},
+	}
+	if err := validateOptions("codex", models, Options{Model: "flat"}); err != nil {
+		t.Errorf("a model without levels must run at the cli default: %v", err)
+	}
+	err := validateOptions("codex", models, Options{Model: "flat", Effort: "low"})
+	if err == nil || !strings.Contains(err.Error(), "takes no effort level") {
+		t.Errorf("a level on a model without levels = %v, want it refused", err)
+	}
+}
+
 // A rejected model or effort must never reach the CLI, whatever the caller
 // passes straight to Run. A fake CLI on PATH records the fact that it ran, so
 // this fails loudly if validation ever stops guarding the exec.
@@ -178,7 +198,7 @@ func TestRunRejectsUncatalogedOptionsWithoutRunningTheCLI(t *testing.T) {
 		{"fable, which can bill usage credits unasked", "claude", Options{Model: "claude-fable-5-1", Effort: "high"}},
 		{"claude on the cli default model, which could be fable", "claude", Options{}},
 		{"claude at codex's top level", "claude", Options{Model: "claude-opus-5-5", Effort: "ultra"}},
-		{"effort on a model that takes none", "claude", Options{Model: "claude-haiku-4-5-20251001", Effort: "high"}},
+		{"superseded claude haiku", "claude", Options{Model: "claude-haiku-4-5-20251001", Effort: "high"}},
 		{"retired codex model", "codex", Options{Model: "gpt-5-codex"}},
 		{"retiring codex model", "codex", Options{Model: "gpt-5.5", Effort: "low"}},
 		{"codex past its model's top level", "codex", Options{Model: "gpt-6-luna", Effort: "ultra"}},

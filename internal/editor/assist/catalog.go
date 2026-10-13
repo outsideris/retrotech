@@ -26,40 +26,42 @@ var (
 // modelRequired) and validateOptions accepts it against the provider's union
 // of levels.
 //
-// Kept by hand and checked against the installed CLIs on 2026-09-30 —
-// claude 2.1.284 and codex 0.159.0. Refresh it after a CLI upgrade; the CLIs
+// Kept by hand and checked against the installed CLIs on 2026-10-13 —
+// claude 2.1.296 and codex 0.160.0. Refresh it after a CLI upgrade; the CLIs
 // do not report a machine-readable list this code could read instead. A new
 // model can outrun the installed CLI: codex 0.146.0 refused the GPT-6 models
-// ("not supported when using Codex with a ChatGPT account") and claude 2.1.278
-// flagged Opus 5.5 as an unrecognized model, so upgrade the CLI first.
+// ("not supported when using Codex with a ChatGPT account") and claude 2.1.289
+// flagged Haiku 5.5 as an unrecognized model, so upgrade the CLI first.
 //
 //   - claude: ids, display names and effort support come from the CLI's own
-//     model registry. Only the current lineup is offered; the CLI's picker
-//     now labels Opus 5 and Sonnet 5 "Previous … version". Every 5-family
-//     model takes low…max. Haiku 4.5 takes no level at all: the CLI accepts
-//     --effort for it and silently drops it, so offering one would only
-//     promise thinking that never happens. Fable 5.1 is left out although
-//     the CLI runs it: depending on the plan and seat tier, Fable bills usage
-//     credits instead of the plan's included limits, and a -p run bills them
-//     without the consent prompt an interactive session shows. No flag or
-//     setting turns that off (code.claude.com/docs/en/model-config, checked
-//     2026-09-30), so leave out any model the CLI's /model picker marks
-//     "Requires usage credits".
+//     model registry. Only the current lineup is offered: the CLI's picker
+//     labels Opus 5 and Sonnet 5 "Previous … version", and Haiku 5.5 took
+//     the haiku alias over from Haiku 4.5. Every model here takes low…max.
+//     The CLI does not hold a model to its levels — it accepted --effort for
+//     Haiku 4.5, which takes none, and silently dropped it — so a model the
+//     registry gives no effort capability must be listed with nil Efforts,
+//     or the knob would promise thinking that never happens. Fable 5.1 is
+//     left out although the CLI runs it: depending on the plan and seat
+//     tier, Fable bills usage credits instead of the plan's included limits,
+//     and a -p run bills them without the consent prompt an interactive
+//     session shows. No flag or setting turns that off
+//     (code.claude.com/docs/en/model-config, checked 2026-10-13), so leave
+//     out any model the CLI's /model picker marks "Requires usage credits".
 //   - codex: the account's catalog (~/.codex/models_cache.json) lists the
-//     models and the levels each accepts; hidden entries (gpt-reserve,
-//     codex-auto-review) are not offered. GPT-5.5 is left out although the
-//     catalog still lists it: it retires on 2026-10-14, with GPT-5.6 Sol
-//     named as its replacement. Neither the CLI nor the API enforces those
-//     levels any more — GPT-6 Luna given ultra ran without an error — so, as
-//     with Haiku, the catalog has to hold each model's ceiling itself.
+//     models and the levels each accepts; hidden entries are not offered —
+//     gpt-reserve, codex-auto-review and GPT-5.5, which retires on
+//     2026-10-14. Neither the CLI nor the API enforces those levels any
+//     more — GPT-6 Luna given ultra ran without an error — so, as with
+//     claude, the catalog has to hold each model's ceiling itself.
 var (
 	claudeModels = []Model{
 		{ID: "claude-opus-5-5", Label: "Opus 5.5", Efforts: effortsToMax},
 		{ID: "claude-sonnet-5-5", Label: "Sonnet 5.5", Efforts: effortsToMax},
-		{ID: "claude-haiku-4-5-20251001", Label: "Haiku 4.5", Efforts: nil},
+		{ID: "claude-haiku-5-5", Label: "Haiku 5.5", Efforts: effortsToMax},
 	}
 
 	codexModels = []Model{
+		{ID: "gpt-6.1-sol", Label: "GPT-6.1 Sol", Efforts: effortsToUltra},
 		{ID: "gpt-6-astra", Label: "GPT-6 Astra", Efforts: effortsToUltra},
 		{ID: "gpt-6-sol", Label: "GPT-6 Sol", Efforts: effortsToUltra},
 		{ID: "gpt-6-luna", Label: "GPT-6 Luna", Efforts: effortsToMax},

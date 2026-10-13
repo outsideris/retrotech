@@ -78,7 +78,7 @@ func TestResearchRejectsWhatTheReaderDoesNotOffer(t *testing.T) {
 		{"previous codex default", "codex", "gpt-5.6-sol", "high", ErrResearchModel},
 		{"previous codex quick check", "codex", "gpt-5.6-terra", "medium", ErrResearchModel},
 		{"Fable may bill credits unasked", "claude", "claude-fable-5-1", "high", ErrResearchModel},
-		{"Haiku takes no effort", "claude", "claude-haiku-4-5-20251001", "high", ErrResearchModel},
+		{"fastest Claude tier", "claude", "claude-haiku-5-5", "high", ErrResearchModel},
 		{"previous Claude alternative", "claude", "claude-sonnet-5", "high", ErrResearchModel},
 		{"previous Claude harder pick", "claude", "claude-opus-5", "xhigh", ErrResearchModel},
 		{"the other CLI's model", "codex", "claude-opus-5-5", "high", ErrResearchModel},
