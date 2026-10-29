@@ -26,7 +26,7 @@ var (
 // modelRequired) and validateOptions accepts it against the provider's union
 // of levels.
 //
-// Kept by hand and checked against the installed CLIs on 2026-10-13 —
+// Kept by hand and checked against the installed CLIs on 2026-10-29 —
 // claude 2.1.296 and codex 0.160.0. Refresh it after a CLI upgrade; the CLIs
 // do not report a machine-readable list this code could read instead. A new
 // model can outrun the installed CLI: codex 0.146.0 refused the GPT-6 models
@@ -48,11 +48,11 @@ var (
 //     (code.claude.com/docs/en/model-config, checked 2026-10-13), so leave
 //     out any model the CLI's /model picker marks "Requires usage credits".
 //   - codex: the account's catalog (~/.codex/models_cache.json) lists the
-//     models and the levels each accepts; hidden entries are not offered —
-//     gpt-reserve, codex-auto-review and GPT-5.5, which retires on
-//     2026-10-14. Neither the CLI nor the API enforces those levels any
-//     more — GPT-6 Luna given ultra ran without an error — so, as with
-//     claude, the catalog has to hold each model's ceiling itself.
+//     models and the levels each accepts; hidden entries (gpt-reserve,
+//     codex-auto-review) are not offered, and GPT-5.5 left the catalog when
+//     it retired on 2026-10-14. Neither the CLI nor the API enforces those
+//     levels any more — GPT-6 Luna given ultra ran without an error — so, as
+//     with claude, the catalog has to hold each model's ceiling itself.
 var (
 	claudeModels = []Model{
 		{ID: "claude-opus-5-5", Label: "Opus 5.5", Efforts: effortsToMax},
@@ -63,6 +63,7 @@ var (
 	codexModels = []Model{
 		{ID: "gpt-6.1-sol", Label: "GPT-6.1 Sol", Efforts: effortsToUltra},
 		{ID: "gpt-6-astra", Label: "GPT-6 Astra", Efforts: effortsToUltra},
+		{ID: "gpt-6.1-terra", Label: "GPT-6.1 Terra", Efforts: effortsToUltra},
 		{ID: "gpt-6-sol", Label: "GPT-6 Sol", Efforts: effortsToUltra},
 		{ID: "gpt-6-luna", Label: "GPT-6 Luna", Efforts: effortsToMax},
 		{ID: "gpt-5.6-sol", Label: "GPT-5.6 Sol", Efforts: effortsToUltra},

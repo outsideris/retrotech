@@ -59,6 +59,7 @@ func TestCatalogOffersTheCurrentModels(t *testing.T) {
 		"codex": {
 			{ID: "gpt-6.1-sol", Label: "GPT-6.1 Sol", Efforts: []string{"low", "medium", "high", "xhigh", "max", "ultra"}},
 			{ID: "gpt-6-astra", Label: "GPT-6 Astra", Efforts: []string{"low", "medium", "high", "xhigh", "max", "ultra"}},
+			{ID: "gpt-6.1-terra", Label: "GPT-6.1 Terra", Efforts: []string{"low", "medium", "high", "xhigh", "max", "ultra"}},
 			{ID: "gpt-6-sol", Label: "GPT-6 Sol", Efforts: []string{"low", "medium", "high", "xhigh", "max", "ultra"}},
 			{ID: "gpt-6-luna", Label: "GPT-6 Luna", Efforts: []string{"low", "medium", "high", "xhigh", "max"}},
 			{ID: "gpt-5.6-sol", Label: "GPT-5.6 Sol", Efforts: []string{"low", "medium", "high", "xhigh", "max", "ultra"}},
@@ -136,7 +137,7 @@ func TestValidateOptions(t *testing.T) {
 		{"newest codex model at ultra", "codex", Options{Model: "gpt-6.1-sol", Effort: "ultra"}, ""},
 		{"codex model past its own ultra", "codex", Options{Model: "gpt-6-luna", Effort: "ultra"}, "does not support effort"},
 		{"older codex model past its top level", "codex", Options{Model: "gpt-5.6-luna", Effort: "ultra"}, "does not support effort"},
-		{"retiring codex model", "codex", Options{Model: "gpt-5.5"}, "unknown model"},
+		{"codex model retired on 2026-10-14", "codex", Options{Model: "gpt-5.5"}, "unknown model"},
 		{"retired codex effort", "codex", Options{Model: "gpt-6-sol", Effort: "minimal"}, "does not support effort"},
 		{"retired codex model", "codex", Options{Model: "gpt-5-codex"}, "unknown model"},
 		{"codex model hidden from the account's catalog", "codex", Options{Model: "gpt-reserve"}, "unknown model"},
@@ -200,7 +201,7 @@ func TestRunRejectsUncatalogedOptionsWithoutRunningTheCLI(t *testing.T) {
 		{"claude at codex's top level", "claude", Options{Model: "claude-opus-5-5", Effort: "ultra"}},
 		{"superseded claude haiku", "claude", Options{Model: "claude-haiku-4-5-20251001", Effort: "high"}},
 		{"retired codex model", "codex", Options{Model: "gpt-5-codex"}},
-		{"retiring codex model", "codex", Options{Model: "gpt-5.5", Effort: "low"}},
+		{"codex model retired on 2026-10-14", "codex", Options{Model: "gpt-5.5", Effort: "low"}},
 		{"codex past its model's top level", "codex", Options{Model: "gpt-6-luna", Effort: "ultra"}},
 		{"retired codex effort", "codex", Options{Model: "gpt-6-sol", Effort: "minimal"}},
 	} {
