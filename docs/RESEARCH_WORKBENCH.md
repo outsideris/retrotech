@@ -29,20 +29,20 @@ go build -o .local-bin/retrotech-research ./cmd/research
 
 ## 모델과 로그인
 
-- 기본: **Codex GPT-6 Sol / high**. 원자료를 대조하고 이야기의 빈틈을 채우는 질문에 사용한다.
-- 짧은 사실·날짜 확인: **Sol / medium**. 출처 확인 기준은 동일하다. GPT-5.6 Terra를 이을 GPT-6 모델이 없어 같은 Sol의 깊이만 낮춘다.
+- 기본: **Codex GPT-6.1 Sol / high**. 원자료를 대조하고 이야기의 빈틈을 채우는 질문에 사용한다.
+- 짧은 사실·날짜 확인: **Sol / medium**. 출처 확인 기준은 동일하다. 목록에 더 빠른 codex 모델을 두지 않아 같은 Sol의 깊이만 낮춘다.
 - 상충하는 증언·메일 스레드·이전 버전 설계의 복원: **Sol / xhigh**.
 - Sol / xhigh로도 결론이 서지 않는 가장 까다로운 질문: **GPT-6 Astra / medium**, 필요하면 high. 공식 안내는 Astra를 Light(low)부터 시작하라고 권하지만 이 리더에는 low가 없다.
 - Claude 대안: **Sonnet 5.5 / high**. 더 까다로운 질문은 **Opus 5.5 / high 또는 xhigh**.
-- 깊이는 medium·high·xhigh만 둔다. low는 출처 대조에 얕다. max는 Claude 문서가 과잉 사고(overthinking)를 경고한다. codex의 ultra는 하위 에이전트에 작업을 나누는데, 이 리더는 하위 에이전트를 끄고 실행한다.
-- 두지 않는 모델: **Fable 5.1**은 요금제에 따라 사용 크레딧으로 청구될 수 있고 `-p` 실행에서는 그때 동의를 묻지 않으므로, 정액 구독을 전제로 한 이 리더에 맞지 않는다. **GPT-6 Luna**는 요약·추출 같은 대량 작업용 효율 모델이다. **Haiku 5.5**는 빠른 답을 위한 가장 작은 모델이다. **GPT-6.1 Sol**은 2026-10-13에 Assist 카탈로그에 들어왔지만 이 목록은 아직 GPT-6 Sol 기준이다. 기본 모델을 바꾸는 것은 따로 정할 큐레이션 결정이다. 이전 세대(GPT-5.6, Opus 5·Sonnet 5)도 뺐다.
+- 깊이는 medium·high·xhigh만 둔다. low는 출처 대조에 얕다. max는 Claude 문서가 과잉 사고(overthinking)를 경고한다. codex의 ultra는 하위 에이전트에 작업을 나누는데, 이 리더는 하위 에이전트를 끄고 실행한다. GPT-6.1 Sol은 CLI 기본 깊이가 low이고 공식 안내는 기본값에서 시작하라고 하지만, 같은 안내가 여러 출처를 대조하는 일에는 High·Extra High를 권하므로 이 리더는 medium부터 둔다.
+- 두지 않는 모델: **Fable 5.1**은 요금제에 따라 사용 크레딧으로 청구될 수 있고 `-p` 실행에서는 그때 동의를 묻지 않으므로, 정액 구독을 전제로 한 이 리더에 맞지 않는다. **GPT-6 Luna**는 요약·추출 같은 대량 작업용 효율 모델이다. **Haiku 5.5**는 빠른 답을 위한 가장 작은 모델이다. **GPT-6.1 Terra**는 2026-10-29에 Assist 카탈로그에 들어왔지만, 공식 안내가 조사가 아니라 글쓰기·시각 자료·컴퓨터 사용용으로 소개해 두지 않았다. 짧은 사실 확인을 Terra로 돌릴지는 따로 정할 큐레이션 결정이다. 이전 세대(GPT-6 Sol, GPT-5.6, Opus 5·Sonnet 5)도 뺐다.
 - 이 추천은 작업 성격에 따른 선택이며 실제 품질·소요 시간은 질문에 따라 다르다.
 
-앱은 설치된 `codex`·`claude` 실행 파일을 찾고 기존 CLI 인증을 사용한다. API 키를 읽거나 저장하지 않는다. 사용자가 터미널에서 `codex login` 또는 `claude auth login`으로 로그인한다. 구독·모델 접근 권한은 각 CLI 계정에 따른다. 모델 목록은 2026-09-30의 공식 안내와 claude 2.1.284·codex 0.159.0을 기준으로 2026-09-16 목록에서 갱신했다. Astra는 9/16에 제외했다가 2026-09-30 사용자 결정으로 가장 까다로운 질문용으로 추가했다.
+앱은 설치된 `codex`·`claude` 실행 파일을 찾고 기존 CLI 인증을 사용한다. API 키를 읽거나 저장하지 않는다. 사용자가 터미널에서 `codex login` 또는 `claude auth login`으로 로그인한다. 구독·모델 접근 권한은 각 CLI 계정에 따른다. 모델 목록은 2026-09-30의 공식 안내와 claude 2.1.284·codex 0.159.0을 기준으로 2026-09-16 목록에서 갱신했다. Astra는 9/16에 제외했다가 2026-09-30 사용자 결정으로 가장 까다로운 질문용으로 추가했다. 2026-10-29에 기본을 GPT-6 Sol에서 **GPT-6.1 Sol**로 바꿨다(codex 0.160.0). OpenAI는 GPT-6.1 Sol을 GPT-6 Sol의 업그레이드로 내놓았다. 의도적으로 어렵게 고른 프롬프트에서 사실 오류가 든 답의 비율이 낮고(low 깊이에서 11.4% → 7.7%), 검색 도구가 작동하지 않을 때 이를 알리지 않은 비율도 4.9%에서 2.1%로 낮다(실패를 유도한 평가, 최대 깊이). API 가격은 같다. 계정 카탈로그는 GPT-6 Sol을 "Previous generation"으로 표시하고, 공식 모델 안내의 추천 모델과 설정 예시에는 GPT-6 Sol 대신 GPT-6.1 Sol이 있다. 9/30에 GPT-5.6 Sol을 GPT-6 Sol로 바꿨을 때처럼 이전 세대는 함께 두지 않고 교체했다.
 
 목록을 바꿀 때는 CLI를 먼저 올리고 Assist 카탈로그(`internal/editor/assist/catalog.go`)를 갱신한 뒤 이 목록을 고친다. 목록의 원본은 `internal/editor/assist/research.go`의 `researchModels`·`researchEfforts` 한 곳이며 서버의 요청 검증도 이것을 쓴다. 카탈로그에 없는 모델은 테스트가 거부한다. 사이드바 메뉴(`internal/research/assets/panel.html`)는 정적 HTML이라 함께 고치며, 둘이 어긋나면 `go test`가 실패한다. 그다음 로그인된 제공자로 보고서 사본에서 모델마다 실제 조사를 한 번 확인하고 `.local-bin/retrotech-research`를 다시 빌드한다. 이미 저장된 추가 조사는 답한 모델의 이름을 그대로 유지하며, 새 요청만 목록으로 검사한다.
 
-근거: [Codex 모델](https://learn.chatgpt.com/docs/models), [Codex 비대화형 실행](https://learn.chatgpt.com/docs/non-interactive-mode), [Claude 모델·effort](https://code.claude.com/docs/en/model-config), [Claude 비대화형 실행](https://code.claude.com/docs/en/headless).
+근거: [Codex 모델](https://learn.chatgpt.com/docs/models), [GPT-6.1 Sol 소개](https://openai.com/index/introducing-gpt-6-1-sol/), [Codex 비대화형 실행](https://learn.chatgpt.com/docs/non-interactive-mode), [Claude 모델·effort](https://code.claude.com/docs/en/model-config), [Claude 비대화형 실행](https://code.claude.com/docs/en/headless).
 
 ## 저장과 오류 처리
 

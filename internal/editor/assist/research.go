@@ -29,17 +29,19 @@ type ResearchOptions struct {
 // (internal/research/assets/panel.html) offers exactly this list, and
 // docs/RESEARCH_WORKBENCH.md says which pick suits which question.
 //
-// Refreshed with the CLIs on 2026-09-30 (claude 2.1.284, codex 0.159.0); every
-// pick must stay runnable in the Assist catalog. Left out: GPT-6 Luna, the
-// efficient tier for summarization and extraction; Fable 5.1, which can bill
-// usage credits, and a -p run never asks before it does; Haiku 5.5, the fastest
-// tier for quick answers; and the previous generation. Effort stops at xhigh:
-// low is too shallow for checking sources, Claude documents max as prone to
-// overthinking, and codex's ultra delegates to sub-agents, which the codex run
-// below disables.
+// Refreshed with the CLIs on 2026-09-30 (claude 2.1.284, codex 0.159.0), and
+// on 2026-10-29 GPT-6.1 Sol replaced GPT-6 Sol (codex 0.160.0); every pick must
+// stay runnable in the Assist catalog. Left out: GPT-6 Luna, the efficient tier
+// for summarization and extraction; Fable 5.1, which can bill usage credits,
+// and a -p run never asks before it does; Haiku 5.5, the fastest tier for quick
+// answers; GPT-6.1 Terra, which OpenAI pitches for writing, visual work and
+// computer use rather than research; and the previous generations (GPT-6 Sol, GPT-5.6, Opus 5, Sonnet 5). Effort stops at
+// xhigh: low is too shallow for checking sources even where it is the CLI's
+// default (GPT-6.1 Sol), Claude documents max as prone to overthinking, and
+// codex's ultra delegates to sub-agents, which the codex run below disables.
 var (
 	researchModels = map[string][]string{
-		"codex":  {"gpt-6-sol", "gpt-6-astra"},
+		"codex":  {"gpt-6.1-sol", "gpt-6-astra"},
 		"claude": {"claude-sonnet-5-5", "claude-opus-5-5"},
 	}
 	researchEfforts = []string{"medium", "high", "xhigh"}

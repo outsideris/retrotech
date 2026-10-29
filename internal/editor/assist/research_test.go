@@ -16,7 +16,7 @@ import (
 // Each pick must also be one the installed CLIs run at every offered level.
 func TestResearchOffersTheCuratedPicks(t *testing.T) {
 	want := map[string][]string{
-		"codex":  {"gpt-6-sol", "gpt-6-astra"},
+		"codex":  {"gpt-6.1-sol", "gpt-6-astra"},
 		"claude": {"claude-sonnet-5-5", "claude-opus-5-5"},
 	}
 	if !reflect.DeepEqual(researchModels, want) {
@@ -75,8 +75,10 @@ func TestResearchRejectsWhatTheReaderDoesNotOffer(t *testing.T) {
 		want                    error
 	}{
 		{"efficient codex tier", "codex", "gpt-6-luna", "high", ErrResearchModel},
-		{"previous codex default", "codex", "gpt-5.6-sol", "high", ErrResearchModel},
-		{"previous codex quick check", "codex", "gpt-5.6-terra", "medium", ErrResearchModel},
+		{"writing and visual codex tier", "codex", "gpt-6.1-terra", "medium", ErrResearchModel},
+		{"previous codex default", "codex", "gpt-6-sol", "high", ErrResearchModel},
+		{"older codex default", "codex", "gpt-5.6-sol", "high", ErrResearchModel},
+		{"older codex quick check", "codex", "gpt-5.6-terra", "medium", ErrResearchModel},
 		{"Fable may bill credits unasked", "claude", "claude-fable-5-1", "high", ErrResearchModel},
 		{"fastest Claude tier", "claude", "claude-haiku-5-5", "high", ErrResearchModel},
 		{"previous Claude alternative", "claude", "claude-sonnet-5", "high", ErrResearchModel},
@@ -84,7 +86,7 @@ func TestResearchRejectsWhatTheReaderDoesNotOffer(t *testing.T) {
 		{"the other CLI's model", "codex", "claude-opus-5-5", "high", ErrResearchModel},
 		{"CLI default model", "codex", "", "high", ErrResearchModel},
 		{"CLI without a research mode", "gemini", "gemini-2.5-pro", "high", ErrResearchProvider},
-		{"too shallow for sources", "codex", "gpt-6-sol", "low", ErrResearchEffort},
+		{"too shallow for sources", "codex", "gpt-6.1-sol", "low", ErrResearchEffort},
 		{"prone to overthinking", "claude", "claude-opus-5-5", "max", ErrResearchEffort},
 		{"delegates to sub-agents", "codex", "gpt-6-astra", "ultra", ErrResearchEffort},
 		{"no effort", "claude", "claude-sonnet-5-5", "", ErrResearchEffort},
@@ -146,7 +148,7 @@ printf '%s\n' '{"type":"item.started"}'
 `
 			}
 			os.WriteFile(filepath.Join(binDir, provider), []byte(script), 0755)
-			model := "gpt-6-sol"
+			model := "gpt-6.1-sol"
 			if provider == "claude" {
 				model = "claude-sonnet-5-5"
 			}

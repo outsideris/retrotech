@@ -42,7 +42,7 @@ func result() *Result {
 	return &Result{Title: "A follow-up", Answer: "Summary", Status: "verified", Paragraphs: []Paragraph{{Text: "The evidence <script>alert(1)</script> is explicit.", SourceIDs: []string{"S1"}}}, Sources: []Source{{ID: "S1", Title: "Original record", URL: "https://example.org/primary?x=1&y=2", Author: "A", Date: "2005-01-01", Locator: "Second paragraph", Supports: "Exact supported claim", Kind: "contemporary primary source"}}, Learning: Learning{Gap: "The original story lacked migration costs.", Rule: "Check migration costs when a new tool replaces an earlier one."}}
 }
 func completed(s *Store) *Job {
-	j := &Job{ID: "abc123", Request: Request{AnchorID: s.Anchors[1].ID, Question: "What happened?", Provider: "codex", Model: "gpt-6-sol", Effort: "high"}, ChapterID: s.Anchors[1].ChapterID, CreatedAt: now(), UpdatedAt: now(), Status: "completed", Result: result()}
+	j := &Job{ID: "abc123", Request: Request{AnchorID: s.Anchors[1].ID, Question: "What happened?", Provider: "codex", Model: "gpt-6.1-sol", Effort: "high"}, ChapterID: s.Anchors[1].ChapterID, CreatedAt: now(), UpdatedAt: now(), Status: "completed", Result: result()}
 	s.State.Jobs = append(s.State.Jobs, j)
 	return j
 }
@@ -176,7 +176,7 @@ func TestHTTPJobsCancellationAndSecurity(t *testing.T) {
 		}
 	})
 	defer app.Close()
-	body := `{"anchorId":"research-p-002","question":"What happened?","provider":"codex","model":"gpt-6-sol","effort":"high","parentId":""}`
+	body := `{"anchorId":"research-p-002","question":"What happened?","provider":"codex","model":"gpt-6.1-sol","effort":"high","parentId":""}`
 	if w := request(app, "POST", "/api/jobs", body, "https://attacker.example"); w.Code != 403 {
 		t.Fatal(w.Code)
 	}
@@ -234,8 +234,8 @@ func TestModelMenuIsWhatTheServerAccepts(t *testing.T) {
 	models, efforts := menu(t, "research-model"), menu(t, "research-effort")
 	// The first entry and the preselected level are the documented default.
 	panel, _ := assets.ReadFile("assets/panel.html")
-	if len(models) == 0 || models[0] != "codex:gpt-6-sol" || !bytes.Contains(panel, []byte(`<option value="high" selected>`)) {
-		t.Fatalf("menu default is not GPT-6 Sol / high: %v", models)
+	if len(models) == 0 || models[0] != "codex:gpt-6.1-sol" || !bytes.Contains(panel, []byte(`<option value="high" selected>`)) {
+		t.Fatalf("menu default is not GPT-6.1 Sol / high: %v", models)
 	}
 	s := fixture(t)
 	var mu sync.Mutex
@@ -293,7 +293,7 @@ func TestModelMenuIsWhatTheServerAccepts(t *testing.T) {
 func TestRetiredModelHistoryStaysUsable(t *testing.T) {
 	s := fixture(t)
 	old := completed(s)
-	old.Request.Model = "gpt-5.6-sol"
+	old.Request.Model = "gpt-6-sol"
 	if e := s.saveLocked(true); e != nil {
 		t.Fatal(e)
 	}
@@ -302,7 +302,7 @@ func TestRetiredModelHistoryStaysUsable(t *testing.T) {
 		t.Fatal(e)
 	}
 	h, _ := os.ReadFile(filepath.Join(s.Dir, "index.html"))
-	if !bytes.Contains(h, []byte("<span>gpt-5.6-sol · high</span>")) {
+	if !bytes.Contains(h, []byte("<span>gpt-6-sol · high</span>")) {
 		t.Fatal("history lost the model that answered")
 	}
 	app := NewServer(restored, func(ctx context.Context, p string, r Request, dir string, progress func(string)) (*Result, error) {
@@ -313,10 +313,10 @@ func TestRetiredModelHistoryStaysUsable(t *testing.T) {
 		body, _ := json.Marshal(Request{AnchorID: old.Request.AnchorID, Question: "And then?", Provider: "codex", Model: model, Effort: "high", ParentID: old.ID})
 		return request(app, "POST", "/api/jobs", string(body), testOrigin)
 	}
-	if w := followUp("gpt-5.6-sol"); w.Code != 400 {
+	if w := followUp("gpt-6-sol"); w.Code != 400 {
 		t.Fatal("a dropped model was accepted for a new request")
 	}
-	w := followUp("gpt-6-sol")
+	w := followUp("gpt-6.1-sol")
 	if w.Code != 202 {
 		t.Fatal(w.Body.String())
 	}
