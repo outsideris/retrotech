@@ -324,6 +324,37 @@ func TestRetiredModelHistoryStaysUsable(t *testing.T) {
 	json.Unmarshal(w.Body.Bytes(), &j)
 	awaitJob(t, restored, j.ID, "completed")
 }
+
+// The skill once went missing with a Mac and the reader kept answering without
+// it for weeks. Each Mac now reaches the Dropbox skill through a link, so a
+// missing or broken link stops the reader before it serves a question.
+func TestMissingSkillStopsTheReader(t *testing.T) {
+	s := fixture(t)
+	broken := filepath.Join(t.TempDir(), "research-retrotech")
+	if e := os.Symlink(filepath.Join(t.TempDir(), "not-synced"), broken); e != nil {
+		t.Fatal(e)
+	}
+	notAFile := t.TempDir()
+	os.Mkdir(filepath.Join(notAFile, "SKILL.md"), 0755)
+	for name, skill := range map[string]string{
+		"no link":              filepath.Join(t.TempDir(), "research-retrotech"),
+		"broken link":          broken,
+		"folder without skill": t.TempDir(),
+		"SKILL.md is a folder": notAFile,
+	} {
+		_, e := NewStore(s.Dir, skill, testOrigin)
+		if !errors.Is(e, ErrSkillMissing) || !strings.Contains(e.Error(), filepath.Join(skill, "SKILL.md")) {
+			t.Errorf("%s: NewStore error = %v, want ErrSkillMissing naming the path", name, e)
+		}
+	}
+	link := filepath.Join(t.TempDir(), "research-retrotech")
+	if e := os.Symlink(s.SkillDir, link); e != nil {
+		t.Fatal(e)
+	}
+	if _, e := NewStore(s.Dir, link, testOrigin); e != nil {
+		t.Fatalf("a link to the skill was refused: %v", e)
+	}
+}
 func TestRulesAreExplicitAndDeduplicated(t *testing.T) {
 	s := fixture(t)
 	j := completed(s)

@@ -23,7 +23,8 @@ go build -o .local-bin/retrotech-research ./cmd/research
 리더는 `-skill` 폴더의 `SKILL.md`, `references/research-dossier.md`, `references/story-research-checks.md`, `references/follow-up-learnings.md`를 질문마다 함께 보낸다. **스킬에 남길 점**도 이 폴더에 쓴다. 이 폴더는 Codex 스킬 `research-retrotech`이고, Codex로 새 에피소드를 조사할 때도 같은 스킬을 쓴다.
 
 - 원본은 `~/Dropbox/Documents/retrotech/skills/research-retrotech`이다. 각 Mac에서는 Codex가 사용자 스킬을 읽는 `~/.agents/skills/research-retrotech`를 원본에 심볼릭 링크로 연결한다. `-skill` 기본값도 이 링크다.
-- 새 Mac에서는 링크만 만든다: `mkdir -p ~/.agents/skills && ln -s ~/Dropbox/Documents/retrotech/skills/research-retrotech ~/.agents/skills/research-retrotech`.
+- 새 Mac에서는 dotfiles 셋업의 `dotfiles link`(`~/Dropbox/App/dotfiles`의 manifest 항목)가 이 링크를 만든다(2026-10-31). dotfiles 없이 만들 때는 `mkdir -p ~/.agents/skills && ln -s ~/Dropbox/Documents/retrotech/skills/research-retrotech ~/.agents/skills/research-retrotech`.
+- 리더는 시작할 때 `-skill` 폴더에 `SKILL.md`가 없으면 실행하지 않고 그 경로를 알려 준다. 링크가 없거나 끊겼거나 Dropbox 동기화가 끝나지 않은 경우다(2026-10-31). 그 전에는 읽지 못한 스킬 파일을 건너뛰고 조사해서, 스킬이 없어진 것을 몇 주 동안 몰랐다.
 - `~/.codex/skills`에는 두지 않는다. 그 폴더는 Codex가 설치·관리하는 스킬 자리이고, 두 곳에 있으면 Codex 스킬 목록에 두 번 나온다.
 - 2026-10-31 복구: 스킬은 M1 Max의 `~/.codex/skills`에만 있다가 M5 Max로 옮길 때 빠졌고, M1 Max를 포맷하면서 사라졌다. 그동안 리더는 스킬 없이 조사했다. Codex 앱에 남은 옛 대화 기록과 보고서 `versions/`의 백업으로 먼저 되살렸고, 이어서 M1 Max의 Time Machine 백업(NAS, 포맷 전 10/11 13:05 스냅숏)에서 원본 폴더를 받아 대조했다. 7개 파일 중 5개는 복구본과 같았다. `references/research-dossier.md`는 원본으로 바꿨고, `references/interactive-research.md`는 원본(9/30)에서 모델 문단의 이름과 날짜만 지금 목록(GPT-6.1 Sol)에 맞췄다. 지금 스킬은 그 한 줄을 빼면 원본과 같다.
 

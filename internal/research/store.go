@@ -31,6 +31,7 @@ var paragraphRE = regexp.MustCompile(`<p(?:\s[^>]*)?>`)
 var tagsRE = regexp.MustCompile(`<[^>]*>`)
 var countRE = regexp.MustCompile(`\d+개 출처 링크`)
 var ErrConflict = errors.New("보고서 파일이 다른 곳에서 변경되었습니다. 덮어쓰지 않았습니다. 변경본을 보존한 뒤 서버를 다시 확인해 주세요")
+var ErrSkillMissing = errors.New("조사 스킬을 찾을 수 없습니다")
 
 type Store struct {
 	mu                    sync.Mutex
@@ -79,6 +80,12 @@ func NewStore(dir, skillDir, origin string) (*Store, error) {
 		if p == "episodes" {
 			return nil, errors.New("episodes 원본 디렉터리는 조사 출력에 사용할 수 없습니다")
 		}
+	}
+	// promptLocked skips guidance files it cannot read, so without this the
+	// reader researches with no skill and nobody notices; it once did for weeks.
+	skill := filepath.Join(skillDir, "SKILL.md")
+	if info, e := os.Stat(skill); e != nil || !info.Mode().IsRegular() {
+		return nil, fmt.Errorf("%w: %s. 새 Mac이면 dotfiles link로 스킬 링크를 만들어 주세요(docs/RESEARCH_WORKBENCH.md의 조사 스킬)", ErrSkillMissing, skill)
 	}
 	s := &Store{Dir: abs, SkillDir: skillDir, Origin: origin}
 	meta := filepath.Join(abs, ".research")
