@@ -18,6 +18,15 @@ go build -o .local-bin/retrotech-research ./cmd/research
 
 기본 포트는 `49327`이고 점유 중이면 운영체제가 빈 포트를 고른다. `-port 0`으로 처음부터 자동 배정할 수 있다. `7800–7899`는 terrarium 예약 대역이라 거부한다. `127.0.0.1`에만 바인딩하며 상시 서비스로 등록하지 않는다.
 
+### 조사 스킬
+
+리더는 `-skill` 폴더의 `SKILL.md`, `references/research-dossier.md`, `references/story-research-checks.md`, `references/follow-up-learnings.md`를 질문마다 함께 보낸다. **스킬에 남길 점**도 이 폴더에 쓴다. 이 폴더는 Codex 스킬 `research-retrotech`이고, Codex로 새 에피소드를 조사할 때도 같은 스킬을 쓴다.
+
+- 원본은 `~/Dropbox/Documents/retrotech/skills/research-retrotech`이다. 각 Mac에서는 Codex가 사용자 스킬을 읽는 `~/.agents/skills/research-retrotech`를 원본에 심볼릭 링크로 연결한다. `-skill` 기본값도 이 링크다.
+- 새 Mac에서는 링크만 만든다: `mkdir -p ~/.agents/skills && ln -s ~/Dropbox/Documents/retrotech/skills/research-retrotech ~/.agents/skills/research-retrotech`.
+- `~/.codex/skills`에는 두지 않는다. 그 폴더는 Codex가 설치·관리하는 스킬 자리이고, 두 곳에 있으면 Codex 스킬 목록에 두 번 나온다.
+- 2026-10-31 복구: 스킬은 M1 Max의 `~/.codex/skills`에만 있다가 M5 Max로 옮길 때 빠졌고, M1 Max를 포맷하면서 사라졌다. 그동안 리더는 스킬 없이 조사했다. Codex 앱에 남은 옛 대화 기록과 보고서 `versions/`의 백업으로 7개 파일 중 6개를 원본 그대로 되살렸다. `references/research-dossier.md`는 약 40%만 남아 파일 머리에 표시했다. 원본을 찾으면 그 파일만 바꾼다.
+
 ## 읽기와 조사
 
 1. `start-research.command`를 실행하고 기존 `index.html`을 연다. 사이드바의 **연결됨** 표시를 확인한 뒤 문단을 클릭하거나 장을 고른다.

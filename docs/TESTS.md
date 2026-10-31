@@ -80,7 +80,7 @@ Chrome가 필요하며 Node/Playwright는 검증 전용이다. 브라우저 검�
 ### 파일 HTML 연결 회귀 (2026-09-24)
 
 - `TestFileOriginConnection`: `Origin: null`의 토큰 없는 읽기·잘못된 토큰·외부 웹 출처 거부, API preflight, 올바른 토큰의 읽기/쓰기, 재시작 후 연결 토큰 보존 및 다른 보고서와의 분리.
-- `cmd/research/main_test.go`: 실행기가 경로를 인용하고 `-open` 없이 서버만 실행하는 계약.
+- `cmd/research/main_test.go`: 실행기가 경로를 인용하고 `-open` 없이 서버만 실행하는 계약. `-skill` 기본값이 Codex 사용자 스킬 링크(`~/.agents/skills/research-retrotech`)인지(2026-10-31).
 - Chrome 통합 검사는 이제 주 흐름을 `file://…/index.html`에서 시작한다.
 
 ### 조사 모델 갱신 (2026-09-30)

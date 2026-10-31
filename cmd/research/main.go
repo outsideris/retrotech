@@ -32,7 +32,7 @@ func main() {
 func run() error {
 	report := flag.String("report", "", "Directory containing index.html and research.md")
 	home, _ := os.UserHomeDir()
-	skill := flag.String("skill", filepath.Join(home, ".codex/skills/research-retrotech"), "Research skill directory")
+	skill := flag.String("skill", defaultSkillDir(home), "Research skill directory")
 	portDefault := 49327
 	if v := os.Getenv("PORT"); v != "" {
 		n, e := strconv.Atoi(v)
@@ -165,6 +165,12 @@ func sameReport(origin, dir string) bool {
 	return v.ID == hex.EncodeToString(h[:])[:16]
 }
 
+// defaultSkillDir is where Codex reads a user's own skills. The research skill
+// itself lives in Dropbox and is linked here; ~/.codex/skills holds the skills
+// Codex installs and manages, and a second copy there would list the skill twice.
+func defaultSkillDir(home string) string {
+	return filepath.Join(home, ".agents/skills/research-retrotech")
+}
 func launcherScript(exe, dir, skill string) string {
 	return "#!/bin/zsh\n# RetroTech local research reader\nexec " + quote(exe) + " -report " + quote(dir) + " -skill " + quote(skill) + "\n"
 }
